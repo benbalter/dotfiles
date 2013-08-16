@@ -40,11 +40,9 @@ alias server="python -m SimpleHTTPServer"
 
 #ip
 alias ip="curl icanhazip.com"
+alias flushdns="dscacheutil -flushcache; echo 'Flushed DNS, btw here is your hosts file just in case:'; cat /etc/hosts"
 
 #boxen + homebrew
 alias up="boxen && brew update && brew upgrade"
 
-#geojson conversion
-function shp2geojson() {
-  ogr2ogr -f GeoJSON -t_srs crs:84 "$1.geojson" "$1.shp"
-}
+
