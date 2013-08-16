@@ -1,5 +1,6 @@
 #Boxen
 source /opt/boxen/env.sh
+source ~/.files/git-completion.sh
 
 # Git
 alias gs="git status"
