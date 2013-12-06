@@ -17,6 +17,9 @@ ZSH_THEME="robbyrussell"
 # Comment this out to disable bi-weekly auto-update checks
 # DISABLE_AUTO_UPDATE="true"
 
+# don't bug me on updates
+DISABLE_UPDATE_PROMPT=true
+
 # Uncomment to change how often before auto-updates occur? (in days)
 # export UPDATE_ZSH_DAYS=13
 
