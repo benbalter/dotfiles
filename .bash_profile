@@ -31,6 +31,8 @@ alias ap="a ./"
 function js() { j "$@" ; ap; }
 export EDITOR='atom -w'
 
+# Chrome cors
+alias chrome-cors="open -a Google\ Chrome --args --disable-web-security"
 
 ### Added by the Heroku Toolbelt
 export PATH="/usr/local/heroku/bin:$PATH"
@@ -44,5 +46,3 @@ alias flushdns="dscacheutil -flushcache; echo 'Flushed DNS, btw here is your hos
 
 #boxen + homebrew
 alias up="boxen && brew update && brew upgrade"
-
-
