@@ -10,6 +10,7 @@ alias gl="git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %
 alias gp="git push"
 alias gd="git diff"
 alias gb="git browse"
+alias reset="git rest HEAD --hard"
 
 #fasd
 eval "$(fasd --init auto)"
