@@ -24,12 +24,11 @@ alias jd="jekyll build --trace"
 alias s='"/Applications/Sublime Text 2.app/Contents/SharedSupport/bin/subl"'
 alias sp="s ./"
 function js() { j "$@" ; sp; }
-#export EDITOR='"/Applications/Sublime Text 2.app/Contents/SharedSupport/bin/subl" -w'
 
 #atom
 alias a='atom'
 alias ap="a ./"
-function js() { j "$@" ; ap; }
+function ja() { j "$@" ; ap; }
 export EDITOR='atom -w'
 
 # Chrome cors
