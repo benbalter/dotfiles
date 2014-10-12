@@ -4,6 +4,7 @@ source /opt/boxen/env.sh
 # Git
 alias gs="git status"
 alias ga="git add"
+alias gad="git add ."
 alias go="git checkout"
 alias gc="git commit"
 alias gl="git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative"
