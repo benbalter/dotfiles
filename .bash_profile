@@ -44,10 +44,3 @@ alias server="python -m SimpleHTTPServer"
 #ip
 alias ip="curl icanhazip.com"
 alias flushdns="dscacheutil -flushcache; echo 'Flushed DNS, btw here is your hosts file just in case:'; cat /etc/hosts"
-
-#boxen + homebrew
-alias up="boxen && brew update && brew upgrade"
-
-# Ruby
-alias be="bundle exec"
-alias be="bundle exec rake"

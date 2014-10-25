@@ -43,7 +43,7 @@ DISABLE_UPDATE_PROMPT=true
 # Which plugins would you like to load? (plugins can be found in ~/.oh-my-zsh/plugins/*)
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
-plugins=(git brew bundler cloudapp coffee cp fasd gem git-extras github heroku npm node osx extract)
+plugins=(atom battery bower brew bundler cloudapp coffee common-aliases cp extract fasd gem history-substring-search git git-extras github heroku iwhois node npm osx rake rake-fast rbenv ruby safe-paste ssh-agent sudo zsh_reload)
 
 source $ZSH/oh-my-zsh.sh
 source ~/.bash_profile
