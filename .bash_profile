@@ -44,3 +44,9 @@ alias server="python -m SimpleHTTPServer"
 #ip
 alias ip="curl icanhazip.com"
 alias flushdns="dscacheutil -flushcache; echo 'Flushed DNS, btw here is your hosts file just in case:'; cat /etc/hosts"
+
+#php cli
+export MAMP_PHP_VERSION="5.6.2"
+alias php="/Applications/MAMP/bin/php/php$MAMP_PHP_VERSION/bin/php"
+alias composer="php /Applications/MAMP/bin/php/php$MAMP_PHP_VERSION/bin/composer.phar"
+alias phpunit="php /Applications/MAMP/bin/php/php$MAMP_PHP_VERSION/bin/phpunit.phar"
