@@ -48,5 +48,7 @@ alias flushdns="dscacheutil -flushcache; echo 'Flushed DNS, btw here is your hos
 #php cli
 export MAMP_PHP_VERSION="5.6.2"
 alias php="/Applications/MAMP/bin/php/php$MAMP_PHP_VERSION/bin/php"
+export WP_CLI_PHP="/Applications/MAMP/bin/php/php$MAMP_PHP_VERSION/bin/php"
 alias composer="php /Applications/MAMP/bin/php/php$MAMP_PHP_VERSION/bin/composer.phar"
 alias phpunit="php /Applications/MAMP/bin/php/php$MAMP_PHP_VERSION/bin/phpunit.phar"
+alias wp="php /Applications/MAMP/bin/php/php$MAMP_PHP_VERSION/bin/wp-cli.phar"
