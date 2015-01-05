@@ -52,3 +52,6 @@ export WP_CLI_PHP="/Applications/MAMP/bin/php/php$MAMP_PHP_VERSION/bin/php"
 alias composer="php /Applications/MAMP/bin/php/php$MAMP_PHP_VERSION/bin/composer.phar"
 alias phpunit="php /Applications/MAMP/bin/php/php$MAMP_PHP_VERSION/bin/phpunit.phar"
 alias wp="php /Applications/MAMP/bin/php/php$MAMP_PHP_VERSION/bin/wp-cli.phar"
+
+# GPG - Workaround for https://github.com/keybase/keybase-issues/issues/1214
+export GPG_TTY=`tty`
