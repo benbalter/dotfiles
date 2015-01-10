@@ -55,3 +55,6 @@ alias wp="php /Applications/MAMP/bin/php/php$MAMP_PHP_VERSION/bin/wp-cli.phar"
 
 # GPG - Workaround for https://github.com/keybase/keybase-issues/issues/1214
 export GPG_TTY=`tty`
+
+# Libre office
+alias soffice="/Applications/LibreOffice.app/Contents/MacOS/soffice"
