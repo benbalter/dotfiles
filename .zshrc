@@ -43,7 +43,7 @@ COMPLETION_WAITING_DOTS="true"
 # Which plugins would you like to load? (plugins can be found in ~/.oh-my-zsh/plugins/*)
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
-plugins=(atom autoenv battery bower brew bundler cloudapp coffee colored-man colorize command-not-found common-aliases cp extract fasd gem history-substring-search git git-extras github heroku iwhois node npm osx rake rake-fast rbenv ruby safe-paste ssh-agent sudo zsh_reload per-directory-history)
+plugins=(atom battery bower brew bundler cloudapp coffee colored-man colorize command-not-found common-aliases cp extract fasd gem history-substring-search git git-extras github heroku iwhois node npm osx rake rake-fast rbenv ruby safe-paste ssh-agent sudo zsh_reload per-directory-history)
 
 source $ZSH/oh-my-zsh.sh
 source ~/.bash_profile

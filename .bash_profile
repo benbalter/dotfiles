@@ -12,7 +12,7 @@ alias gp="git push"
 alias gd="git diff"
 alias gb="git browse"
 alias reset="git reset HEAD --hard; git clean -f -d"
-alias clean="git branch --merged | grep -v "\*" | xargs -n 1 git branch -d"
+alias clean="$(git branch --merged | grep -v "\*" | xargs -n 1 git branch -d)"
 
 #fasd
 eval "$(fasd --init auto)"
