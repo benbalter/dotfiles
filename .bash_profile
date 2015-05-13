@@ -1,5 +1,6 @@
 #Boxen
 source /opt/boxen/env.sh
+source ~/.gpg-agent-info
 
 # Git
 alias gs="git status"
@@ -59,3 +60,6 @@ export GPG_TTY=`tty`
 
 # Libre office
 alias soffice="/Applications/LibreOffice.app/Contents/MacOS/soffice"
+
+# You've got mail
+unset MAILCHECK
