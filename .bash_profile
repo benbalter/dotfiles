@@ -1,6 +1,5 @@
 #Boxen
 source /opt/boxen/env.sh
-source ~/.gpg-agent-info
 
 # Git
 alias gs="git status"
@@ -14,6 +13,7 @@ alias gd="git diff"
 alias gb="git browse"
 alias reset="git reset HEAD --hard; git clean -f -d"
 alias clean="git branch --merged | grep -v "\*" | xargs -n 1 git branch -d"
+alias ggb="git commit -m ':gem: bump'"
 
 #fasd
 eval "$(fasd --init auto)"
