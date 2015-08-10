@@ -38,9 +38,6 @@ export EDITOR='atom -w'
 # Chrome cors
 alias chrome-cors="open -a Google\ Chrome --args --disable-web-security"
 
-### Added by the Heroku Toolbelt
-export PATH="/usr/local/heroku/bin:$PATH"
-
 #simple server
 alias server="python -m SimpleHTTPServer"
 
