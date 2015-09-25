@@ -1,6 +1,7 @@
 # Git
 brew "git"
 brew "git-lfs"
+brew "hub"
 
 # Command line stuffs
 brew "zsh"
@@ -20,7 +21,6 @@ brew "cask"
 # dev stuffs
 cask "iterm2"
 cask "atom"
-cask "hub"
 cask "yubiswitch"
 cask "github-desktop"
 cask "heroku-toolbelt"
