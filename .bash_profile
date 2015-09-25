@@ -1,7 +1,8 @@
-# Homebrew
-export PATH="/usr/local/sbin:$PATH"
+#Boxen
+source /opt/boxen/env.sh
 
 # Git
+alias git="hub"
 alias gs="git status"
 alias ga="git add"
 alias gad="git add ."
