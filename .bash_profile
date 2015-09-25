@@ -1,3 +1,6 @@
+# Homebrew
+export PATH="/usr/local/sbin:$PATH"
+
 # Git
 alias gs="git status"
 alias ga="git add"
