@@ -1,6 +1,3 @@
-#Boxen
-source /opt/boxen/env.sh
-
 # Git
 alias gs="git status"
 alias ga="git add"
