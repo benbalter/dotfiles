@@ -5,4 +5,6 @@ if ! type "brew" > /dev/null; then
   brew tap homebrew/bundle
 fi
 
+brew update
+brew upgrade
 brew bundle
