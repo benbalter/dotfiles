@@ -14,6 +14,11 @@ alias reset="git reset HEAD --hard; git clean -f -d"
 alias clean="git branch --merged | grep -v '\*' | xargs -n 1 git branch -d"
 alias ggb="git commit -m ':gem: bump'"
 
+# Script/*
+alias sb="script/bootstrap"
+alias sc="script/cibuild"
+alias console="script/console"
+
 #fasd
 eval "$(fasd --init auto)"
 alias j='fasd_cd -d'
