@@ -1,4 +1,5 @@
 # Homebrew
+
 tap "caskroom/cask"
 tap "homebrew/bundle"
 tap "homebrew/versions"
@@ -29,6 +30,7 @@ brew "libxml2"
 brew "gmp"
 brew "openssl"
 brew "gdbm"
+brew "readline"
 
 # Le casks
 brew "cask"
