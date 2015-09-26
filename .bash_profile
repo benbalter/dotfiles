@@ -65,5 +65,5 @@ alias up="~/.files/script/update"
 
 # Setup cli tools
 export PATH="/usr/local/sbin:$PATH"
-export PATH="./bin:$PATH"
 eval "$(rbenv init -)"
+export PATH="./bin:$PATH"
