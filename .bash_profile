@@ -63,4 +63,4 @@ unset MAILCHECK
 # .files
 alias up="~/.files/script/update"
 
-rbenv rehash
+eval "$(rbenv init -)"
