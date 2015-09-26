@@ -1,3 +1,9 @@
+# Homebrew
+tap "caskroom/cask"
+tap "homebrew/bundle"
+tap "homebrew/versions"
+brew "caskroom/cask/brew-cask"
+
 # Git
 brew "git"
 brew "git-lfs"
