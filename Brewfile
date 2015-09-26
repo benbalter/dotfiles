@@ -14,6 +14,8 @@ brew "wget"
 brew "ruby"
 brew "rbenv"
 brew "ruby-build"
+brew "rbenv-gem-rehash"
+brew "rbenv-binstubs"
 
 # Le casks
 brew "cask"
