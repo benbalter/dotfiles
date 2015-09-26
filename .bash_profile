@@ -1,6 +1,3 @@
-#Boxen
-source /opt/boxen/env.sh
-
 # Git
 alias git="hub"
 alias gs="git status"
