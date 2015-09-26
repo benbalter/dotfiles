@@ -9,6 +9,7 @@ brew "fasd"
 brew "node"
 brew "curl"
 brew "wget"
+brew "libyaml"
 
 # Ruby
 brew "ruby"
@@ -16,6 +17,12 @@ brew "rbenv"
 brew "ruby-build"
 brew "rbenv-gem-rehash"
 brew "rbenv-binstubs"
+brew "pcre"
+brew "icu4c"
+brew "libxml2"
+brew "gmp"
+brew "openssl"
+brew "gdbm"
 
 # Le casks
 brew "cask"
