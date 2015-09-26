@@ -1,0 +1,47 @@
+[hub]
+	protocol = https
+
+[credential]
+	helper = osxkeychain
+
+[core]
+  excludesfile = ~/.gitignore
+  whitespace = trailing-space,space-before-tab
+	pager = less -r
+	autocrlf = input
+
+[user]
+	name = Ben Balter
+	email = ben.balter@github.com
+	signingkey = 6AD356C4
+
+[color]
+  diff = true
+  status = true
+  branch = true
+  ui = true
+  interactive = true
+
+[apply]
+  whitespace = fix
+
+[github]
+  user = benbalter
+  token = !sh -c 'echo $GITHUB_TOKEN'
+
+[push]
+  default = current
+
+[git-up "bundler"]
+	check = true
+  autoinstall = true
+
+[filter "media"]
+	required = true
+	clean = git media clean %f
+	smudge = git media smudge %f
+
+[filter "lfs"]
+	clean = git-lfs clean %f
+	smudge = git-lfs smudge %f
+	required = true
