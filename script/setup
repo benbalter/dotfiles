@@ -1,0 +1,23 @@
+#!/bin/sh
+
+title () {
+  echo "\n"
+  echo "-------------------------------"
+  echo $1
+  echo "-------------------------------"
+  echo "\n"
+}
+
+if ! type "brew" > /dev/null; then
+  title "Installing homebrew..."
+  ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+  brew tap homebrew/bundle
+fi
+
+title "Setting up Homebrew..."
+brew bundle
+
+title "Setting up atom..."
+apm install --packages-file ~/.files/atom/packages.txt
+
+title "Fin."

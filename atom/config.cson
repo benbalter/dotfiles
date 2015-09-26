@@ -1,0 +1,67 @@
+"*":
+  "exception-reporting":
+    userId: "7850ac09-82f7-ff76-2cbb-a0a25dea82bd"
+  "release-notes":
+    viewedVersion: "0.94.0"
+  welcome:
+    showOnStartup: false
+  metrics:
+    userId: ""
+  editor:
+    fontSize: 19
+    softWrap: true
+    invisibles: {}
+    fontFamily: "Inconsolata"
+    showInvisibles: true
+    softWrapAtPreferredLineLength: true
+  core:
+    followSymlinks: true
+    disabledPackages: [
+      "markdown-format"
+      "save-session"
+      "markdown-writer"
+    ]
+    excludeVcsIgnoredPaths: false
+  "spell-check":
+    grammars: [
+      "source.gfm"
+      "text.git-commit"
+      "text.plain"
+    ]
+  feedback:
+    email: "ben.balter@github.com"
+  autocomplete:
+    includeCompletionsFromAllBuffers: true
+  linter:
+    lintOnChange: false
+    showInfoMessages: false
+    showErrorTabFile: false
+    showErrorTabProject: false
+    statusIconScope: "File"
+    showErrorPanel: false
+  "linter-write-good": {}
+  Zen:
+    fullscreen: true
+  "travis-ci-status": {}
+  "atom-beautify":
+    analytics: false
+    css_newline_between_rules: true
+    css_preserve_newlines: true
+    css_selector_separator_newline: true
+    css_force_indentation: true
+    css_align_assignments: true
+  "tidy-markdown":
+    ensureFirstHeaderIsH1: false
+    runOnSave: false
+  "tree-view": {}
+  "autocomplete-emojis":
+    enableUnicodeEmojis: false
+  "autocomplete-plus": {}
+  "status-bar": {}
+  tabs:
+    enableVcsColoring: true
+    alwaysShowTabBar: false
+  "one-dark-ui": {}
+  "line-ending-converter":
+    showEolInStatusBar: false
+  pigments: {}

@@ -1,0 +1,4 @@
+#!/bin/sh
+
+apm clean
+apm list --installed --bare | grep '^[^@]\+' -o > ~/.files/atom/packages.txt
