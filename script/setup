@@ -8,6 +8,20 @@ title () {
   echo "\n"
 }
 
+link() {
+  if [ ! -f ~/$1 ] || [ $(ls -l ~/$1 | awk '{print $11}') != "/Users/benbalter/.files/$1" ]; then
+    echo "Linking ~/$1 to ~/.files/$1"
+    ln -sf ~/.files/$1 ~/$1
+  fi
+}
+
+link .bash_profile
+link .gitconfig
+link .gitignore
+link .irbrc
+link .zshrc
+link .Brewfile
+
 if ! type "brew" > /dev/null; then
   title "Installing homebrew..."
   ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
@@ -15,9 +29,12 @@ if ! type "brew" > /dev/null; then
 fi
 
 title "Setting up Homebrew..."
-brew bundle
+if ! brew bundle check --global; then
+  brew bundle --global
+fi
 
 title "Setting up atom..."
-apm install --packages-file ~/.files/atom/packages.txt
+link .atom/config.cson
+apm install --packages-file ~/.files/.atom/packages.txt
 
 title "Fin."

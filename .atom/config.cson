@@ -6,7 +6,6 @@
     fontSize: 19
     showIndentGuide: true
     softWrap: true
-    softWrapAtPreferredLineLength: true
   "exception-reporting":
     userId: "05e28b42-e3fa-77bb-d312-beac2ff9e773"
   welcome:

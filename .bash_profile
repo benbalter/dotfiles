@@ -67,8 +67,10 @@ unset MAILCHECK
 
 # .files
 alias up="~/.files/script/update"
+alias setup="~/.files/script/setup"
 
 # Setup cli tools
+export HOMEBREW_CASK_OPTS="--appdir=/Applications"
 export PATH="/usr/local/sbin:$PATH"
 eval "$(rbenv init -)"
 export PATH="./bin:$PATH"
