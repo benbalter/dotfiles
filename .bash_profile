@@ -59,3 +59,6 @@ alias soffice="/Applications/LibreOffice.app/Contents/MacOS/soffice"
 
 # You've got mail
 unset MAILCHECK
+
+# .files
+alias up="~/.files/script/update"
