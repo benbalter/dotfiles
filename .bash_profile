@@ -60,7 +60,7 @@ alias wp="php /Applications/MAMP/bin/php/php$MAMP_PHP_VERSION/bin/wp-cli.phar"
 export GPG_TTY=`tty`
 
 # Libre office
-alias soffice="/Applications/LibreOffice.app/Contents/MacOS/soffice"
+alias soffice="~/Applications/LibreOffice.app/Contents/MacOS/soffice"
 
 # You've got mail
 unset MAILCHECK
