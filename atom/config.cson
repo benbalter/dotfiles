@@ -1,67 +1,48 @@
 "*":
+  editor:
+    invisibles: {}
+    backUpBeforeSaving: true
+    fontFamily: "Inconsolata"
+    fontSize: 19
+    showIndentGuide: true
+    softWrap: true
+    softWrapAtPreferredLineLength: true
   "exception-reporting":
-    userId: "7850ac09-82f7-ff76-2cbb-a0a25dea82bd"
-  "release-notes":
-    viewedVersion: "0.94.0"
+    userId: "05e28b42-e3fa-77bb-d312-beac2ff9e773"
   welcome:
     showOnStartup: false
-  metrics:
-    userId: ""
-  editor:
-    fontSize: 19
-    softWrap: true
-    invisibles: {}
-    fontFamily: "Inconsolata"
-    showInvisibles: true
-    softWrapAtPreferredLineLength: true
   core:
-    followSymlinks: true
-    disabledPackages: [
-      "markdown-format"
-      "save-session"
-      "markdown-writer"
-    ]
     excludeVcsIgnoredPaths: false
-  "spell-check":
-    grammars: [
-      "source.gfm"
-      "text.git-commit"
-      "text.plain"
-    ]
-  feedback:
-    email: "ben.balter@github.com"
-  autocomplete:
-    includeCompletionsFromAllBuffers: true
+  Zen:
+    typewriter: true
+  "atom-alignment": {}
+  "code-links":
+    displayMode: "always"
+  "file-icons":
+    onChanges: true
+  "line-ending-converter":
+    showEolInStatusBar: false
   linter:
-    lintOnChange: false
-    showInfoMessages: false
     showErrorTabFile: false
     showErrorTabProject: false
     statusIconScope: "File"
-    showErrorPanel: false
+  "linter-ruby": {}
   "linter-write-good": {}
-  Zen:
-    fullscreen: true
+  "markdown-table-formatter": {}
   "travis-ci-status": {}
-  "atom-beautify":
-    analytics: false
-    css_newline_between_rules: true
-    css_preserve_newlines: true
-    css_selector_separator_newline: true
-    css_force_indentation: true
-    css_align_assignments: true
-  "tidy-markdown":
-    ensureFirstHeaderIsH1: false
-    runOnSave: false
-  "tree-view": {}
-  "autocomplete-emojis":
-    enableUnicodeEmojis: false
+  wordcount: {}
   "autocomplete-plus": {}
-  "status-bar": {}
+  autosave:
+    enabled: true
+  "find-and-replace": {}
+  "fuzzy-finder": {}
+  "git-diff": {}
+  "markdown-preview":
+    useGitHubStyle: true
+  whitespace:
+    keepMarkdownLineBreakWhitespace: false
   tabs:
-    enableVcsColoring: true
     alwaysShowTabBar: false
-  "one-dark-ui": {}
-  "line-ending-converter":
-    showEolInStatusBar: false
-  pigments: {}
+    enableVcsColoring: true
+  "status-bar": {}
+  "spell-check": {}
