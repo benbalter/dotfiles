@@ -32,6 +32,7 @@ brew "openssl"
 brew "gdbm"
 brew "readline"
 brew "cmake"
+brew "pkg-config"
 
 # Le casks
 brew "cask"
