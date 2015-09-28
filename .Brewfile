@@ -31,6 +31,7 @@ brew "gmp"
 brew "openssl"
 brew "gdbm"
 brew "readline"
+brew "cmake"
 
 # Le casks
 brew "cask"
