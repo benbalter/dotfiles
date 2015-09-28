@@ -17,6 +17,7 @@ brew "node"
 brew "curl"
 brew "wget"
 brew "libyaml"
+brew "mtr"
 
 # Ruby
 brew "ruby"
