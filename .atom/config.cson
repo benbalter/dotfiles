@@ -25,6 +25,7 @@
     showErrorTabFile: false
     showErrorTabProject: false
     statusIconScope: "File"
+    showErrorPanel: false
   "linter-ruby": {}
   "linter-write-good": {}
   "markdown-table-formatter": {}
