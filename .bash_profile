@@ -74,3 +74,6 @@ export HOMEBREW_CASK_OPTS="--appdir=/Applications"
 export PATH="/usr/local/sbin:$PATH"
 eval "$(rbenv init -)"
 export PATH="./bin:$PATH"
+
+# GitHub token with no scope, used to get around API limits
+export HOMEBREW_GITHUB_API_TOKEN=$(cat ~/.token)
