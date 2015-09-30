@@ -3,6 +3,7 @@
 tap "caskroom/cask"
 tap "homebrew/bundle"
 tap "homebrew/versions"
+tap "caskroom/fonts"
 brew "caskroom/cask/brew-cask"
 
 # Git
@@ -74,6 +75,11 @@ cask "pandoc"
 cask "quickgeojson"
 cask "quicklook-csv"
 cask "quicklook-json"
+cask "animated-gif-quicklook"
+
+# Fonts
+cask "font-inconsolata"
+cask "font-open-sans"
 
 # Useful to have, but install the others first
 brew "keybase"
