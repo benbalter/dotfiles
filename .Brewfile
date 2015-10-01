@@ -80,6 +80,8 @@ cask "animated-gif-quicklook"
 # Fonts
 cask "font-inconsolata"
 cask "font-open-sans"
+cask "font-source-code-pro"
+cask "font-source-sans-pro"
 
 # Useful to have, but install the others first
 brew "keybase"
