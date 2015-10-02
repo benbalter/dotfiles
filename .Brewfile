@@ -72,10 +72,17 @@ cask "steam"
 cask "gpgtools"
 cask "vlc"
 cask "pandoc"
+
+# quicklooks
 cask "quickgeojson"
 cask "quicklook-csv"
 cask "quicklook-json"
 cask "animated-gif-quicklook"
+cask "qlcolorcode"
+cask "qlstephen"
+cask "qlmarkdown"
+cask "betterzipql"
+cask "qlimagesize"
 
 # Fonts
 cask "font-inconsolata"
