@@ -16,3 +16,10 @@ brew upgrade
 title "Updating Atom..."
 apm update
 apm upgrade
+
+title "Updating system Ruby gems..."
+gem update
+
+title "Updating global Node packages..."
+npm update --global
+npm upgrade --global
