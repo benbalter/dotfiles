@@ -47,3 +47,5 @@
   "status-bar": {}
   "spell-check": {}
   "theme-switcher": {}
+  "tidy-markdown":
+    ensureFirstHeaderIsH1: false
