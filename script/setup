@@ -1,5 +1,9 @@
 #!/bin/sh
 
+if [ $TRAVIS != "true" ]; then
+  set -e
+fi
+
 title () {
   echo "\n"
   echo "-------------------------------"
