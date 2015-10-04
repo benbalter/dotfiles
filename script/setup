@@ -66,6 +66,16 @@ if ! type "brew" > /dev/null; then
   exit 1
 fi
 
+title "Setting up Ruby"
+if [ $(rbenv global) = "system" ]; then
+  latest=$(rbenv install -l | grep -v - | tail -1 )
+  latest="$(echo "${latest}" | tr -d '[[:space:]]')"
+  rbenv install $latest
+  rbenv global $latest
+  rbenv rehash
+fi
+gem install bundler
+
 title "Setting up Homebrew"
 if ! brew bundle check --global; then
   brew bundle install --global
@@ -99,17 +109,6 @@ if [ -d ~/Dropbox/Desktop ] && [ ! -L ~/Dropbox/Desktop ]; then
   cp ~/Dropbox/Desktop/* ~/Desktop
   rm -Rf ~/Dropbox/Desktop/
   ln -s ~/Desktop ~/Dropbox/Desktop
-fi
-
-
-if [ $(rbenv global) = "system" ]; then
-  title "Setting up Ruby"
-  latest=$(rbenv install -l | grep -v - | tail -1 )
-  latest="$(echo "${latest}" | tr -d '[[:space:]]')"
-  rbenv install $latest
-  rbenv global $latest
-  rbenv rehash
-  gem install bundler
 fi
 
 title "Setting up atom"
