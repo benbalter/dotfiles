@@ -64,7 +64,7 @@ link Library/LaunchAgents/com.balter.ben.update.plist
 mkdir_safe projects
 mkdir_safe github
 
-source ~/.bash_profile
+source "$HOME_DIR/.bash_profile"
 
 if ! type "brew" > /dev/null; then
   echo "Please run strap first. https://github.com/mikemcquaid/strap"
