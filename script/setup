@@ -39,7 +39,7 @@ if [ ! -d ~/.oh-my-zsh ]; then
 
   # Set ZSH as the default shell
   command -v zsh | sudo tee -a /etc/shells
-  sudo chsh -s "$(command -v zsh)" "${USER}"
+  sudo -n chsh -s "$(command -v zsh)" "${USER}"
   export SHELL=$(which zsh)
 
   # Iterm shell integration
