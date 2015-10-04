@@ -59,7 +59,6 @@ mkdir_safe github
 
 source ~/.bash_profile
 
-
 if ! type "brew" > /dev/null; then
   echo "Please run strap first. https://github.com/mikemcquaid/strap"
   exit 1
