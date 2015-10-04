@@ -85,8 +85,8 @@ defaults write com.apple.Safari \
   -bool false
 touch ~/.hushlogin
 
-title "Setting up dropbox"
-if [ -d ~/Dropbox/Desktop ]; then
+if [ -d ~/Dropbox/Desktop ] && [ ! -L ~/Dropbox/Desktop ]; then
+  title "Setting up dropbox"
   cp ~/Dropbox/Desktop/* ~/Desktop
   rm -Rf ~/Dropbox/Desktop/
   ln -s ~/Desktop ~/Dropbox/Desktop
