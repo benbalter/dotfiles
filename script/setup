@@ -9,11 +9,13 @@ title () {
 }
 
 link() {
-  if [ ! -f ~/$1 ] || [ $(ls -l ~/$1 | awk '{print $11}') != "/Users/benbalter/.files/$1" ]; then
+  username=$(whomai)
+  if [ ! -f ~/$1 ] || [ $(ls -l ~/$1 | awk '{print $11}') != "/Users/$username/.files/$1" ]; then
     echo "Linking ~/$1 to ~/.files/$1"
     ln -sf ~/.files/$1 ~/$1
   fi
 }
+
 
 link .bash_profile
 link .gitconfig
@@ -21,6 +23,11 @@ link .gitignore
 link .irbrc
 link .zshrc
 link .Brewfile
+
+if [ ! -d "/Users/$(whoami)/projects" ]; then
+  echo "Creating project directory"
+  mkdir "/Users/$(whoami)/projects"
+fi
 
 if ! type "brew" > /dev/null; then
   title "Installing homebrew..."
