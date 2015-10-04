@@ -30,7 +30,7 @@
   token = !sh -c 'echo $GITHUB_TOKEN'
 
 [push]
-  default = current
+	default = simple
 
 [git-up "bundler"]
 	check = true

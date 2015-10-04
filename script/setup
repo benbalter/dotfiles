@@ -12,6 +12,7 @@ link() {
   username=$(whoami)
   if [ ! -f ~/$1 ] || [ $(ls -l ~/$1 | awk '{print $11}') != "/Users/$username/.files/$1" ]; then
     echo "Linking ~/$1 to ~/.files/$1"
+    rm -f ~/$1
     ln -sf ~/.files/$1 ~/$1
   fi
 }
@@ -30,6 +31,8 @@ link .gitignore
 link .irbrc
 link .zshrc
 link .Brewfile
+
+source ~/.bash_profile
 
 if [ ! -d ~/projects ]; then
   echo "Creating project directory"
