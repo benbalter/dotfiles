@@ -1,2 +1,4 @@
 os: osx
 script: script/cibuild
+env:
+  SHELL: zsh
