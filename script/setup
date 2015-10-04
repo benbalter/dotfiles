@@ -9,13 +9,20 @@ title () {
 }
 
 link() {
-  username=$(whomai)
+  username=$(whoami)
   if [ ! -f ~/$1 ] || [ $(ls -l ~/$1 | awk '{print $11}') != "/Users/$username/.files/$1" ]; then
     echo "Linking ~/$1 to ~/.files/$1"
     ln -sf ~/.files/$1 ~/$1
   fi
 }
 
+if [ ! -d ~/.oh-my-zsh ]; then
+  title "Setting up zsh"
+  sh -c "$(wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"
+  rm -f .zshrc
+  curl -L https://iterm2.com/misc/zsh_startup.in > ~/.iterm2_shell_integration.zsh
+  chmod +x ~/.iterm2_shell_integration.zsh
+fi
 
 link .bash_profile
 link .gitconfig
@@ -24,9 +31,9 @@ link .irbrc
 link .zshrc
 link .Brewfile
 
-if [ ! -d "/Users/$(whoami)/projects" ]; then
+if [ ! -d ~/projects ]; then
   echo "Creating project directory"
-  mkdir "/Users/$(whoami)/projects"
+  mkdir ~/projects
 fi
 
 if ! type "brew" > /dev/null; then
@@ -43,5 +50,6 @@ fi
 title "Setting up atom..."
 link .atom/config.cson
 apm install --packages-file ~/.files/.atom/packages.txt
+
 
 title "Fin."

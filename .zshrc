@@ -47,5 +47,4 @@ plugins=(atom battery bower brew bundler cloudapp coffee colored-man colorize co
 
 source $ZSH/oh-my-zsh.sh
 source ~/.bash_profile
-
 source /Users/benbalter/.iterm2_shell_integration.zsh
