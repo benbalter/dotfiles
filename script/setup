@@ -41,6 +41,7 @@ link .gitignore
 link .irbrc
 link .zshrc
 link .Brewfile
+link .gemrc
 link Library/LaunchAgents/com.balter.ben.tmpreaper.plist
 link Library/LaunchAgents/com.balter.ben.update.plist
 
@@ -52,9 +53,8 @@ if [ ! -d ~/projects ]; then
 fi
 
 if ! type "brew" > /dev/null; then
-  title "Installing homebrew..."
-  ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-  brew tap homebrew/bundle
+  echo "Please run strap first. https://github.com/mikemcquaid/strap"
+  exit 1
 fi
 
 title "Setting up Homebrew..."
@@ -77,6 +77,12 @@ defaults write com.apple.screencapture disable-shadow -bool true
 /usr/libexec/PlistBuddy -c "Set :StandardViewSettings:IconViewSettings:arrangeBy grid" ~/Library/Preferences/com.apple.finder.plist
 defaults write com.apple.finder EmptyTrashSecurely -bool true
 defaults write com.google.Chrome AppleEnableSwipeNavigateWithScrolls -bool false
+defaults write com.apple.Safari \
+  com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabled \
+  -bool false
+defaults write com.apple.Safari \
+  com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabledForLocalFiles \
+  -bool false
 touch ~/.hushlogin
 
 title "Setting up atom..."
