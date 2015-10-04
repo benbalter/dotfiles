@@ -1,8 +1,6 @@
 #!/bin/sh
 
-if [ $TRAVIS != "true" ]; then
-  set -e
-fi
+set -e
 
 title () {
   echo "\n"
@@ -28,9 +26,13 @@ mkdir_safe() {
   fi
 }
 
-sudo -n -v
+if [ "$TRAVIS" != "true" ]; then
+  sudo -v
+else
+  sudo -n -v
+fi
 
-if [ ! -d ~/.oh-my-zsh ]; then
+if [ ! -d ~/.oh-my-zsh ] && [ "$TRAVIS" != "true" ]; then
   title "Setting up zsh"
   sh -c "$(wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"
 
