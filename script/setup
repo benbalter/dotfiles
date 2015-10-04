@@ -26,7 +26,9 @@ mkdir_safe() {
   fi
 }
 
-sudo -v
+if [ $TRAVIS != "true" ]; then
+  sudo -v
+fi
 
 if [ ! -d ~/.oh-my-zsh ]; then
   title "Setting up zsh"
