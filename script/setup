@@ -26,9 +26,7 @@ mkdir_safe() {
   fi
 }
 
-if [ $TRAVIS != "true" ]; then
-  sudo -v
-fi
+sudo -n -v
 
 if [ ! -d ~/.oh-my-zsh ]; then
   title "Setting up zsh"
@@ -38,7 +36,7 @@ if [ ! -d ~/.oh-my-zsh ]; then
   rm -f .zshrc
 
   # Set ZSH as the default shell
-  command -v zsh | sudo tee -a /etc/shells
+  command -v zsh | sudo -n tee -a /etc/shells
   sudo -n chsh -s "$(command -v zsh)" "${USER}"
   export SHELL=$(which zsh)
 
