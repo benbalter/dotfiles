@@ -13,6 +13,9 @@ title "Updating Homebrew..."
 brew update
 brew upgrade
 
+title "Updating App Store apps"
+softwareupdate --install --all
+
 title "Updating Atom..."
 apm update
 apm upgrade
