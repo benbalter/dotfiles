@@ -69,6 +69,7 @@ if ! type "brew" > /dev/null; then
 fi
 
 title "Setting up Ruby"
+brew install rbenv
 if [ $(rbenv global) = "system" ]; then
   latest=$(rbenv install -l | grep -v - | tail -1 )
   latest="$(echo "${latest}" | tr -d '[[:space:]]')"
