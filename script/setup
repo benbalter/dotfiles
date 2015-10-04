@@ -85,6 +85,13 @@ defaults write com.apple.Safari \
   -bool false
 touch ~/.hushlogin
 
+title "Setting up dropbox"
+if [ -d ~/Dropbox/Desktop ]; then
+  cp ~/Dropbox/Desktop/* ~/Desktop
+  rm -Rf ~/Dropbox/Desktop/
+  ln -s ~/Desktop ~/Dropbox/Desktop
+fi
+
 title "Setting up atom..."
 link .atom/config.cson
 apm install --packages-file ~/.files/.atom/packages.txt
