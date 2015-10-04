@@ -30,7 +30,7 @@ fi
 
 title "Setting up Homebrew..."
 if ! brew bundle check --global; then
-  brew bundle --global
+  brew bundle install --global
 fi
 
 title "Setting up atom..."
