@@ -92,6 +92,17 @@ if [ -d ~/Dropbox/Desktop ] && [ ! -L ~/Dropbox/Desktop ]; then
   ln -s ~/Desktop ~/Dropbox/Desktop
 fi
 
+
+if [ $(rbenv global) = "system" ]; then
+  title "Setting up Ruby"
+  latest=$(rbenv install -l | grep -v - | tail -1 )
+  latest="$(echo "${latest}" | tr -d '[[:space:]]')"
+  rbenv install $latest
+  rbenv global $latest
+  rbenv rehash
+  gem install bundler
+fi
+
 title "Setting up atom..."
 link .atom/config.cson
 apm install --packages-file ~/.files/.atom/packages.txt

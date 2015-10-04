@@ -20,9 +20,20 @@ title "Updating Atom..."
 apm update
 apm upgrade
 
-title "Updating system Ruby gems..."
-gem update
-
 title "Updating global Node packages..."
 npm update --global
 npm upgrade --global
+
+latest_ruby=$(rbenv install -l | grep -v - | tail -1 )
+latest_ruby="$(echo "${latest_ruby}" | tr -d '[[:space:]]')"
+if [ $(rbenv global) != $latest_ruby ]; then
+  title "Updating Ruby..."
+  rbenv install $latest
+  rbenv global $latest
+  rbenv rehash
+  gem install bundler
+fi
+
+title "Updating system Ruby gems..."
+gem update --system
+gem update
