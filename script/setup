@@ -33,7 +33,7 @@ if [ ! -d ~/.oh-my-zsh ]; then
   sh -c "$(wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"
 
   # Remove default .zshrc file so we can link our own
-  rm -f .zshrc
+  rm -f ~/.zshrc
 
   # Set ZSH as the default shell
   command -v zsh | sudo -n tee -a /etc/shells
