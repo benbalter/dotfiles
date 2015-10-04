@@ -19,6 +19,7 @@ brew "curl"
 brew "wget"
 brew "libyaml"
 brew "mtr"
+brew "tmpreaper"
 
 # Ruby
 brew "ruby"

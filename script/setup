@@ -31,6 +31,8 @@ link .gitignore
 link .irbrc
 link .zshrc
 link .Brewfile
+link Library/LaunchAgents/com.balter.ben.tmpreaper.plist
+link Library/LaunchAgents/com.balter.ben.update.plist
 
 source ~/.bash_profile
 
