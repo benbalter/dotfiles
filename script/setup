@@ -3,6 +3,7 @@
 set -e
 
 DOTFILES_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
+HOME_DIR="/Users/$USER"
 
 title () {
   echo ""
@@ -14,17 +15,17 @@ title () {
 
 link() {
   username=$(whoami)
-  if [[ ! -f ~/"$1" ]] || [[ $(ls -l ~/"$1" | awk '{print $11}') != "$DOTFILES_ROOT/$1" ]]; then
+  if [[ ! -f "$HOME_DIR/$1" ]] || [[ $(ls -l "$HOME_DIR/$1" | awk '{print $11}') != "$DOTFILES_ROOT/$1" ]]; then
     echo "Linking ~/$1 to ~/.files/$1"
-    rm -f ~/"$1"
-    ln -sf ~/.files/"$1" ~/"$1"
+    rm -f "$HOME_DIR/$1"
+    ln -sf "$HOME_DIR/.files/$1" ~/"$1"
   fi
 }
 
 mkdir_safe() {
-  if [[ ! -d ~/"$1" ]]; then
+  if [[ ! -d "$HOME_DIR/$1" ]]; then
     echo "Creating $1 directory"
-    mkdir ~/"$1"
+    mkdir "$HOME_DIR/$1"
   fi
 }
 
