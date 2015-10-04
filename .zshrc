@@ -1,5 +1,6 @@
 # Path to your oh-my-zsh configuration.
 export ZSH=/Users/benbalter/.oh-my-zsh
+export SHELL=$(which zsh)
 
 # Set name of the theme to load.
 # Look in ~/.oh-my-zsh/themes/

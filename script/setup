@@ -17,12 +17,22 @@ link() {
   fi
 }
 
+sudo -v
+
 if [ ! -d ~/.oh-my-zsh ]; then
   title "Setting up zsh"
   sh -c "$(wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"
+
+  # Remove default .zshrc file so we can link our own 
   rm -f .zshrc
-  curl -L https://iterm2.com/misc/zsh_startup.in > ~/.iterm2_shell_integration.zsh
-  chmod +x ~/.iterm2_shell_integration.zsh
+
+  # Set ZSH as the default shell
+  command -v zsh | sudo tee -a /etc/shells
+  sudo chsh -s "$(command -v zsh)" "${USER}"
+  export SHELL=$(which zsh)
+
+  # Iterm shell integration
+  curl -L https://iterm2.com/misc/install_shell_integration.sh | bash
 fi
 
 link .bash_profile
