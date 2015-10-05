@@ -77,6 +77,7 @@ eval "$(rbenv init -)"
 if [ $(rbenv global) = "system" ]; then
   latest=$(rbenv install -l | grep -v - | tail -1 )
   latest="$(echo "${latest}" | tr -d '[[:space:]]')"
+  brew install ruby-build
   rbenv install $latest
   rbenv global $latest
   rbenv rehash
@@ -103,12 +104,8 @@ defaults write com.apple.screencapture disable-shadow -bool true
 /usr/libexec/PlistBuddy -c "Set :StandardViewSettings:IconViewSettings:arrangeBy grid" ~/Library/Preferences/com.apple.finder.plist
 defaults write com.apple.finder EmptyTrashSecurely -bool true
 defaults write com.google.Chrome AppleEnableSwipeNavigateWithScrolls -bool false
-defaults write com.apple.Safari \
-  com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabled \
-  -bool false
-defaults write com.apple.Safari \
-  com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabledForLocalFiles \
-  -bool false
+defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabled -bool false
+defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabledForLocalFiles -bool false
 touch ~/.hushlogin
 
 if [ -d ~/Dropbox/Desktop ] && [ ! -L ~/Dropbox/Desktop ]; then
