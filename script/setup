@@ -104,7 +104,7 @@ defaults write com.apple.finder EmptyTrashSecurely -bool true
 defaults write com.google.Chrome AppleEnableSwipeNavigateWithScrolls -bool false
 defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabled -bool false
 defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabledForLocalFiles -bool false
-touch ~/.hushlogin
+touch "$HOME_DIR/.hushlogin"
 
 if [ -d "$HOME_DIR/Dropbox/Desktop" ] && [ ! -L "$HOME_DIR/Dropbox/Desktop" ]; then
   title "Setting up dropbox"
