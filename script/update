@@ -1,12 +1,12 @@
-#!/bin/sh
+#!/bin/bash
 
 
 title () {
-  echo "\n"
+  echo ""
   echo "-------------------------------"
   echo $1
   echo "-------------------------------"
-  echo "\n"
+  echo ""
 }
 
 title "Updating Homebrew..."
