@@ -63,6 +63,7 @@ link Library/LaunchAgents/com.balter.ben.tmpreaper.plist
 link Library/LaunchAgents/com.balter.ben.update.plist
 mkdir_safe projects
 mkdir_safe github
+touch "$HOME_DIR/.token"
 
 source "$DOTFILES_ROOT/.bash_profile"
 
