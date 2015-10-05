@@ -16,9 +16,9 @@ title () {
 link() {
   username=$(whoami)
   if [[ ! -f "$HOME_DIR/$1" ]] || [[ $(ls -l "$HOME_DIR/$1" | awk '{print $11}') != "$DOTFILES_ROOT/$1" ]]; then
-    echo "Linking $HOME_DIR/$1 to $DOTFILES_ROOT/.files/$1"
+    echo "Linking $HOME_DIR/$1 to $DOTFILES_ROOT/$1"
     rm -f "$HOME_DIR/$1"
-    ln -sf "$DOTFILES_ROOT/.files/$1" "$HOME_DIR/$1"
+    ln -sf "$DOTFILES_ROOT/$1" "$HOME_DIR/$1"
   fi
 }
 
@@ -65,7 +65,7 @@ mkdir_safe projects
 mkdir_safe github
 touch "$HOME_DIR/.token"
 
-source "$DOTFILES_ROOT/.bash_profile"
+source "$HOME_DIR/.bash_profile"
 
 if ! type "brew" > /dev/null; then
   echo "Please run strap first. https://github.com/mikemcquaid/strap"
@@ -109,15 +109,15 @@ defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebK
 defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabledForLocalFiles -bool false
 touch ~/.hushlogin
 
-if [ -d ~/Dropbox/Desktop ] && [ ! -L ~/Dropbox/Desktop ]; then
+if [ -d "$HOME_DIR/Dropbox/Desktop" ] && [ ! -L "$HOME_DIR/Dropbox/Desktop" ]; then
   title "Setting up dropbox"
-  cp ~/Dropbox/Desktop/* ~/Desktop
-  rm -Rf ~/Dropbox/Desktop/
-  ln -s ~/Desktop ~/Dropbox/Desktop
+  cp "$HOME_DIR/Dropbox/Desktop/*" "$HOME_DIR/Desktop"
+  rm -Rf "$HOME_DIR/Dropbox/Desktop/"
+  ln -s "$HOME_DIR/Desktop" "$HOME_DIR/Dropbox/Desktop"
 fi
 
 title "Setting up atom"
 link .atom/config.cson
-apm install --packages-file ~/.files/.atom/packages.txt
+apm install --packages-file "$DOTFILES_ROOT/.atom/packages.txt"
 
 echo "Fin."
