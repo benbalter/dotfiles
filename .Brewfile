@@ -39,6 +39,7 @@ brew "readline"
 brew "cmake"
 brew "pkg-config"
 brew "autoconf"
+brew "nodenv"
 
 # Le casks
 brew "cask"

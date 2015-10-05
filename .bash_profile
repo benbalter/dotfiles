@@ -72,9 +72,12 @@ alias setup="~/.files/script/setup"
 # Setup cli tools
 export HOMEBREW_CASK_OPTS="--appdir=/Applications"
 export PATH="/usr/local/sbin:$PATH"
-eval "$(rbenv init -)"
 export PATH="./bin:$PATH"
 
 # GitHub token with no scope, used to get around API limits
 export HOMEBREW_GITHUB_API_TOKEN=$(cat ~/.token)
+
+# Init some stuff
 if brew command command-not-found-init > /dev/null; then eval "$(brew command-not-found-init)"; fi
+if which nodenv > /dev/null; then eval "$(nodenv init -)"; fi
+if which rbenv > /dev/null;  then eval "$(rbenv init -)"; fi
