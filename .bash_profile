@@ -77,3 +77,4 @@ export PATH="./bin:$PATH"
 
 # GitHub token with no scope, used to get around API limits
 export HOMEBREW_GITHUB_API_TOKEN=$(cat ~/.token)
+if brew command command-not-found-init > /dev/null; then eval "$(brew command-not-found-init)"; fi
