@@ -1,4 +1,8 @@
 os: osx
+before_install:
+  - git clone https://github.com/mikemcquaid/strap
+  - cd strap
+  - ./bin/strap.sh
 script: script/cibuild
 env:
   SHELL: zsh
