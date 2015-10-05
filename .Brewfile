@@ -70,7 +70,6 @@ cask "chromecast"
 cask "libreoffice"
 cask "slack"
 cask "steam"
-cask "gpgtools"
 cask "vlc"
 cask "pandoc"
 
