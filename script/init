@@ -1,9 +1,9 @@
-#!/bin/bash
+#!/bin/sh
 
 # Load libs
-export DOTFILES_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-source "$DOTFILES_ROOT/lib/zsh.zsh"
-source "$DOTFILES_ROOT/lib/aliases.zsh"
+export DOTFILES_ROOT="$( echo ~/.files )"
+source "$DOTFILES_ROOT/lib/zsh.sh"
+source "$DOTFILES_ROOT/lib/aliases.sh"
 source ~/.iterm2_shell_integration.zsh
 
 # Set Atom as the default editor

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 export ZSH=/Users/benbalter/.oh-my-zsh
 export SHELL=$(which zsh)
