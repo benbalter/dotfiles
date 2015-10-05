@@ -14,8 +14,8 @@ title "Updating App Store apps"
 softwareupdate --install --all
 
 title "Updating Atom..."
-apm update
-apm upgrade
+apm update --no-confirm
+apm upgrade --no-confirm
 
 title "Updating global Node packages..."
 npm update --global
