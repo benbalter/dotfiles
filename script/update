@@ -1,13 +1,7 @@
 #!/bin/bash
 
-
-title () {
-  echo ""
-  echo "-------------------------------"
-  echo $1
-  echo "-------------------------------"
-  echo ""
-}
+DOTFILES_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
+source "$DOTFILES_ROOT/lib/functions.sh"
 
 title "Updating Homebrew..."
 brew update
@@ -24,12 +18,10 @@ title "Updating global Node packages..."
 npm update --global
 npm upgrade --global
 
-latest_ruby=$(rbenv install -l | grep -v - | tail -1 )
-latest_ruby="$(echo "${latest_ruby}" | tr -d '[[:space:]]')"
-if [ $(rbenv global) != $latest_ruby ]; then
+if [ $(rbenv global) != $(latest_ruby) ]; then
   title "Updating Ruby..."
-  rbenv install $latest
-  rbenv global $latest
+  rbenv install $(latest_ruby)
+  rbenv global $(latest_ruby)
   rbenv rehash
   gem install bundler
 fi

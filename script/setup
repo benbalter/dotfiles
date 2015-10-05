@@ -4,30 +4,7 @@ set -e
 
 DOTFILES_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
 HOME_DIR="/Users/$USER"
-
-title () {
-  echo ""
-  echo "-------------------------------"
-  echo "$1..."
-  echo "-------------------------------"
-  echo ""
-}
-
-link() {
-  username=$(whoami)
-  if [[ ! -f "$HOME_DIR/$1" ]] || [[ $(ls -l "$HOME_DIR/$1" | awk '{print $11}') != "$DOTFILES_ROOT/$1" ]]; then
-    echo "Linking $HOME_DIR/$1 to $DOTFILES_ROOT/$1"
-    rm -f "$HOME_DIR/$1"
-    ln -sf "$DOTFILES_ROOT/$1" "$HOME_DIR/$1"
-  fi
-}
-
-mkdir_safe() {
-  if [[ ! -d "$HOME_DIR/$1" ]]; then
-    echo "Creating $1 directory"
-    mkdir "$HOME_DIR/$1"
-  fi
-}
+source "$DOTFILES_ROOT/lib/functions.sh"
 
 if [ "$TRAVIS" != "true" ]; then
   sudo -v
@@ -76,15 +53,13 @@ title "Setting up Ruby"
 
 if ! type "rbenv" > /dev/null; then
   brew install rbenv
+  eval "$(rbenv init -)"
 fi
 
-eval "$(rbenv init -)"
 if [ $(rbenv global) = "system" ]; then
   brew install ruby-build
-  latest=$(rbenv install -l | grep -v - | tail -1 )
-  latest="$(echo "${latest}" | tr -d '[[:space:]]')"
-  rbenv install $latest
-  rbenv global $latest
+  rbenv install $(latest_ruby)
+  rbenv global $(latest_ruby)
   rbenv rehash
 fi
 
