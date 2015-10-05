@@ -1,40 +1,57 @@
-#!/bin/sh
+#!/bin/bash
+
+set -e
+
+DOTFILES_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
+HOME_DIR="/Users/$USER"
 
 title () {
-  echo "\n"
+  echo ""
   echo "-------------------------------"
-  echo $1
+  echo "$1..."
   echo "-------------------------------"
-  echo "\n"
+  echo ""
 }
 
 link() {
   username=$(whoami)
-  if [ ! -f ~/$1 ] || [ $(ls -l ~/$1 | awk '{print $11}') != "/Users/$username/.files/$1" ]; then
-    echo "Linking ~/$1 to ~/.files/$1"
-    rm -f ~/$1
-    ln -sf ~/.files/$1 ~/$1
+  if [[ ! -f "$HOME_DIR/$1" ]] || [[ $(ls -l "$HOME_DIR/$1" | awk '{print $11}') != "$DOTFILES_ROOT/$1" ]]; then
+    echo "Linking $HOME_DIR/$1 to $DOTFILES_ROOT/$1"
+    rm -f "$HOME_DIR/$1"
+    ln -sf "$DOTFILES_ROOT/$1" "$HOME_DIR/$1"
   fi
 }
 
-sudo -v
+mkdir_safe() {
+  if [[ ! -d "$HOME_DIR/$1" ]]; then
+    echo "Creating $1 directory"
+    mkdir "$HOME_DIR/$1"
+  fi
+}
 
-if [ ! -d ~/.oh-my-zsh ]; then
+if [ "$TRAVIS" != "true" ]; then
+  sudo -v
+else
+  sudo -n -v
+fi
+
+if [ ! -d ~/.oh-my-zsh ] && [ "$TRAVIS" != "true" ]; then
   title "Setting up zsh"
   sh -c "$(wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"
 
   # Remove default .zshrc file so we can link our own
-  rm -f .zshrc
+  rm -f ~/.zshrc
 
   # Set ZSH as the default shell
-  command -v zsh | sudo tee -a /etc/shells
-  sudo chsh -s "$(command -v zsh)" "${USER}"
+  command -v zsh | sudo -n tee -a /etc/shells
+  sudo -n chsh -s "$(command -v zsh)" "${USER}"
   export SHELL=$(which zsh)
 
   # Iterm shell integration
   curl -L https://iterm2.com/misc/install_shell_integration.sh | bash
 fi
 
+title "Setting up home directory"
 link .bash_profile
 link .gitconfig
 link .gitignore
@@ -44,20 +61,38 @@ link .Brewfile
 link .gemrc
 link Library/LaunchAgents/com.balter.ben.tmpreaper.plist
 link Library/LaunchAgents/com.balter.ben.update.plist
+mkdir_safe projects
+mkdir_safe github
+touch "$HOME_DIR/.token"
 
-source ~/.bash_profile
-
-if [ ! -d ~/projects ]; then
-  echo "Creating project directory"
-  mkdir ~/projects
-fi
+source "$HOME_DIR/.bash_profile"
 
 if ! type "brew" > /dev/null; then
   echo "Please run strap first. https://github.com/mikemcquaid/strap"
   exit 1
 fi
 
-title "Setting up Homebrew..."
+title "Setting up Ruby"
+
+if ! type "rbenv" > /dev/null; then
+  brew install rbenv
+fi
+
+eval "$(rbenv init -)"
+if [ $(rbenv global) = "system" ]; then
+  brew install ruby-build
+  latest=$(rbenv install -l | grep -v - | tail -1 )
+  latest="$(echo "${latest}" | tr -d '[[:space:]]')"
+  rbenv install $latest
+  rbenv global $latest
+  rbenv rehash
+fi
+
+if ! type "bundle" > /dev/null; then
+  gem install bundler
+fi
+
+title "Setting up Homebrew"
 if ! brew bundle check --global; then
   brew bundle install --global
 fi
@@ -72,39 +107,22 @@ defaults write com.apple.screensaver askForPasswordDelay -int 0
 defaults write com.apple.screencapture location -string "${HOME}/Desktop"
 defaults write com.apple.screencapture type -string "png"
 defaults write com.apple.screencapture disable-shadow -bool true
-/usr/libexec/PlistBuddy -c "Set :DesktopViewSettings:IconViewSettings:arrangeBy grid" ~/Library/Preferences/com.apple.finder.plist
-/usr/libexec/PlistBuddy -c "Set :FK_StandardViewSettings:IconViewSettings:arrangeBy grid" ~/Library/Preferences/com.apple.finder.plist
-/usr/libexec/PlistBuddy -c "Set :StandardViewSettings:IconViewSettings:arrangeBy grid" ~/Library/Preferences/com.apple.finder.plist
 defaults write com.apple.finder EmptyTrashSecurely -bool true
 defaults write com.google.Chrome AppleEnableSwipeNavigateWithScrolls -bool false
-defaults write com.apple.Safari \
-  com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabled \
-  -bool false
-defaults write com.apple.Safari \
-  com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabledForLocalFiles \
-  -bool false
-touch ~/.hushlogin
+defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabled -bool false
+defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabledForLocalFiles -bool false
+touch "$HOME_DIR/.hushlogin"
 
-if [ -d ~/Dropbox/Desktop ] && [ ! -L ~/Dropbox/Desktop ]; then
+if [ -d "$HOME_DIR/Dropbox/Desktop" ] && [ ! -L "$HOME_DIR/Dropbox/Desktop" ]; then
   title "Setting up dropbox"
-  cp ~/Dropbox/Desktop/* ~/Desktop
-  rm -Rf ~/Dropbox/Desktop/
-  ln -s ~/Desktop ~/Dropbox/Desktop
+  cp "$HOME_DIR/Dropbox/Desktop/*" "$HOME_DIR/Desktop"
+  rm -Rf "$HOME_DIR/Dropbox/Desktop/"
+  ln -s "$HOME_DIR/Desktop" "$HOME_DIR/Dropbox/Desktop"
 fi
 
-
-if [ $(rbenv global) = "system" ]; then
-  title "Setting up Ruby"
-  latest=$(rbenv install -l | grep -v - | tail -1 )
-  latest="$(echo "${latest}" | tr -d '[[:space:]]')"
-  rbenv install $latest
-  rbenv global $latest
-  rbenv rehash
-  gem install bundler
-fi
-
-title "Setting up atom..."
+title "Setting up Atom"
+mkdir_safe .atom
 link .atom/config.cson
-apm install --packages-file ~/.files/.atom/packages.txt
+apm install --packages-file "$DOTFILES_ROOT/.atom/packages.txt"
 
-title "Fin."
+echo "Fin."
