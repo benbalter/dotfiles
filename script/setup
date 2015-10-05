@@ -73,7 +73,11 @@ if ! type "brew" > /dev/null; then
 fi
 
 title "Setting up Ruby"
-brew install rbenv
+
+if ! type "rbenv" > /dev/null; then
+  brew install rbenv
+fi
+
 eval "$(rbenv init -)"
 if [ $(rbenv global) = "system" ]; then
   brew install ruby-build
@@ -83,7 +87,10 @@ if [ $(rbenv global) = "system" ]; then
   rbenv global $latest
   rbenv rehash
 fi
-gem install bundler
+
+if ! type "bundle" > /dev/null; then
+  gem install bundler
+fi
 
 title "Setting up Homebrew"
 if ! brew bundle check --global; then
