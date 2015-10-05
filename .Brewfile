@@ -22,6 +22,7 @@ brew "wget"
 brew "libyaml"
 brew "mtr"
 brew "tmpreaper"
+brew "gnupg"
 
 # Ruby
 brew "ruby"
