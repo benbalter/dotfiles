@@ -3,6 +3,7 @@ before_install:
   - git clone https://github.com/mikemcquaid/strap
   - cd strap
   - STRAP_CI=1 ./bin/strap.sh
+  - cd ..
 # Empty (to avoid Bundler).
 install:
   -
