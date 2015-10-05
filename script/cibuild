@@ -3,3 +3,4 @@
 set -x
 
 script/setup
+script/update
