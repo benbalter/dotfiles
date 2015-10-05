@@ -75,9 +75,9 @@ title "Setting up Ruby"
 brew install rbenv
 eval "$(rbenv init -)"
 if [ $(rbenv global) = "system" ]; then
+  brew install ruby-build
   latest=$(rbenv install -l | grep -v - | tail -1 )
   latest="$(echo "${latest}" | tr -d '[[:space:]]')"
-  brew install ruby-build
   rbenv install $latest
   rbenv global $latest
   rbenv rehash
