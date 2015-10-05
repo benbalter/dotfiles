@@ -1,4 +1,5 @@
 #!/bin/sh
+# ZSH settings and initializations
 
 export ZSH=/Users/benbalter/.oh-my-zsh
 export SHELL=$(which zsh)

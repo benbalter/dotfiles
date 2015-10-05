@@ -1,4 +1,5 @@
 #!/bin/sh
+# Alias all the things!
 
 # Git
 alias git="hub"

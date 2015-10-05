@@ -1,7 +1,10 @@
 #!/bin/bash
+# Update all installed dependencies
+# Usage: up
 
 DOTFILES_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
-source "$DOTFILES_ROOT/lib/functions.zsh"
+source "$DOTFILES_ROOT/lib/functions.sh"
+source "$DOTFILES_ROOT/lib/globals.sh"
 
 title "Updating Homebrew..."
 brew update

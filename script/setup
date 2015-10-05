@@ -1,10 +1,13 @@
 #!/bin/bash
+# Set up all our dependencies
+# Usage: script/setup
 
 set -e
 
 DOTFILES_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
 HOME_DIR="/Users/$USER"
-source "$DOTFILES_ROOT/lib/functions.zsh"
+source "$DOTFILES_ROOT/lib/functions.sh"
+source "$DOTFILES_ROOT/lib/globals.sh"
 
 if [ "$TRAVIS" != "true" ]; then
   sudo -v
@@ -16,7 +19,7 @@ if [ ! -d ~/.oh-my-zsh ] && [ "$TRAVIS" != "true" ]; then
   title "Setting up zsh"
   sh -c "$(wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"
 
-  # Remove default .zshrc file so we can link our own
+  # Remove default .zshrc file so we can link_safe our own
   rm -f ~/.zshrc
 
   # Set ZSH as the default shell
@@ -29,20 +32,17 @@ if [ ! -d ~/.oh-my-zsh ] && [ "$TRAVIS" != "true" ]; then
 fi
 
 title "Setting up home directory"
-link .bash_profile
-link .gitconfig
-link .gitignore
-link .irbrc
-link .zshrc
-link .Brewfile
-link .gemrc
-link Library/LaunchAgents/com.balter.ben.tmpreaper.plist
-link Library/LaunchAgents/com.balter.ben.update.plist
+link_safe .gitconfig
+link_safe .gitignore
+link_safe .irbrc
+link_safe .zshrc
+link_safe .Brewfile
+link_safe .gemrc
+link_safe Library/LaunchAgents/com.balter.ben.tmpreaper.plist
+link_safe Library/LaunchAgents/com.balter.ben.update.plist
 mkdir_safe projects
 mkdir_safe github
 touch "$HOME_DIR/.token"
-
-source "$HOME_DIR/.bash_profile"
 
 if ! type "brew" > /dev/null; then
   echo "Please run strap first. https://github.com/mikemcquaid/strap"
@@ -97,7 +97,7 @@ fi
 
 title "Setting up Atom"
 mkdir_safe .atom
-link .atom/config.cson
+link_safe .atom/config.cson
 apm install --packages-file "$DOTFILES_ROOT/.atom/packages.txt"
 
-echo "Fin."
+title "Fin."

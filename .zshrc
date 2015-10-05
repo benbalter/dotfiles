@@ -1,1 +1,1 @@
-source ~/.files/script/init
+source ~/.files/lib/init.sh
