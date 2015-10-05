@@ -3,7 +3,9 @@
 tap "caskroom/cask"
 tap "homebrew/bundle"
 tap "homebrew/versions"
+tap "homebrew/services"
 tap "caskroom/fonts"
+tap "homebrew/command-not-found"
 brew "caskroom/cask/brew-cask"
 
 # Git
@@ -36,6 +38,7 @@ brew "gdbm"
 brew "readline"
 brew "cmake"
 brew "pkg-config"
+brew "autoconf"
 
 # Le casks
 brew "cask"
