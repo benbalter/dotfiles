@@ -49,3 +49,4 @@
   "theme-switcher": {}
   "tidy-markdown":
     ensureFirstHeaderIsH1: false
+    runOnSave: false
