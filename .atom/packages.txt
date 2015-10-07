@@ -1,6 +1,7 @@
 Sublime-Style-Column-Selection
 Zen
 atom-alignment
+atom-linter-alex
 code-links
 file-icons
 line-ending-converter
