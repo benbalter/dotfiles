@@ -90,6 +90,7 @@ cask "betterzipql"
 cask "qlimagesize"
 
 # Fonts
+cask "font-octicons"
 cask "font-inconsolata"
 cask "font-open-sans"
 cask "font-source-code-pro"
