@@ -27,7 +27,7 @@ brew "mtr"
 brew "tmpreaper"
 brew "gnupg"
 
-# Ruby
+# Dev stuffs
 brew "ruby"
 brew "rbenv"
 brew "ruby-build"
@@ -44,6 +44,7 @@ brew "cmake"
 brew "pkg-config"
 brew "autoconf"
 brew "nodenv"
+brew "memcached"
 
 # Le casks
 brew "cask"
