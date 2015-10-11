@@ -14,6 +14,7 @@ brew "caskroom/cask/brew-cask"
 brew "git"
 brew "git-lfs"
 brew "hub"
+brew "ghi"
 
 # Command line stuffs
 brew "zsh"
