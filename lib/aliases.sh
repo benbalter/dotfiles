@@ -47,3 +47,7 @@ alias setup="~/.files/script/setup"
 
 # Libre office
 alias soffice="/Applications/LibreOffice.app/Contents/MacOS/soffice"
+
+# Todo
+alias todo='function _todo(){ ghi open -m "$1" --claim -- benbalter/todo; };_todo'
+alias todo-list="ghi list --global --mine"
