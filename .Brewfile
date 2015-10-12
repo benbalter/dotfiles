@@ -46,6 +46,7 @@ brew "pkg-config"
 brew "autoconf"
 brew "nodenv"
 brew "memcached"
+brew "mysql"
 
 # Le casks
 brew "cask"
