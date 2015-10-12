@@ -58,6 +58,7 @@ cask "yubiswitch"
 cask "github-desktop"
 cask "heroku-toolbelt"
 cask "viscosity"
+cask "paw"
 
 # Web stuffs
 cask "google-chrome"
