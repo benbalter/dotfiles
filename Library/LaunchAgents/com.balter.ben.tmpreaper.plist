@@ -4,12 +4,11 @@
 	<dict>
 		<key>Label</key>
 		<string>com.balter.ben.tmpreaper</string>
-		<key>Program</key>
-		<string>/usr/local/sbin/tmpreaper</string>
 		<key>ProgramArguments</key>
 		<array>
+			<string>/usr/local/sbin/tmpreaper</string>
 			<string>5d</string>
-			<string>~/Downloads</string>
+			<string>/Users/benbalter/Downloads</string>
 		</array>
 		<key>StartCalendarInterval</key>
 		<dict>
