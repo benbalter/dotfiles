@@ -59,6 +59,7 @@ cask "github-desktop"
 cask "heroku-toolbelt"
 cask "viscosity"
 cask "paw"
+cask "java"
 
 # Web stuffs
 cask "google-chrome"
