@@ -85,6 +85,7 @@ cask "slack"
 cask "steam"
 cask "vlc"
 cask "pandoc"
+cask "gimp"
 
 # quicklooks
 cask "quickgeojson"
