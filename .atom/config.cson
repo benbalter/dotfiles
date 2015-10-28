@@ -50,3 +50,5 @@
   "tidy-markdown":
     ensureFirstHeaderIsH1: false
     runOnSave: false
+  "tree-view":
+    hideVcsIgnoredFiles: false
