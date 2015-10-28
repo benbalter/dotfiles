@@ -69,6 +69,8 @@ cask "adium"
 cask "cloak"
 cask "1password"
 cask "flash"
+cask "blue-jeans-launcher"
+cask "blue-jeans-browser-plugin"
 
 # Menubar stuffs
 cask "fitbit-connect"
