@@ -27,6 +27,8 @@ brew "libyaml"
 brew "mtr"
 brew "tmpreaper"
 brew "gnupg"
+brew "dnscrypt-proxy"
+brew "speedtest_cli"
 
 # Dev stuffs
 brew "ruby"
@@ -47,6 +49,10 @@ brew "autoconf"
 brew "nodenv"
 brew "memcached"
 brew "mysql"
+brew "automake"
+brew "redis"
+brew "grc"
+brew "node"
 
 # Le casks
 brew "cask"
@@ -89,6 +95,7 @@ cask "steam"
 cask "vlc"
 cask "pandoc"
 cask "gimp"
+cask "tableau-public"
 
 # quicklooks
 cask "quickgeojson"
