@@ -12,8 +12,7 @@
     showOnStartup: false
   core:
     excludeVcsIgnoredPaths: false
-  Zen:
-    typewriter: true
+  Zen: {}
   "atom-alignment": {}
   "code-links":
     displayMode: "always"
