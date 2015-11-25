@@ -12,10 +12,7 @@ linter-write-good
 markdown-lists
 markdown-table-formatter
 pdf-view
-tasks
 theme-switcher
 tidy-markdown
 travis-ci-status
 wordcount
-hyperclick
-js-hyperclick
