@@ -28,6 +28,8 @@ link_safe Library/LaunchAgents/com.balter.ben.update.plist
 
 mkdir_safe projects
 mkdir_safe github
+mkdir_safe .ssh
+
 touch "$HOME_DIR/.token"
 
 if ! type "brew" > /dev/null; then
