@@ -4,6 +4,7 @@
 @BenBalter's development environment and the scripts to initialize it and keep it up to date.
 
 ## What's here:
+
 - `script/setup` - Set up all the things!
 - `script/update` - Update all the things!
 - `.Atom` - Editor configuration and plugins
@@ -15,9 +16,15 @@
 - Common development aliases
 - Launch agents to keep the Downloads folder tidy and dependencies up to date
 
-## How to use it
-1. Run [Strap](https://github.com/mikemcquaid/strap)
-2. Run `script/setup`
+## Setting up a new machine from scratch
+
+1. Login to [osx-strap.herokuapp.com](https://osx-strap.herokuapp.com/) (or [strap.githubapp.com](https://strap.githubapp.com) for GitHubbers)
+2. Download `strap.sh`
+3. `bash ~/Downloads/strap.sh`
+4. `git clone https://github.com/benbalter/dotfiles ~/.files`
+5. `cd ~/.files`
+2. `script/setup`
 
 ## How to update dependencies
+
 Run `up`
