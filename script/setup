@@ -17,6 +17,7 @@ fi
 
 if [ ! -d ~/.oh-my-zsh ] && [ "$TRAVIS" != "true" ]; then
   title "Setting up zsh"
+  brew install wget
   sh -c "$(wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"
 
   # Remove default .zshrc file so we can link_safe our own
