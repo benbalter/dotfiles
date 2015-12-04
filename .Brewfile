@@ -6,7 +6,6 @@ tap "homebrew/versions"
 tap "homebrew/services"
 tap "caskroom/fonts"
 tap "homebrew/command-not-found"
-tap "jawshooah/nodenv"
 
 brew "caskroom/cask/brew-cask"
 
@@ -19,7 +18,7 @@ brew "ghi"
 # Command line stuffs
 brew "zsh"
 brew "fasd"
-brew "jawshooah/nodenv/nodenv"
+brew "nodenv"
 brew "node-build", args: ["HEAD"]
 brew "curl"
 brew "wget"
