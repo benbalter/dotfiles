@@ -68,6 +68,9 @@ if [ -d "$HOME_DIR/Dropbox/Desktop" ] && [ ! -L "$HOME_DIR/Dropbox/Desktop" ]; t
   ln -s "$HOME_DIR/Desktop" "$HOME_DIR/Dropbox/Desktop"
 fi
 
+title "Setting up the dock"
+source "$DOTFILES_ROOT/lib/dock.sh"
+
 title "Setting up Atom"
 mkdir_safe .atom
 link_safe .atom/config.cson
