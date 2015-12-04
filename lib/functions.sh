@@ -21,7 +21,7 @@ link_safe() {
 mkdir_safe() {
   if [[ ! -d "$HOME_DIR/$1" ]]; then
     echo "Creating $1 directory"
-    mkdir "$HOME_DIR/$1"
+    mkdir -p "$HOME_DIR/$1"
   fi
 }
 
