@@ -28,6 +28,7 @@ brew "tmpreaper"
 brew "gnupg"
 brew "dnscrypt-proxy"
 brew "speedtest_cli"
+brew "dockutil"
 
 # Dev stuffs
 brew "ruby"
