@@ -15,28 +15,10 @@ else
   sudo -n -v
 fi
 
-if [ ! -d ~/.oh-my-zsh ] && [ "$TRAVIS" != "true" ]; then
-  title "Setting up zsh"
-  brew install wget
-  sh -c "$(wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"
-
-  # Remove default .zshrc file so we can link_safe our own
-  rm -f ~/.zshrc
-
-  # Set ZSH as the default shell
-  command -v zsh | sudo -n tee -a /etc/shells
-  sudo -n chsh -s "$(command -v zsh)" "${USER}"
-  export SHELL=$(which zsh)
-
-  # Iterm shell integration
-  curl -L https://iterm2.com/misc/install_shell_integration.sh | bash
-fi
-
 title "Setting up home directory"
 link_safe .gitconfig
 link_safe .gitignore
 link_safe .irbrc
-link_safe .zshrc
 link_safe .Brewfile
 link_safe .gemrc
 
@@ -90,5 +72,23 @@ title "Setting up Atom"
 mkdir_safe .atom
 link_safe .atom/config.cson
 apm install --packages-file "$DOTFILES_ROOT/.atom/packages.txt"
+
+if [ ! -d ~/.oh-my-zsh ] && [ "$TRAVIS" != "true" ]; then
+  title "Setting up zsh"
+  brew install wget
+  sh -c "$(wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"
+
+  # Remove default .zshrc file so we can link_safe our own
+  rm -f ~/.zshrc
+  link_safe .zshrc
+
+  # Set ZSH as the default shell
+  command -v zsh | sudo -n tee -a /etc/shells
+  sudo -n chsh -s "$(command -v zsh)" "${USER}"
+  export SHELL=$(which zsh)
+
+  # Iterm shell integration
+  curl -L https://iterm2.com/misc/install_shell_integration.sh | bash
+fi
 
 title "Fin."
