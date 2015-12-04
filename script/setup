@@ -38,8 +38,11 @@ link_safe .irbrc
 link_safe .zshrc
 link_safe .Brewfile
 link_safe .gemrc
+
+mkdir_safe "Library/LaunchAgents/"
 link_safe Library/LaunchAgents/com.balter.ben.tmpreaper.plist
 link_safe Library/LaunchAgents/com.balter.ben.update.plist
+
 mkdir_safe projects
 mkdir_safe github
 touch "$HOME_DIR/.token"
