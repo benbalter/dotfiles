@@ -4,7 +4,7 @@ dockutil --list | awk -F"\t" '{print $1}' | while read line; do
 done
 
 # Give dock time to restart
-sleep 5
+sleep 1
 
 # Apps wanted in the dock, in order
 apps=(Adium Atom "Google Chrome" Slack Spotify)
@@ -12,4 +12,5 @@ apps=(Adium Atom "Google Chrome" Slack Spotify)
 # Re-add the apps we want
 for app in $apps; do 
   dockutil --add "/Applications/$app.app"
+  sleep 1
 done
