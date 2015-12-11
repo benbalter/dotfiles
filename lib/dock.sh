@@ -11,6 +11,7 @@ apps=(Adium Atom "Google Chrome" Slack Spotify)
 
 # Re-add the apps we want
 for app in $apps; do 
+  echo "adding $app to dock"
   dockutil --add "/Applications/$app.app"
   sleep 1
 done
