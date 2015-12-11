@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Remove all apps from the dock
 dockutil --list | awk -F"\t" '{print $1}' | while read line; do 
   dockutil --remove "$line"
