@@ -34,7 +34,13 @@ if [[ ! -f "$HOME_DIR/.token" ]]; then
   echo "Create a GitHub Personal Access Token with *public* scope"
   echo "by going to https://github.com/settings/tokens"
   echo "and enter it below:"
-  read token
+
+  if [ "$TRAVIS" != "true" ]; then
+    token=""
+  else
+    read token
+  fi
+  
   echo "$token" > "$HOME_DIR/.token"
 fi
 
