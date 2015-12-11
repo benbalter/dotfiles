@@ -1,12 +1,14 @@
 #!/bin/bash
 
 # Strap
-if [ -f "~/Downloads/strap.sh" ]; then
+if [[ -f "~/Downloads/strap.sh" ]]; then
   bash ~/Downloads/strap.sh
 fi
 
 # Bootstrap dotfiles
-git clone https://github.com/benbalter/dotfiles ~/.files
+if [[ ! -d "~/.files" ]]; then
+  git clone https://github.com/benbalter/dotfiles ~/.files
+fi
 
 # The main event
 cd ~/.files
