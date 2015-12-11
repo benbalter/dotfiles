@@ -36,11 +36,11 @@ if [[ ! -f "$HOME_DIR/.token" ]]; then
   echo "and enter it below:"
 
   if [ "$TRAVIS" != "true" ]; then
-    token=""
-  else
     read token
+  else
+    token=""
   fi
-  
+
   echo "$token" > "$HOME_DIR/.token"
 fi
 
