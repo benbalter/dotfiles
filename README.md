@@ -5,6 +5,7 @@
 
 ## What's here:
 
+- `script/bootstrap` - Bootstrap this repo
 - `script/setup` - Set up all the things!
 - `script/update` - Update all the things!
 - `.Atom` - Editor configuration and plugins
