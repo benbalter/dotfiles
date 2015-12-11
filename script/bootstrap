@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# Strap
+bash ~/Downloads/strap.sh
+
+# Bootstrap dotfiles
+git clone https://github.com/benbalter/dotfiles ~/.files
+
+# The main event
+cd ~/.files
+script/setup
