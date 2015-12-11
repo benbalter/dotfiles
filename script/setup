@@ -78,6 +78,9 @@ mkdir_safe .atom
 link_safe .atom/config.cson
 apm install --packages-file "$DOTFILES_ROOT/.atom/packages.txt"
 
+title "Setting up NPM globals"
+source "$DOTFILES_ROOT/lib/npm.sh"
+
 title "Opening background apps"
 source "$DOTFILES_ROOT/lib/first-start.sh"
 
