@@ -30,7 +30,13 @@ mkdir_safe projects
 mkdir_safe github
 mkdir_safe .ssh
 
-touch "$HOME_DIR/.token"
+if [[ ! -f "$HOME_DIR/.token" ]]; then
+  echo "Create a GitHub Personal Access Token with *public* scope"
+  echo "by going to https://github.com/settings/tokens"
+  echo "and enter it below:"
+  read token
+  echo "$token" > "$HOME_DIR/.token"
+fi
 
 if ! type "brew" > /dev/null; then
   echo "Please run strap first. https://github.com/mikemcquaid/strap"
@@ -65,7 +71,7 @@ source "$DOTFILES_ROOT/lib/osx.sh"
 
 if [ -d "$HOME_DIR/Dropbox/Desktop" ] && [ ! -L "$HOME_DIR/Dropbox/Desktop" ]; then
   title "Setting up dropbox"
-  if [ "$(ls -A $HOME_DIR/Dropbox/Desktop)" ]; then 
+  if [ "$(ls -A $HOME_DIR/Dropbox/Desktop)" ]; then
     cp "$HOME_DIR/Dropbox/Desktop/*" "$HOME_DIR/Desktop"
   fi
   rm -Rf "$HOME_DIR/Dropbox/Desktop/"
