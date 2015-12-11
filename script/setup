@@ -65,7 +65,9 @@ source "$DOTFILES_ROOT/lib/osx.sh"
 
 if [ -d "$HOME_DIR/Dropbox/Desktop" ] && [ ! -L "$HOME_DIR/Dropbox/Desktop" ]; then
   title "Setting up dropbox"
-  cp "$HOME_DIR/Dropbox/Desktop/*" "$HOME_DIR/Desktop"
+  if [ "$(ls -A $HOME_DIR/Dropbox/Desktop)" ]; then 
+    cp "$HOME_DIR/Dropbox/Desktop/*" "$HOME_DIR/Desktop"
+  fi
   rm -Rf "$HOME_DIR/Dropbox/Desktop/"
   ln -s "$HOME_DIR/Desktop" "$HOME_DIR/Dropbox/Desktop"
 fi
