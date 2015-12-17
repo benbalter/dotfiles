@@ -69,6 +69,7 @@ fi
 
 mkdir_safe .bundle
 link_safe .bundle/config
+source "$DOTFILES_ROOT/lib/ruby.sh"
 
 title "Setting up Homebrew"
 if ! brew bundle check --global; then
