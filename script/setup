@@ -67,6 +67,9 @@ if ! type "bundle" > /dev/null; then
   gem install bundler
 fi
 
+mkdir_safe .bundle
+link_safe .bundle/config
+
 title "Setting up Homebrew"
 if ! brew bundle check --global; then
   brew bundle install --global
