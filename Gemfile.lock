@@ -1,0 +1,14 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    gem-release (0.7.4)
+
+PLATFORMS
+  java
+  ruby
+
+DEPENDENCIES
+  gem-release
+
+BUNDLED WITH
+   1.11.2
