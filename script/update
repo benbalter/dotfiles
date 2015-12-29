@@ -29,6 +29,8 @@ if [ $(rbenv global) != $(latest_ruby) ]; then
   gem install bundler
 fi
 
-
 title "Updating system Ruby gems..."
 source "$DOTFILES_ROOT/lib/ruby.sh"
+
+title "Updating Oh My ZSH"
+/bin/sh $ZSH/tools/upgrade.sh
