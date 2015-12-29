@@ -121,6 +121,9 @@ if [ ! -d ~/.oh-my-zsh ] && [ "$TRAVIS" != "true" ]; then
   ~/.iterm2_shell_integration.`basename $SHELL`
 fi
 
+title "Setting up Chrome"
+ruby lib/chrome.rb
+
 # Remove strap.sh, which contains tokens
 rm -f "$HOME_DIR/Downloads/strap.sh"
 
