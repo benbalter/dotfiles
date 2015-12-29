@@ -2,7 +2,6 @@
 # Sets iTerm2 preferences
 
 require 'CFPropertyList'
-require 'pp'
 
 # Top level preferences
 preferences = {
@@ -30,7 +29,6 @@ plist = CFPropertyList::List.new file: file
 data = CFPropertyList.native_types(plist.value)
 
 hotkey_profile = data["New Bookmarks"].find { |p| p["Name"] == "Hotkey Window"}
-pp hotkey_profile
 preferences["HotKeyBookmark"] = hotkey_profile["Guid"]
 preferences.each do |key, value|
   data[key] = value
