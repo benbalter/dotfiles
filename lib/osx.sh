@@ -16,11 +16,22 @@ defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebK
 defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabledForLocalFiles -bool false
 defaults write com.apple.driver.AppleBluetoothMultitouch.mouse MouseButtonMode TwoButton
 
-# iTerm 
+# iTerm
 defaults write com.googlecode.iterm2 HotKeyTogglesWindow -int 1
 defaults write com.googlecode.iterm2 HotKey -int 1
 defaults write com.googlecode.iterm2 HotkeyChar -int 96
 defaults write com.googlecode.iterm2 HotkeyCode -int 50
 defaults write com.googlecode.iterm2 HotkeyModifiers -int 262401
+
+# screensaver
+if [[ ! -d "$HOME_DIR/github/octodex.github.com" ]]; then
+  git clone https://github.com/github/octodex.github.com "$HOME_DIR/github/octodex.github.com"
+fi
+defaults -currentHost write com.apple.screensaver moduleDict -dict moduleName "iLifeSlideshows" path "/System/Library/Frameworks/ScreenSaver.framework/Resources/iLifeSlideshows.saver" type -int 0
+defaults -currentHost write com.apple.ScreenSaver.iLifeSlideShows styleKey "VintagePrints"
+defaults -currentHost write com.apple.ScreenSaverPhotoChooser SelectedFolderPath "/Users/benbalter/github/octodex.github.com/images"
+defaults -currentHost write com.apple.ScreenSaverPhotoChooser CustomFolderDict -dict identifier "/Users/benbalter/github/octodex.github.com/images" name "octodex"
+defaults -currentHost write com.apple.ScreenSaverPhotoChooser SelectedFolderPath "/Users/benbalter/github/octodex.github.com/images"
+defaults -currentHost write com.apple.ScreenSaverPhotoChooser SelectedSource -int 4
 
 touch "$HOME_DIR/.hushlogin"
