@@ -124,6 +124,9 @@ fi
 title "Setting up Chrome"
 ruby lib/chrome.rb
 
+title "Setting up iTerm"
+ruby lib/iterm.rb
+
 # Remove strap.sh, which contains tokens
 rm -f "$HOME_DIR/Downloads/strap.sh"
 

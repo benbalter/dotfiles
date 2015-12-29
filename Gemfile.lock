@@ -1,20 +1,30 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    CFPropertyList (2.3.2)
     coderay (1.1.0)
+    ffi (1.9.10-java)
     gem-release (0.7.4)
     method_source (0.8.2)
     pry (0.10.3)
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
       slop (~> 3.4)
+    pry (0.10.3-java)
+      coderay (~> 1.1.0)
+      method_source (~> 0.8.1)
+      slop (~> 3.4)
+      spoon (~> 0.0)
     slop (3.6.0)
+    spoon (0.0.4)
+      ffi
 
 PLATFORMS
   java
   ruby
 
 DEPENDENCIES
+  CFPropertyList
   gem-release
   pry
 
