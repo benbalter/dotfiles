@@ -2,7 +2,6 @@
 # Sets Chrome preferences
 
 require 'json'
-require 'pp'
 
 file = File.expand_path "~/Library/Application Support/Google/Chrome/Default/Preferences"
 json = File.open(file).read
