@@ -16,13 +16,6 @@ defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebK
 defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabledForLocalFiles -bool false
 defaults write com.apple.driver.AppleBluetoothMultitouch.mouse MouseButtonMode TwoButton
 
-# iTerm
-defaults write com.googlecode.iterm2 HotKeyTogglesWindow -int 1
-defaults write com.googlecode.iterm2 HotKey -int 1
-defaults write com.googlecode.iterm2 HotkeyChar -int 96
-defaults write com.googlecode.iterm2 HotkeyCode -int 50
-defaults write com.googlecode.iterm2 HotkeyModifiers -int 262401
-
 # screensaver
 if [[ ! -d "$HOME_DIR/github/octodex.github.com" ]]; then
   git clone https://github.com/github/octodex.github.com "$HOME_DIR/github/octodex.github.com"
