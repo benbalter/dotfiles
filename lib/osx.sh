@@ -16,6 +16,11 @@ defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebK
 defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabledForLocalFiles -bool false
 defaults write com.apple.driver.AppleBluetoothMultitouch.mouse MouseButtonMode TwoButton
 
+# Software update
+defaults write /Library/Preferences/com.apple.commerce AutoUpdate -bool TRUE
+defaults write /Library/Preferences/com.apple.commerce AutoUpdateRestartRequired -bool TRUE
+defaults write /Library/Preferences/com.apple.SoftwareUpdate AutomaticCheckEnabled -bool TRUE
+
 # screensaver
 if [[ ! -d "$HOME_DIR/github/octodex.github.com" ]]; then
   git clone https://github.com/github/octodex.github.com "$HOME_DIR/github/octodex.github.com"
