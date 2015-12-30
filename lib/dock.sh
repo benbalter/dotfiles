@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Remove all apps from the dock
-dockutil --list | awk -F"\t" '{print $1}' | while read line; do 
+dockutil --list | awk -F"\t" '{print $1}' | while read line; do
   dockutil --remove "$line"
 done
 
@@ -12,8 +12,11 @@ sleep 1
 apps=(Adium Atom "Google Chrome" Slack Spotify)
 
 # Re-add the apps we want
-for app in "${apps[@]}"; do 
+for app in "${apps[@]}"; do
   echo "adding $app to dock"
   dockutil --add "/Applications/$app.app"
   sleep 1
 done
+
+echo "Adding the Chrome launcher to the dock"
+dockutil --add "~/Applications/Chrome Apps.localized/app_list.app"
