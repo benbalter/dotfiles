@@ -130,6 +130,9 @@ ruby lib/iterm.rb
 title "Installing App Store apps"
 source "$DOTFILES_ROOT/lib/app-store.sh"
 
+title "Setting up Prey"
+source "$DOTFILES_ROOT/lib/prey.sh"
+
 # Remove strap.sh, which contains tokens
 rm -f "$HOME_DIR/Downloads/strap.sh"
 
