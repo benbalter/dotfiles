@@ -29,6 +29,7 @@ link_safe Library/LaunchAgents/com.balter.ben.update.plist
 mkdir_safe projects
 mkdir_safe github
 mkdir_safe .ssh
+link_safe .ssh/config
 
 if [[ ! -f "$HOME_DIR/.token" ]]; then
   echo "Create a GitHub Personal Access Token with *public* scope"
