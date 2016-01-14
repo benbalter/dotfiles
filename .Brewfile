@@ -6,6 +6,7 @@ tap "homebrew/versions"
 tap "homebrew/services"
 tap "caskroom/fonts"
 tap "homebrew/command-not-found"
+tap "github/bootstrap"
 
 brew "caskroom/cask/brew-cask"
 
