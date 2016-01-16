@@ -1,4 +1,6 @@
 ---
 BUNDLE_GEM__COC: 'false'
-BUNDLE_GEM__MIT: true
+BUNDLE_GEM__MIT: 'true'
 BUNDLE_GEM__TEST: rspec
+BUNDLE_BUILD: EventMachine -with CPPFLAGS=-I /include
+BUNDLE_BUILD__EVENTMACHINE: "--with-cppflags=-I/usr/local/opt/openssl/include"
