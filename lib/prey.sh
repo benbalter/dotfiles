@@ -2,6 +2,8 @@
 
 npm install prey -g
 
-sudo prey config account setup
-sudo prey config plugins enable control-panel
-sudo prey config check
+if sudo prey config check; then
+else
+  sudo prey config account setup
+  sudo prey config plugins enable control-panel
+fi

@@ -31,6 +31,7 @@ brew "dnscrypt-proxy"
 brew "speedtest_cli"
 brew "dockutil"
 brew "tccutil"
+brew "mackup"
 
 # Dev stuffs
 brew "ruby"
