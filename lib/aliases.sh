@@ -31,9 +31,15 @@ alias jl="jekyll serve --watch"
 alias jd="jekyll build --trace"
 
 #atom
-alias a='atom'
-alias ap="a ./"
-function ja() { j "$@" ; ap; }
+unalias a
+function a() {
+	if [ $# -eq 0 ]; then
+		atom .;
+	else
+		atom "$@";
+	fi;
+}
+function ja() { j "$@" ; a; }
 
 #simple server
 alias server="python -m SimpleHTTPServer"
@@ -52,3 +58,7 @@ alias soffice="/Applications/LibreOffice.app/Contents/MacOS/soffice"
 # Todo
 function todo(){ ghi open -m "${*}" --claim -- benbalter/todo; }
 alias todo-list="ghi list --global --mine"
+
+# Misc
+alias p="cd ~/projects"
+alias afk="/System/Library/CoreServices/Menu\ Extras/User.menu/Contents/Resources/CGSession -suspend"
