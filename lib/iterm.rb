@@ -3,15 +3,6 @@
 
 require 'CFPropertyList'
 
-# Top level preferences
-preferences = {
-  "Hotkey" => 1,
-  "HotkeyChar" => 96,
-  "HotkeyCode" => 50,
-  "HotkeyModifiers" => 262401,
-  "HotKeyTogglesWindow" => 1
-}
-
 # Per profile preferences
 profile_preferences = {
   "Prompt Before Closing 2" => 0,
@@ -30,9 +21,6 @@ data = CFPropertyList.native_types(plist.value)
 
 hotkey_profile = data["New Bookmarks"].find { |p| p["Name"] == "Hotkey Window"}
 preferences["HotKeyBookmark"] = hotkey_profile["Guid"]
-preferences.each do |key, value|
-  data[key] = value
-end
 
 data["New Bookmarks"].each do |profile|
   profile_preferences.each do |key, value|

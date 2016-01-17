@@ -2,7 +2,9 @@ GEM
   remote: https://rubygems.org/
   specs:
     CFPropertyList (2.3.2)
+    awesome_print (1.6.1)
     coderay (1.1.0)
+    deep_merge (1.0.1)
     ffi (1.9.10-java)
     gem-release (0.7.4)
     method_source (0.8.2)
@@ -25,6 +27,8 @@ PLATFORMS
 
 DEPENDENCIES
   CFPropertyList
+  awesome_print
+  deep_merge
   gem-release
   pry
 
