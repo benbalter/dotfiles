@@ -1,3 +1,6 @@
+# Plister OS X preference file
+# See https://github.com/benbalter/plister
+
 # System-wide settings stored in /Library/Preferences
 system:
   com.apple.commerce:

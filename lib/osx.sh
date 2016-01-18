@@ -8,4 +8,4 @@ fi
 
 touch "$HOME_DIR/.hushlogin"
 
-sudo ./lib/osx.rb
+sudo plister "$HOME_DIR/.osx.yml"
