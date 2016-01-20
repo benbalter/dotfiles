@@ -58,7 +58,7 @@
   token = !security find-internet-password -a benbalter -s github.com -w
 
 [push]
-	default = simple
+	default = current
 
 [git-up "bundler"]
 	check = true
