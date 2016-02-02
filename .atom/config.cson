@@ -1,53 +1,53 @@
 "*":
+  Zen: {}
+  "atom-alignment": {}
+  "autocomplete-plus": {}
+  autosave:
+    enabled: true
+  "code-links":
+    displayMode: "always"
+  core:
+    excludeVcsIgnoredPaths: false
   editor:
-    invisibles: {}
     backUpBeforeSaving: true
     fontFamily: "Inconsolata"
     fontSize: 20
+    invisibles: {}
     showIndentGuide: true
     softWrap: true
   "exception-reporting":
     userId: "05e28b42-e3fa-77bb-d312-beac2ff9e773"
-  welcome:
-    showOnStartup: false
-  core:
-    excludeVcsIgnoredPaths: false
-  Zen: {}
-  "atom-alignment": {}
-  "code-links":
-    displayMode: "always"
   "file-icons":
     onChanges: true
-  "line-ending-converter":
-    showEolInStatusBar: false
-  linter:
-    showErrorTabFile: false
-    showErrorTabProject: false
-    statusIconScope: "File"
-    showErrorPanel: false
-  "linter-ruby": {}
-  "linter-write-good": {}
-  "markdown-table-formatter": {}
-  "travis-ci-status": {}
-  wordcount: {}
-  "autocomplete-plus": {}
-  autosave:
-    enabled: true
   "find-and-replace": {}
   "fuzzy-finder": {}
   "git-diff": {}
+  "line-ending-converter":
+    showEolInStatusBar: false
+  linter:
+    showErrorPanel: false
+    showErrorTabFile: false
+    showErrorTabProject: false
+    statusIconScope: "File"
+  "linter-ruby": {}
+  "linter-write-good": {}
   "markdown-preview":
     useGitHubStyle: true
-  whitespace:
-    keepMarkdownLineBreakWhitespace: false
+  "markdown-table-formatter": {}
+  "spell-check": {}
+  "status-bar": {}
   tabs:
     alwaysShowTabBar: false
     enableVcsColoring: true
-  "status-bar": {}
-  "spell-check": {}
   "theme-switcher": {}
   "tidy-markdown":
     ensureFirstHeaderIsH1: false
     runOnSave: false
+  "travis-ci-status": {}
   "tree-view":
     hideVcsIgnoredFiles: false
+  welcome:
+    showOnStartup: false
+  whitespace:
+    keepMarkdownLineBreakWhitespace: false
+  wordcount: {}

@@ -9,6 +9,7 @@ linter-coffeelint
 linter-markdown
 linter-ruby
 linter-write-good
+linter-rubocop
 markdown-lists
 markdown-table-formatter
 pdf-view
