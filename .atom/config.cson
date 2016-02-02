@@ -51,3 +51,5 @@
   whitespace:
     keepMarkdownLineBreakWhitespace: false
   wordcount: {}
+  "linter-rubocop":
+    executablePath: '/usr/local/opt/rbenv/versions/2.3.0/bin/rubocop'
