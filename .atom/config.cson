@@ -29,6 +29,7 @@
     showErrorTabFile: false
     showErrorTabProject: false
     statusIconScope: "File"
+  "linter-alex": {}
   "linter-rubocop":
     command: "/usr/local/opt/rbenv/versions/2.3.0/bin/rubocop"
   "linter-ruby": {}
