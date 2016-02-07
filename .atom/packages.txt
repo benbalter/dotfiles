@@ -1,10 +1,13 @@
 atom-alignment
+atom-beautify
 atomic-chrome
+autoclose-html
 file-icons
 line-ending-converter
 linter
 linter-alex
 linter-coffeelint
+linter-csslint
 linter-markdown
 linter-rubocop
 linter-ruby
