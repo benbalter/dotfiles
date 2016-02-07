@@ -1,0 +1,42 @@
+{
+  "output": true,
+  "settings": {
+    "bullet": "*",
+    "emphasis": "*",
+    "strong": "*",
+    "fence": "`",
+    "rule": "-",
+    "gfm": true,
+    "yaml": true,
+    "footnotes": true,
+    "listItemIndent": "1"
+  },
+  "plugins": {
+    "remark-yaml": {},
+    "remark-squeeze-paragraphs": {},
+    "remark-slug": {},
+    "remark-lint": {
+      "external": [
+        "remark-lint-no-empty-sections",
+        "remark-lint-code"
+      ],
+      "blockquote-indentation": 2,
+      "checkbox-character-style": {
+        "checked": "x",
+        "unchecked": " "
+      },
+      "code-block-style": "fenced",
+      "fenced-code-marker": "`",
+      "emphasis-marker": "*",
+      "file-extension": "md",
+      "heading-style": "atx",
+      "ordered-list-marker-style": ".",
+      "ordered-list-marker-value": "ordered",
+      "rule-style": "---",
+      "strong-marker": "*",
+      "unordered-list-marker-style": "*",
+      "maximum-line-length": false,
+      "list-item-indent": "space"
+    }
+  }
+}

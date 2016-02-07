@@ -1,6 +1,7 @@
 "*":
   Zen: {}
   "atom-alignment": {}
+  "atom-beautify": {}
   "autocomplete-plus": {}
   autosave:
     enabled: true

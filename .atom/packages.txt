@@ -1,7 +1,10 @@
+aligner
+aligner-ruby
 atom-alignment
 atom-beautify
 atomic-chrome
 autoclose-html
+autocomplete-ruby
 file-icons
 line-ending-converter
 linter
@@ -15,6 +18,9 @@ linter-write-good
 markdown-lists
 markdown-table-formatter
 pdf-view
+rubocop-auto-correct
+ruby-block
+ruby-test-switcher
 sublime-style-column-selection
 theme-switcher
 tidy-markdown

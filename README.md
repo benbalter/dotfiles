@@ -6,17 +6,17 @@
 
 ## What's here
 
-- `script/bootstrap` - Bootstrap this repo
-- `script/setup` - Set up all the things!
-- `script/update` - Update all the things!
-- `.Atom` - Editor configuration and plugins
-- `.Brewfile` - Homebrew dependencies
-- `.gemrc` - Gem settings
-- `.gitconfig` and `.gitignore` - Git settings
-- `.irbrc` - IRB settings
-- `.zshrc` - ZSH (shell) settings
-- Common development aliases
-- Launch agents to keep the Downloads folder tidy and dependencies up to date
+* `script/bootstrap` - Bootstrap this repo
+* `script/setup` - Set up all the things!
+* `script/update` - Update all the things!
+* `.Atom` - Editor configuration and plugins
+* `.Brewfile` - Homebrew dependencies
+* `.gemrc` - Gem settings
+* `.gitconfig` and `.gitignore` - Git settings
+* `.irbrc` - IRB settings
+* `.zshrc` - ZSH (shell) settings
+* Common development aliases
+* Launch agents to keep the Downloads folder tidy and dependencies up to date
 
 ## Setting up a new machine from scratch
 

@@ -25,6 +25,7 @@ link_safe .gemrc
 link_safe .mackup.cfg
 link_safe .digrc
 link_safe .osx.yml
+link_safe .remarkrc
 
 mkdir_safe "Library/LaunchAgents/"
 link_safe Library/LaunchAgents/com.balter.ben.tmpreaper.plist
