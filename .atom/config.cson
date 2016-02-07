@@ -29,6 +29,8 @@
     showErrorTabFile: false
     showErrorTabProject: false
     statusIconScope: "File"
+  "linter-rubocop":
+    command: "/usr/local/opt/rbenv/versions/2.3.0/bin/rubocop"
   "linter-ruby": {}
   "linter-write-good": {}
   "markdown-preview":
@@ -51,5 +53,3 @@
   whitespace:
     keepMarkdownLineBreakWhitespace: false
   wordcount: {}
-  "linter-rubocop":
-    executablePath: '/usr/local/opt/rbenv/versions/2.3.0/bin/rubocop'
