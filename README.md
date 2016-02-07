@@ -1,9 +1,10 @@
 # @BenBalter's dotfiles
+
 [![Build Status](https://travis-ci.org/benbalter/dotfiles.svg?branch=master)](https://travis-ci.org/benbalter/dotfiles)
 
 @BenBalter's development environment and the scripts to initialize it and keep it up to date.
 
-## What's here:
+## What's here
 
 - `script/bootstrap` - Bootstrap this repo
 - `script/setup` - Set up all the things!
