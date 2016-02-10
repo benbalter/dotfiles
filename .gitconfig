@@ -7,8 +7,9 @@
 [core]
   excludesfile = ~/.gitignore
   whitespace = trailing-space,space-before-tab
-	pager = less -r
+	pager = "diff-so-fancy | less --tabs=1,5 -R"
 	autocrlf = input
+	whitespace = fix,-indent-with-non-tab,trailing-space,cr-at-eol
 
 [user]
 	name = Ben Balter
@@ -45,10 +46,6 @@
     changed = green
     untracked = cyan
     branch = magenta
-
-[core]
-    pager = less -FRSX
-    whitespace = fix,-indent-with-non-tab,trailing-space,cr-at-eol
 
 [apply]
   whitespace = fix
