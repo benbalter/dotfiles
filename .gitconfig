@@ -75,8 +75,9 @@
 	token = !security find-internet-password -a benbalter -s github.com -l 'ghi token' -w
 
 [branch "master"]
-    remote = origin
-    merge = refs/heads/master
+  remote = origin
+  merge = refs/heads/master
+
 [color "diff-highlight"]
 	oldHighlight = red bold 52
 	newNormal = green bold
