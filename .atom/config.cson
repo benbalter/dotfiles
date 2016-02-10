@@ -1,13 +1,17 @@
 "*":
   Zen: {}
   "atom-alignment": {}
-  "atom-beautify": {}
+  "atom-beautify":
+    _analyticsUserId: ""
   "autocomplete-plus": {}
   autosave:
     enabled: true
   "code-links":
     displayMode: "always"
   core:
+    disabledPackages: [
+      "language-gfm"
+    ]
     excludeVcsIgnoredPaths: false
   editor:
     backUpBeforeSaving: true
@@ -17,7 +21,7 @@
     showIndentGuide: true
     softWrap: true
   "exception-reporting":
-    userId: "05e28b42-e3fa-77bb-d312-beac2ff9e773"
+    userId: ""
   "file-icons":
     onChanges: true
   "find-and-replace": {}
