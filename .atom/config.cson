@@ -21,7 +21,7 @@
     showIndentGuide: true
     softWrap: true
   "exception-reporting":
-    userId: ""
+    userId: "d0e99223-9683-a67e-278c-73f62295b9ed"
   "file-icons":
     onChanges: true
   "find-and-replace": {}
