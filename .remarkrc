@@ -22,7 +22,12 @@
     "remark-yaml": {},
     "remark-squeeze-paragraphs": {},
     "remark-slug": {},
-    "remark-heading-gap": {},
+    "remark-heading-gap": {
+      "2": {
+        "before": "",
+        "after": ""
+        }
+    },
     "remark-inline-links": {},
     "remark-textr": {
       "options": {
@@ -38,8 +43,8 @@
       "external": [
         "remark-lint-no-empty-sections",
         "remark-lint-code",
-        "remark-lint-blank-lines-1-0-2",
-        "remark-lint-no-url-trailing-slash"
+        "remark-lint-no-url-trailing-slash",
+        "remark-lint-blank-lines-1-0-2"
       ],
       "blockquote-indentation": 2,
       "checkbox-character-style": {
