@@ -66,7 +66,8 @@
       "unordered-list-marker-style": "*",
       "maximum-line-length": false,
       "list-item-indent": "space",
-      "table-cell-padding": "padded"
+      "table-cell-padding": "padded",
+      "no-literal-urls": false
     }
   }
 }
