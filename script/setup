@@ -31,6 +31,9 @@ mkdir_safe "Library/LaunchAgents/"
 link_safe Library/LaunchAgents/com.balter.ben.tmpreaper.plist
 link_safe Library/LaunchAgents/com.balter.ben.update.plist
 
+mkdir_safe "Library/Spelling/"
+link_safe Library/Spelling/LocalDictionary
+
 mkdir_safe projects
 mkdir_safe github
 
