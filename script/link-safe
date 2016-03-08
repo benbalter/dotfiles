@@ -1,0 +1,12 @@
+#!/bin/bash
+# Set up a symlink to the dotfiles repo
+# Usage: script/link-safe <PATH>
+
+set -e
+
+DOTFILES_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
+HOME_DIR="/Users/$USER"
+
+source "$DOTFILES_ROOT/lib/functions.sh"
+
+link_safe $1

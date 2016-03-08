@@ -26,7 +26,8 @@
       "2": {
         "before": "",
         "after": ""
-        }
+      },
+    "validate-links": {}
     },
     "remark-inline-links": {},
     "remark-textr": {
@@ -42,9 +43,7 @@
     "remark-lint": {
       "external": [
         "remark-lint-no-empty-sections",
-        "remark-lint-code",
-        "remark-lint-no-url-trailing-slash",
-        "remark-lint-blank-lines-1-0-2"
+        "remark-lint-code"
       ],
       "blockquote-indentation": 2,
       "checkbox-character-style": {

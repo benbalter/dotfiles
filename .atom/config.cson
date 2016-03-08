@@ -9,9 +9,6 @@
   "code-links":
     displayMode: "always"
   core:
-    disabledPackages: [
-      "language-gfm"
-    ]
     excludeVcsIgnoredPaths: false
   editor:
     backUpBeforeSaving: true
