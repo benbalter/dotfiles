@@ -39,6 +39,7 @@
   "markdown-preview":
     useGitHubStyle: true
   "markdown-table-formatter": {}
+  "one-dark-ui": {}
   "spell-check": {}
   "status-bar": {}
   tabs:
