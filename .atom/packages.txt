@@ -23,7 +23,6 @@ ruby-block
 ruby-test-switcher
 sublime-style-column-selection
 theme-switcher
-tidy-markdown
 travis-ci-status
 wordcount
 zen
