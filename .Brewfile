@@ -7,6 +7,7 @@ tap "homebrew/services"
 tap "caskroom/fonts"
 tap "homebrew/command-not-found"
 tap "github/bootstrap"
+tap "caskroom/versions"
 
 brew "caskroom/cask/brew-cask"
 
@@ -20,7 +21,7 @@ brew "ghi"
 brew "zsh"
 brew "fasd"
 brew "nodenv"
-brew "node-build", args: ["HEAD"]
+brew "node-build"
 brew "curl"
 brew "wget"
 brew "libyaml"
@@ -32,6 +33,7 @@ brew "speedtest_cli"
 brew "dockutil"
 brew "tccutil"
 brew "mackup"
+brew "the_silver_searcher"
 
 # Dev stuffs
 brew "ruby"
@@ -60,7 +62,7 @@ brew "node"
 brew "cask"
 
 # dev stuffs
-cask "iterm2"
+cask "iterm2-beta"
 cask "atom"
 cask "yubiswitch"
 cask "github-desktop"
@@ -83,7 +85,6 @@ cask "blue-jeans-browser-plugin"
 # Menubar stuffs
 cask "fitbit-connect"
 cask "google-photos-backup"
-cask "dnscrypt"
 cask "flux"
 cask "cloudup"
 

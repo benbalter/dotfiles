@@ -62,7 +62,8 @@
       "maximum-line-length": false,
       "list-item-indent": "space",
       "table-cell-padding": "padded",
-      "no-literal-urls": false
+      "no-literal-urls": false,
+      "no-missing-blank-lines": false
     }
   }
 }
