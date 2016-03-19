@@ -40,6 +40,8 @@
     useGitHubStyle: true
   "markdown-table-formatter": {}
   "one-dark-ui": {}
+  "rubocop-auto-correct":
+    autoRun: true
   "spell-check": {}
   "status-bar": {}
   tabs:
