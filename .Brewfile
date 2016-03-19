@@ -63,7 +63,7 @@ brew "cask"
 
 # dev stuffs
 cask "iterm2-beta"
-cask "atom"
+cask "atom-beta"
 cask "yubiswitch"
 cask "github-desktop"
 cask "heroku-toolbelt"
