@@ -20,7 +20,7 @@ plist = CFPropertyList::List.new file: file
 data = CFPropertyList.native_types(plist.value)
 
 hotkey_profile = data['New Bookmarks'].find { |p| p['Name'] == 'Hotkey Window' }
-preferences['HotKeyBookmark'] = hotkey_profile['Guid']
+data['HotKeyBookmark'] = hotkey_profile['Guid']
 
 data['New Bookmarks'].each do |profile|
   profile_preferences.each do |key, value|
