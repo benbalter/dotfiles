@@ -2,7 +2,7 @@
 # Set up some common global variables
 
 export DOTFILES_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
-export EDITOR='atom -w'
+#export EDITOR='atom -w'
 
 # Setup cli tools
 export HOMEBREW_CASK_OPTS="--appdir=/Applications"
