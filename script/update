@@ -2,6 +2,8 @@
 # Update all installed dependencies
 # Usage: up
 
+set -e
+
 DOTFILES_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
 source "$DOTFILES_ROOT/lib/functions.sh"
 source "$DOTFILES_ROOT/lib/globals.sh"
