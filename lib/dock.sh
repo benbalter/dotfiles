@@ -19,4 +19,4 @@ for app in "${apps[@]}"; do
 done
 
 echo "Adding the Chrome launcher to the dock"
-dockutil --add "~/Applications/Chrome Apps.localized/app_list.app"
+dockutil --add "$HOME/Applications/Chrome Apps.localized/app_list.app"

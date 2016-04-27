@@ -10,7 +10,6 @@ title () {
 }
 
 link_safe() {
-  username=$(whoami)
   if [[ ! -f "$HOME_DIR/$1" ]] || [[ $(ls -l "$HOME_DIR/$1" | awk '{print $11}') != "$DOTFILES_ROOT/$1" ]]; then
     echo "Linking $HOME_DIR/$1 to $DOTFILES_ROOT/$1"
     rm -f "$HOME_DIR/$1"

@@ -25,8 +25,8 @@ npm upgrade --global
 
 if [ $(rbenv global) != $(latest_ruby) ]; then
   title "Updating Ruby..."
-  rbenv install $(latest_ruby)
-  rbenv global $(latest_ruby)
+  rbenv install "$(latest_ruby)"
+  rbenv global "$(latest_ruby)"
   rbenv rehash
   gem install bundler
 fi

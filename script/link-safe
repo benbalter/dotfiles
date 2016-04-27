@@ -5,7 +5,7 @@
 set -e
 
 DOTFILES_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
-HOME_DIR="/Users/$USER"
+export HOME_DIR="/Users/$USER"
 
 source "$DOTFILES_ROOT/lib/functions.sh"
 

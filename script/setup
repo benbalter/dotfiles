@@ -72,8 +72,8 @@ fi
 
 if [ $(rbenv global) = "system" ]; then
   brew install ruby-build
-  rbenv install $(latest_ruby)
-  rbenv global $(latest_ruby)
+  rbenv install "$(latest_ruby)"
+  rbenv global "$(latest_ruby)"
   rbenv rehash
 fi
 
@@ -142,7 +142,7 @@ title "Setting up iTerm"
 ruby lib/iterm.rb
 
 title "Installing App Store apps"
-source "$DOTFILES_ROOT/lib/app-store.sh"
+"$DOTFILES_ROOT/lib/app-store.rb"
 
 title "Setting up Prey"
 source "$DOTFILES_ROOT/lib/prey.sh"

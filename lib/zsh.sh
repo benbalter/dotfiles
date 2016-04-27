@@ -4,11 +4,11 @@
 export ZSH=/Users/benbalter/.oh-my-zsh
 export SHELL=$(which zsh)
 
-ZSH_THEME="robbyrussell"
-DISABLE_UPDATE_PROMPT=true
-COMPLETION_WAITING_DOTS="true"
+export ZSH_THEME="robbyrussell"
+export DISABLE_UPDATE_PROMPT=true
+export COMPLETION_WAITING_DOTS="true"
 
-plugins=(
+export plugins=(
   atom
   battery
   bower
