@@ -10,6 +10,7 @@ tap "github/bootstrap"
 tap "caskroom/versions"
 
 brew "caskroom/cask/brew-cask"
+brew "argon/mas/mas"
 
 # Git
 brew "git"

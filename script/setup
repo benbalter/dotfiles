@@ -25,6 +25,7 @@ link_safe .gemrc
 link_safe .mackup.cfg
 link_safe .digrc
 link_safe .osx.yml
+link_safe .mas.yml
 link_safe .remarkrc
 
 mkdir_safe "Library/LaunchAgents/"
@@ -90,7 +91,7 @@ if ! brew bundle check --global; then
 fi
 
 title "Configuring OS X"
-source "$DOTFILES_ROOT/lib/osx.sh"
+"$DOTFILES_ROOT/lib/app-store.rb"
 
 if [ -d "$HOME_DIR/Dropbox/Desktop" ] && [ ! -L "$HOME_DIR/Dropbox/Desktop" ]; then
   title "Setting up dropbox"

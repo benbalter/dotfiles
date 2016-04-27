@@ -13,7 +13,7 @@ brew update
 brew upgrade
 
 title "Updating App Store apps"
-softwareupdate --install --all
+mas upgrade
 
 title "Updating Atom..."
 apm update --no-confirm
