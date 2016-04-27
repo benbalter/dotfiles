@@ -9,6 +9,9 @@
   "code-links":
     displayMode: "always"
   core:
+    disabledPackages: [
+      "linter-rubocop"
+    ]
     excludeVcsIgnoredPaths: false
   editor:
     backUpBeforeSaving: true
@@ -33,7 +36,7 @@
     statusIconScope: "File"
   "linter-alex": {}
   "linter-rubocop":
-    command: "/usr/local/opt/rbenv/shims/rubocop"
+    command: "rbenv which rubocop"
   "linter-ruby": {}
   "linter-write-good": {}
   "markdown-preview":
@@ -42,12 +45,15 @@
   "one-dark-ui": {}
   "rubocop-auto-correct":
     autoRun: true
+    rubocopCommandPath: "bundle exec rubocop"
   "spell-check": {}
   "status-bar": {}
   tabs:
     alwaysShowTabBar: false
     enableVcsColoring: true
-  "theme-switcher": {}
+  "theme-switcher":
+    syntaxThemeOne: "one-dark"
+    syntaxThemeTwo: "one-light"
   "tidy-markdown":
     ensureFirstHeaderIsH1: false
     runOnSave: false
