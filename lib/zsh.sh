@@ -1,14 +1,14 @@
 #!/bin/sh
+
 # ZSH settings and initializations
-
-export ZSH=/Users/benbalter/.oh-my-zsh
+export ZSH=$HOME/.oh-my-zsh
 export SHELL=$(which zsh)
-
 export ZSH_THEME="robbyrussell"
 export DISABLE_UPDATE_PROMPT=true
 export COMPLETION_WAITING_DOTS="true"
 
-export plugins=(
+local plugins
+plugins=(
   atom
   battery
   bower
