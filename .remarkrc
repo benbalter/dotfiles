@@ -19,7 +19,6 @@
     "spacedTable": true
   },
   "plugins": {
-    "remark-yaml": {},
     "remark-squeeze-paragraphs": {},
     "remark-slug": {},
     "remark-heading-gap": {
