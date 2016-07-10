@@ -1,7 +1,8 @@
 #!/bin/sh
 # OS X settings
 
-# screensaverwhub/octodex.github.com" ]]; then
+# screensaver
+if [[ ! -d "$HOME_DIR/github/octodex.github.com" ]]; then
   git clone https://github.com/github/octodex.github.com "$HOME_DIR/github/octodex.github.com"
 fi
 

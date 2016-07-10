@@ -4,9 +4,11 @@ GEM
     CFPropertyList (2.3.2)
     awesome_print (1.6.1)
     deep_merge (1.0.1)
+    gemoji (2.1.0)
     plister (0.1.1)
       CFPropertyList (~> 2.3)
       deep_merge (~> 1.0)
+    sqlite3 (1.3.11)
 
 PLATFORMS
   java
@@ -16,7 +18,9 @@ DEPENDENCIES
   CFPropertyList
   awesome_print
   deep_merge
+  gemoji
   plister
+  sqlite3
 
 BUNDLED WITH
    1.12.5

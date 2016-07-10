@@ -1,0 +1,68 @@
+#!/usr/bin/env ruby
+
+require 'CFPropertyList'
+require 'tempfile'
+require 'plister'
+require "sqlite3"
+require 'gemoji'
+
+db_path =  "~/Library/Dictionaries/CoreDataUbiquitySupport/"
+db_path << "#{Plister.user}~#{Plister.uuid}"
+db_path << "/UserDictionary/local/store/UserDictionary.db"
+db      = SQLite3::Database.new File.expand_path(db_path)
+emojis  = Emoji.all
+
+max_id = db.execute("select max(Z_PK) from ZUSERDICTIONARYENTRY").first.first.to_i
+index  = 1
+replacement_items = []
+emojis.each do |emoji|
+  next if emoji.raw.nil?
+
+  emoji.aliases.each do |emoji_alias|
+    emoji_alias = ":#{emoji_alias}:"
+
+    replacement_items.push({
+      "replace" => emoji_alias,
+      "with"    => emoji.raw,
+      "on"      => 1
+    })
+
+    sql = "SELECT EXISTS(SELECT 1 FROM ZUSERDICTIONARYENTRY"
+    sql << " WHERE ZSHORTCUT=\"#{emoji_alias}\" LIMIT 1);"
+    exists = db.execute(sql)
+    next unless exists.first.first.to_i == 0
+
+    data = {
+      "Z_PK"          => (max_id + index),
+      "Z_ENT"         => 1,
+      "Z_OPT"         => 1,
+      "ZAUXINTVALUE1" => 0,
+      "ZAUXINTVALUE2" => 0,
+      "ZAUXINTVALUE3" => 0,
+      "ZAUXINTVALUE4" => 0,
+      "ZTIMESTAMP"    => Time.now.to_i,
+      "ZSHORTCUT"     => emoji_alias,
+      "ZPHRASE"       => emoji.raw
+    }
+
+    keys = data.keys.join(", ")
+    values = (["?"] * data.values.count).join(", ")
+
+    sql = "INSERT INTO ZUSERDICTIONARYENTRY (#{keys}) VALUES (#{values})"
+    db.execute(sql, data.values)
+    index = index + 1
+  end
+end
+
+plist = Plister::Preferences.new
+plist.instance_variable_set("@data", {
+  "user" => {
+    ".GlobalPreferences" => {
+      "NSUserDictionaryReplacementItems" => replacement_items
+    }
+  }
+})
+plist.set!
+
+output = `echo ":+1:" | osxsub`.strip
+puts "Emoji updated. Everything is 👍." if output == "👍"

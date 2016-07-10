@@ -67,6 +67,7 @@ user:
   .GlobalPreferences:
     NSAutomaticDashSubstitutionEnabled: false
     NSAutomaticQuoteSubstitutionEnabled: false
+    WebAutomaticTextReplacementEnabled: true
     WebKitDeveloperExtras: true
 
 # Host specific settings stored in ~/Library/Prefrences/ByHost (currentHost)
