@@ -3,26 +3,10 @@ GEM
   specs:
     CFPropertyList (2.3.2)
     awesome_print (1.6.1)
-    coderay (1.1.0)
     deep_merge (1.0.1)
-    ffi (1.9.10-java)
-    gem-release (0.7.4)
-    method_source (0.8.2)
     plister (0.1.1)
       CFPropertyList (~> 2.3)
       deep_merge (~> 1.0)
-    pry (0.10.3)
-      coderay (~> 1.1.0)
-      method_source (~> 0.8.1)
-      slop (~> 3.4)
-    pry (0.10.3-java)
-      coderay (~> 1.1.0)
-      method_source (~> 0.8.1)
-      slop (~> 3.4)
-      spoon (~> 0.0)
-    slop (3.6.0)
-    spoon (0.0.4)
-      ffi
 
 PLATFORMS
   java
@@ -32,9 +16,7 @@ DEPENDENCIES
   CFPropertyList
   awesome_print
   deep_merge
-  gem-release
   plister
-  pry
 
 BUNDLED WITH
-   1.11.2
+   1.12.5

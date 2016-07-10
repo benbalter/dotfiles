@@ -70,8 +70,12 @@ if ! type "rbenv" > /dev/null; then
   eval "$(rbenv init -)"
 fi
 
-echo "Linking $DOTFILES_ROOT/default-gems to $(rbenv root)/default-gems"
-ln -sf "$DOTFILES_ROOT/default-gems" "$(rbenv root)/default-gems"
+
+if [[ ! -f "$(rbenv root)/default_gems" ]] || [[ $(ls -l "$(rbenv root)/default_gems" | awk '{print $11}') != "$DOTFILES_ROOT/default-gems" ]]; then
+  echo "Linking $(rbenv root)/default_gems to $DOTFILES_ROOT/default_gems"
+  rm -f "$(rbenv root)/default_gems"
+  ln -sf "$DOTFILES_ROOT/default_gems" "$(rbenv root)/default_gems"
+fi
 
 if [ $(rbenv global) = "system" ]; then
   brew install ruby-build
