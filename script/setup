@@ -70,15 +70,14 @@ if ! type "rbenv" > /dev/null; then
   eval "$(rbenv init -)"
 fi
 
+echo "Linking $DOTFILES_ROOT/default-gems to $(rbenv root)/default-gems"
+ln -sf "$DOTFILES_ROOT/default-gems" "$(rbenv root)/default-gems"
+
 if [ $(rbenv global) = "system" ]; then
   brew install ruby-build
   rbenv install "$(latest_ruby)"
   rbenv global "$(latest_ruby)"
   rbenv rehash
-fi
-
-if ! type "bundle" > /dev/null; then
-  gem install bundler
 fi
 
 mkdir_safe .bundle
