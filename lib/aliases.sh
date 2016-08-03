@@ -17,6 +17,7 @@ alias reset="git reset HEAD --hard; git clean -f -d"
 alias clean="git branch --merged | grep -v '\*' | xargs -n 1 git branch -d"
 alias ggb="git commit -m ':gem: bump'"
 function gccd(){ git clone $1; cd $(basename $1); }
+alias branches="git branch -v"
 
 # fasd
 alias j='fasd_cd -d'
