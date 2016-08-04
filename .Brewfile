@@ -79,6 +79,7 @@ cask "dropbox"
 cask "cloak"
 cask "1password"
 cask "flash"
+cask "zoomus"
 
 # Menubar stuffs
 cask "fitbit-connect"
