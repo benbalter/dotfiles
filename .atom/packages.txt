@@ -6,6 +6,7 @@ atomic-chrome
 autoclose-html
 autocomplete-ruby
 file-icons
+language-lua
 line-ending-converter
 linter
 linter-alex
@@ -14,6 +15,7 @@ linter-csslint
 linter-markdown
 linter-rubocop
 linter-ruby
+linter-shellcheck
 linter-write-good
 markdown-lists
 markdown-table-formatter
@@ -22,6 +24,7 @@ rubocop-auto-correct
 ruby-block
 ruby-test-switcher
 sublime-style-column-selection
+table-editor
 theme-switcher
 travis-ci-status
 wordcount
