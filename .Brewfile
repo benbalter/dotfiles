@@ -73,7 +73,7 @@ cask "paw"
 cask "java"
 
 # Web stuffs
-cask "google-chrome"
+cask "google-chrome-beta"
 cask "google-hangouts"
 cask "dropbox"
 cask "cloak"
