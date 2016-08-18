@@ -16,7 +16,7 @@
   editor:
     backUpBeforeSaving: true
     fontFamily: "Inconsolata"
-    fontSize: 20
+    fontSize: 19
     invisibles: {}
     showIndentGuide: true
     showInvisibles: true
@@ -60,7 +60,8 @@
     runOnSave: false
   "travis-ci-status": {}
   "tree-view":
-    hideVcsIgnoredFiles: false
+    autoReveal: true
+    squashDirectoryNames: true
   welcome:
     showOnStartup: false
   whitespace:
