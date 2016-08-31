@@ -13,6 +13,7 @@ plugins=(
   battery
   bower
   brew
+  brew-cask
   bundler
   cloudapp
   coffee
@@ -24,9 +25,9 @@ plugins=(
   extract
   fasd
   gem
-  history-substring-search
   git
   git-extras
+  history-substring-search
   heroku
   iwhois
   node
