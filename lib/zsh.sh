@@ -34,7 +34,6 @@ plugins=(
   osx
   rake
   rake-fast
-  rbenv
   ruby
   safe-paste
   ssh-agent
