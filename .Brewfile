@@ -91,7 +91,6 @@ cask "libreoffice"
 cask "slack"
 cask "steam"
 cask "vlc"
-cask "pandoc"
 cask "gimp"
 
 # quicklooks
@@ -117,3 +116,4 @@ brew "keybase"
 brew "ack"
 brew "siege"
 brew "android-platform-tools"
+brew "pandoc"
