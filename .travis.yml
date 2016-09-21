@@ -4,9 +4,10 @@ before_install:
   - cd strap
   - STRAP_CI=1 ./bin/strap.sh
   - cd ..
+  - gem install bundler
 # Empty (to avoid Bundler).
 install:
-  -
+  - 
 script: script/cibuild
 env:
   SHELL: zsh
