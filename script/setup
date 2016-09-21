@@ -99,7 +99,7 @@ title "Configuring OS X"
 if [ -d "$HOME_DIR/Dropbox/Desktop" ] && [ ! -L "$HOME_DIR/Dropbox/Desktop" ]; then
   title "Setting up dropbox"
   if [ "$(ls -A $HOME_DIR/Dropbox/Desktop)" ]; then
-    cp "$HOME_DIR/Dropbox/Desktop/*" "$HOME_DIR/Desktop"
+    cp "$HOME_DIR/Dropbox/Desktop/"* "$HOME_DIR/Desktop"
   fi
   rm -Rf "$HOME_DIR/Dropbox/Desktop/"
   ln -s "$HOME_DIR/Desktop" "$HOME_DIR/Dropbox/Desktop"
