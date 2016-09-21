@@ -153,9 +153,6 @@ source "$DOTFILES_ROOT/lib/prey.sh"
 title "Restoring mackup"
 mackup restore
 
-title "Importing emoji"
-script/update-emoji
-
 # Remove strap.sh, which contains tokens
 rm -f "$HOME_DIR/Downloads/strap.sh"
 
