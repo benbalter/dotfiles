@@ -9,7 +9,7 @@ done
 sleep 1
 
 # Apps wanted in the dock, in order
-apps=(Adium "Atom Beta" "Google Chrome" Slack Spotify)
+apps=("Atom Beta" "Google Chrome" Slack Spotify)
 
 # Re-add the apps we want
 for app in "${apps[@]}"; do
@@ -17,6 +17,3 @@ for app in "${apps[@]}"; do
   dockutil --add "/Applications/$app.app"
   sleep 1
 done
-
-echo "Adding the Chrome launcher to the dock"
-dockutil --add "$HOME/Applications/Chrome Apps.localized/app_list.app"
