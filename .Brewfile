@@ -9,7 +9,6 @@ tap "homebrew/command-not-found"
 tap "github/bootstrap"
 tap "caskroom/versions"
 
-brew "caskroom/cask/brew-cask"
 brew "argon/mas/mas"
 
 # Git
