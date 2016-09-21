@@ -1,4 +1,4 @@
 #!/bin/sh
 
-gem update --system
+sudo gem update --system
 gem update
