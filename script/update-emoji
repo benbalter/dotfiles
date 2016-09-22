@@ -28,7 +28,7 @@ emojis.each do |emoji|
     sql = 'SELECT EXISTS(SELECT 1 FROM ZUSERDICTIONARYENTRY'
     sql << " WHERE ZSHORTCUT=\"#{emoji_alias}\" LIMIT 1);"
     exists = db.execute(sql)
-    next unless exists.first.first.to_i == 0
+    next unless exists.first.first.to_i.zero?
 
     data = {
       'Z_PK'          => (max_id + index),

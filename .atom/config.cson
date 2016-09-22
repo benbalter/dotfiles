@@ -13,6 +13,7 @@
       "linter-rubocop"
     ]
     excludeVcsIgnoredPaths: false
+    telemetryConsent: "no"
   editor:
     backUpBeforeSaving: true
     fontFamily: "Inconsolata"

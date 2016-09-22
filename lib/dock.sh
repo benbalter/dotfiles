@@ -9,7 +9,7 @@ done
 sleep 1
 
 # Apps wanted in the dock, in order
-apps=("Atom Beta" "Google Chrome" Slack Spotify)
+apps=("Atom Beta" "Google Chrome" Slack Spotify TweetDeck)
 
 # Re-add the apps we want
 for app in "${apps[@]}"; do
