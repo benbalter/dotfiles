@@ -8,38 +8,42 @@ tap "caskroom/fonts"
 tap "homebrew/command-not-found"
 tap "github/bootstrap"
 tap "caskroom/versions"
+brew "cask"
 
+# Install first
+cask "google-chrome-beta"
+cask "dropbox"
+cask "1password"
+cask "atom-beta"
+cask "iterm2-beta"
+
+# Necessary to bootstrap
 brew "mas"
-
-# Git
 brew "git"
-brew "git-lfs"
-brew "hub"
-brew "ghi"
-brew "diff-so-fancy"
-
-# Command line stuffs
 brew "zsh"
-brew "fasd"
+brew "node"
 brew "nodenv"
 brew "node-build"
 brew "curl"
 brew "wget"
-brew "libyaml"
-brew "mtr"
-brew "tmpreaper"
-brew "gnupg"
 brew "dockutil"
-brew "tccutil"
 brew "mackup"
-brew "the_silver_searcher"
-
-# Dev stuffs
 brew "ruby"
 brew "rbenv"
 brew "ruby-build"
 brew "rbenv-binstubs"
 brew "rbenv-default-gems"
+
+# Command line stuffs
+brew "fasd"
+brew "libyaml"
+brew "mtr"
+brew "tmpreaper"
+brew "gnupg"
+brew "tccutil"
+brew "the_silver_searcher"
+
+# Dev stuffs
 brew "pcre"
 brew "icu4c"
 brew "libxml2"
@@ -50,21 +54,14 @@ brew "readline"
 brew "cmake"
 brew "pkg-config"
 brew "autoconf"
-brew "nodenv"
 brew "memcached"
 brew "mysql"
 brew "automake"
 brew "redis"
 brew "grc"
-brew "node"
 brew "shellcheck"
 
-# Le casks
-brew "cask"
-
 # dev stuffs
-cask "iterm2-beta"
-cask "atom-beta"
 cask "yubiswitch"
 cask "github-desktop"
 cask "viscosity"
@@ -72,11 +69,8 @@ cask "paw"
 cask "java"
 
 # Web stuffs
-cask "google-chrome-beta"
 cask "google-hangouts"
-cask "dropbox"
 cask "cloak"
-cask "1password"
 cask "flash"
 cask "zoomus"
 
@@ -118,3 +112,7 @@ brew "ack"
 brew "siege"
 brew "android-platform-tools"
 brew "pandoc"
+brew "git-lfs"
+brew "hub"
+brew "ghi"
+brew "diff-so-fancy"
