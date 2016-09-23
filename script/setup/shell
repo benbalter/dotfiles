@@ -7,9 +7,3 @@ if brew command command-not-found-init > /dev/null; then eval "$(brew command-no
 if which nodenv > /dev/null; then eval "$(nodenv init -)"; fi
 if which rbenv > /dev/null;  then eval "$(rbenv init -)"; fi
 if which fasd > /dev/null; then eval "$(fasd --init auto)"; fi
-
-# shellcheck source=lib/globals
-source "/$HOME/.files/lib/globals"
-
-# shellcheck source=lib/aliases
-source "$DOTFILES_ROOT/lib/aliases"
