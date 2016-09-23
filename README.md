@@ -6,15 +6,15 @@
 
 ## What's here
 
-* `script/bootstrap` - Bootstrap this repo
+### Scripts
+
 * `script/setup` - Set up all the things!
+* `script/setup/*` - Individual setup scripts
 * `script/update` - Update all the things!
-* `.Atom` - Editor configuration and plugins
-* `.Brewfile` - Homebrew dependencies
-* `.gemrc` - Gem settings
-* `.gitconfig` and `.gitignore` - Git settings
-* `.irbrc` - IRB settings
-* `.zshrc` - ZSH (shell) settings
+
+### Everything else
+
+* Configuration files that will be symlinked into the proper place
 * Common development aliases
 * Launch agents to keep the Downloads folder tidy and dependencies up to date
 
