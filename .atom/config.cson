@@ -11,6 +11,7 @@
   core:
     disabledPackages: [
       "linter-rubocop"
+      "linter-shellcheck"
     ]
     excludeVcsIgnoredPaths: false
     telemetryConsent: "no"
@@ -40,6 +41,10 @@
   "linter-rubocop":
     command: "rbenv which rubocop"
   "linter-ruby": {}
+  "linter-shellcheck":
+    enableNotice: true
+    shellcheckExecutablePath: "/usr/local/bin/shellcheck"
+    userParameters: "-x"
   "linter-write-good": {}
   "markdown-preview":
     useGitHubStyle: true

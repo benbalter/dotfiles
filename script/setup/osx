@@ -1,0 +1,11 @@
+#!/bin/sh
+# OS X settings
+
+# screensaver
+if [ ! -d "$HOME/github/octodex.github.com" ]; then
+  git clone https://github.com/github/octodex.github.com "$HOME/github/octodex.github.com"
+fi
+
+touch "$HOME/.hushlogin"
+
+sudo plister "$HOME/.osx.yml"

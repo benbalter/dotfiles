@@ -3,4 +3,4 @@
 set -ex
 
 rubocop -S -D
-script/setup
+script/bootstrap

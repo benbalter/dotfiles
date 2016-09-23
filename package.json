@@ -22,7 +22,7 @@
     "diff-so-fancy": "^0.1.2",
     "npr-one": "^1.6.1",
     "prey": "^1.3.9",
-    "remark-cli": "^3.2.3",
+    "remark-cli": "^2.0.0",
     "remark-heading-gap": "^2.0.0",
     "remark-inline-links": "^3.0.0",
     "remark-lint": "^2.3.1",

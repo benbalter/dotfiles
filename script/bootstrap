@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 # Strap
 if [[ -f "$HOME/Downloads/strap.sh" ]]; then
   bash ~/Downloads/strap.sh
@@ -12,4 +14,27 @@ fi
 
 # The main event
 cd ~/.files || exit
-script/setup
+
+# shellcheck source=lib/globals
+source "/Users/$USER/.files/lib/globals"
+
+# shellcheck source=lib/functions
+source "/$DOTFILES_ROOT/lib/functions"
+
+if [ "$TRAVIS" != "true" ]; then
+  sudo -v
+else
+  sudo -n -v
+fi
+
+setups=(symlinks token homebrew ruby app-store dropbox dock atom node background-apps zsh chrome iterm apps-store prey mackup)
+
+for setup in "${setups[@]}"; do
+  script/title "Setting up $setup"
+  "script/setup/$setup"
+done
+
+# Remove strap.sh, which contains tokens
+rm -f "$HOME/Downloads/strap.sh"
+
+script/title "Fin."

@@ -1,8 +1,5 @@
-#!/bin/bash
-# Set up a symlink to the dotfiles repo
-# Usage: script/link-safe <PATH>
-
-set -e
+#!/bin/sh
+# Setup up Bundler
 
 # shellcheck source=lib/globals
 source "/Users/$USER/.files/lib/globals"
@@ -10,4 +7,5 @@ source "/Users/$USER/.files/lib/globals"
 # shellcheck source=lib/functions
 source "/$DOTFILES_ROOT/lib/functions"
 
-link_safe "$1"
+mkdir_safe .bundle
+link_safe .bundle/config

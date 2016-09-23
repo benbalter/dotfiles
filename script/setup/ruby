@@ -1,0 +1,6 @@
+#!/bin/sh
+# Set up Rbenv, bundler, and system gems
+
+script/setup/rbenv
+script/setup/bundler
+gem update --system

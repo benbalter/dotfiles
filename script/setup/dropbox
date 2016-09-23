@@ -1,0 +1,10 @@
+#!/bin/sh
+# Setup dropbox
+
+if [ -d "$HOME/Dropbox/Desktop" ] && [ ! -L "$HOME/Dropbox/Desktop" ]; then
+  if [ "$(ls -A "$HOME/Dropbox/Desktop")" ]; then
+    cp "$HOME/Dropbox/Desktop/"* "$HOME/Desktop"
+  fi
+  rm -Rf "$HOME/Dropbox/Desktop/"
+  ln -s "$HOME/Desktop" "$HOME/Dropbox/Desktop"
+fi

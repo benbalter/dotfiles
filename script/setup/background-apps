@@ -3,6 +3,6 @@
 
 apps=(Cloak Cloudup "DNSCrypt Menubar" Dropbox Flux "Google Photos Backup" iTerm Yubiswitch)
 
-for app in $apps; do
+for app in "${apps[@]}"; do
   open "/Applications/$app.app"
 done

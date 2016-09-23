@@ -1,0 +1,27 @@
+#!/bin/sh
+# Setup Oh my ZSH
+
+# shellcheck source=lib/globals
+source "/Users/$USER/.files/lib/globals"
+
+# shellcheck source=lib/functions
+source "/$DOTFILES_ROOT/lib/functions"
+
+if [ ! -d ~/.oh-my-zsh ] && [ "$TRAVIS" != "true" ]; then
+  brew install wget
+  sh -c "$(wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"
+
+  # Remove default .zshrc file so we can link_safe our own
+  rm -f ~/.zshrc
+  link_safe .zshrc
+
+  # Set ZSH as the default shell
+  command -v zsh | sudo -n tee -a /etc/shells
+  sudo -n chsh -s "$(command -v zsh)" "${USER}"
+  SHELL=$(which zsh)
+  export SHELL
+
+  # Iterm shell integration
+  "curl -L https://iterm2.com/misc/$("basename $SHELL")startup.in" >> \
+  "$HOME/.iterm2_shell_integration.$("basename $SHELL")"
+fi

@@ -4,35 +4,29 @@
 
 set -e
 
-DOTFILES_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
-source "$DOTFILES_ROOT/lib/functions.sh"
-source "$DOTFILES_ROOT/lib/globals.sh"
+# shellcheck source=lib/globals
+source "/Users/$USER/.files/lib/globals"
 
-title "Updating Homebrew..."
-brew update
-brew upgrade
+# shellcheck source=lib/functions
+source "/$DOTFILES_ROOT/lib/functions"
 
-title "Updating App Store apps"
+script/title "Updating Homebrew..."
+brew update --verbose
+brew upgrade --verbose
+
+script/title "Updating App Store apps"
 mas upgrade
 
-title "Updating Atom..."
+script/title "Updating Atom..."
 apm update --no-confirm
 apm upgrade --no-confirm
 
-title "Updating global Node packages..."
+script/title "Updating global Node packages..."
 npm update --global
 npm upgrade --global
 
-if [ $(rbenv global) != $(latest_ruby) ]; then
-  title "Updating Ruby..."
-  rbenv install "$(latest_ruby)"
-  rbenv global "$(latest_ruby)"
-  rbenv rehash
-  gem install bundler
-fi
+script/title "Updating Ruby"
+script/setup/ruby
 
-title "Updating system Ruby gems..."
-source "$DOTFILES_ROOT/lib/ruby.sh"
-
-title "Updating Oh My ZSH"
-/bin/sh $ZSH/tools/upgrade.sh
+script/title "Updating Oh My ZSH"
+/bin/sh "$ZSH/tools/upgrade.sh"

@@ -1,0 +1,4 @@
+#!/bin/sh
+# Link Dropbox-stored config
+
+mackup restore
