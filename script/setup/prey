@@ -8,4 +8,5 @@ else
   sudo prey config account setup
   sudo prey config hooks post_install
   sudo prey config plugins enable control-panel
+  sudo prey config gui
 fi
