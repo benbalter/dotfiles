@@ -9,7 +9,7 @@ if which rbenv > /dev/null;  then eval "$(rbenv init -)"; fi
 if which fasd > /dev/null; then eval "$(fasd --init auto)"; fi
 
 # shellcheck source=lib/globals
-source "/Users/$USER/.files/lib/globals"
+source "/$HOME/.files/lib/globals"
 
 # shellcheck source=lib/aliases
 source "$DOTFILES_ROOT/lib/aliases"

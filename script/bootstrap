@@ -12,14 +12,11 @@ if [[ ! -d "$HOME/.files" ]]; then
   git clone https://github.com/benbalter/dotfiles ~/.files
 fi
 
-# The main event
-cd ~/.files || exit
-
 # shellcheck source=lib/globals
-source "/Users/$USER/.files/lib/globals"
+source "$HOME/.files/lib/globals"
 
 # shellcheck source=lib/functions
-source "/$DOTFILES_ROOT/lib/functions"
+source "$DOTFILES_ROOT/lib/functions"
 
 if [ "$TRAVIS" != "true" ]; then
   sudo -v

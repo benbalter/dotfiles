@@ -2,20 +2,12 @@
 # Setup up rbenv
 
 # shellcheck source=lib/globals
-source "/Users/$USER/.files/lib/globals"
-
-latest_ruby() {
-  latest_ruby=$(rbenv install -l | grep -v - | tail -1 )
-  echo "$latest_ruby" | tr -d '[:space:]'
-}
+source "$HOME/.files/lib/globals"
+source "$DOTFILES_ROOT/lib/functions"
 
 command -v rbenv >/dev/null 2>&1 || { echo >&2 brew install rbenv; eval "$(rbenv init -)"; }
 
-if [ ! -f "$(rbenv root)/default_gems" ] || [ "$(find "$(rbenv root)/default_gems" | awk '{print $11}')" != "$DOTFILES_ROOT/default-gems" ]; then
-  echo "Linking $(rbenv root)/default_gems to $DOTFILES_ROOT/default_gems"
-  rm -f "$(rbenv root)/default_gems"
-  ln -sf "$DOTFILES_ROOT/default_gems" "$(rbenv root)/default_gems"
-fi
+link_safe default_gems $(rbenv root)
 
 echo "Latest Ruby version is $(latest_ruby)"
 

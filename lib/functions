@@ -1,17 +1,32 @@
 #!/bin/sh
 # Functions shared between script/setup and script/update
 
+# Link a file if it doesn't already exist
+# SOURCE_DIR defaults to $HOME
+# DESTINATION_DIR defaults to $DOTFILES_ROOT
+# Usage: link_safe RELATIVE_PATH [SOURCE_DIR] [DESTINATION_DIR]
 link_safe() {
-  if [[ ! -f "$HOME_DIR/$1" ]] || [[ $(ls -l "$HOME_DIR/$1" | awk '{print $11}') != "$DOTFILES_ROOT/$1" ]]; then
-    echo "Linking $HOME_DIR/$1 to $DOTFILES_ROOT/$1"
-    rm -f "$HOME_DIR/$1"
-    ln -sf "$DOTFILES_ROOT/$1" "$HOME_DIR/$1"
+  RELATIVE_PATH=$1
+  SOURCE_DIR=${2:-$HOME}
+  DESTINATION_DIR=${3:-$DOTFILES_ROOT}
+  SOURCE_PATH="$SOURCE_DIR/$RELATIVE_PATH"
+  DESTINATION_PATH="$DESTINATION_DIR/$RELATIVE_PATH"
+
+  if [[ ! -f "$SOURCE_PATH" ]] || [[ $(ls -l "$SOURCE_PATH" | awk '{print $11}') != "$DESTINATION_PATH" ]]; then
+    echo "Linking $SOURCE_PATH to $DESTINATION_PATH"
+    rm -f "$SOURCE_PATH"
+    ln -sf "$DESTINATION_PATH" "$SOURCE_PATH"
   fi
 }
 
 mkdir_safe() {
-  if [[ ! -d "$HOME_DIR/$1" ]]; then
+  if [[ ! -d "$HOME/$1" ]]; then
     echo "Creating $1 directory"
-    mkdir -p "$HOME_DIR/$1"
+    mkdir -p "$HOME/$1"
   fi
+}
+
+latest_ruby() {
+  latest_ruby=$(rbenv install -l | grep -v - | tail -1 )
+  echo "$latest_ruby" | tr -d '[:space:]'
 }

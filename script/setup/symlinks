@@ -2,7 +2,7 @@
 # Setups up symlinks from .files to home directory
 
 # shellcheck source=lib/globals
-source "/Users/$USER/.files/lib/globals"
+source "/$HOME/.files/lib/globals"
 
 # shellcheck source=lib/functions
 source "/$DOTFILES_ROOT/lib/functions"
