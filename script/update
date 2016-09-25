@@ -10,9 +10,11 @@ source "/$HOME/.files/lib/globals"
 # shellcheck source=lib/functions
 source "/$DOTFILES_ROOT/lib/functions"
 
+pushd $DOTFILES_ROOT
+
 script/title "Updating Homebrew..."
-brew update --verbose
-brew upgrade --verbose
+brew update
+brew upgrade
 
 script/title "Updating App Store apps"
 mas upgrade
@@ -30,3 +32,5 @@ script/setup/ruby
 
 script/title "Updating Oh My ZSH"
 /bin/sh "$ZSH/tools/upgrade.sh"
+
+popd
