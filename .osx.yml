@@ -26,15 +26,15 @@ user:
     disable-shadow: true
 
   com.apple.finder:
-    DesktopViewSettings:
+    ViewSettings:
       IconViewSettings:
-        arrangeBy: grid
+        arrangeBy: name
     FK_StandardViewSettings:
       IconViewSettings:
-        arrangeBy: grid
+        arrangeBy: name
     StandardViewSettings:
       IconViewSettings:
-        arrangeBy: grid
+        arrangeBy: name
     EmptyTrashSecurely: true
 
   com.google.Chrome:

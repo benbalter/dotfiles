@@ -5,7 +5,11 @@ atom-beautify
 atomic-chrome
 autoclose-html
 autocomplete-ruby
+editorconfig
 file-icons
+highlight-selected
+language-gfm2
+language-liquid
 language-lua
 line-ending-converter
 linter
@@ -19,7 +23,14 @@ linter-shellcheck
 linter-write-good
 markdown-lists
 markdown-table-formatter
+merge-conflicts
+minimap
+minimap-find-and-replace
+minimap-git-diff
+minimap-highlight-selected
 pdf-view
+pretty-json
+qolor
 rubocop-auto-correct
 ruby-block
 ruby-test-switcher

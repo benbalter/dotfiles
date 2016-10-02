@@ -9,10 +9,6 @@
   "code-links":
     displayMode: "always"
   core:
-    disabledPackages: [
-      "linter-rubocop"
-      "linter-shellcheck"
-    ]
     excludeVcsIgnoredPaths: false
     telemetryConsent: "no"
   editor:
@@ -49,6 +45,14 @@
   "markdown-preview":
     useGitHubStyle: true
   "markdown-table-formatter": {}
+  minimap:
+    plugins:
+      "find-and-replace": true
+      "find-and-replaceDecorationsZIndex": 0
+      "git-diff": true
+      "git-diffDecorationsZIndex": 0
+      "highlight-selected": true
+      "highlight-selectedDecorationsZIndex": 0
   "one-dark-ui": {}
   "rubocop-auto-correct":
     autoRun: true
