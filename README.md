@@ -22,7 +22,7 @@
 
 1. Login to [osx-strap.herokuapp.com](https://osx-strap.herokuapp.com/) (or [strap.githubapp.com](https://strap.githubapp.com) for GitHubbers)
 2. Download `strap.sh`
-3. `curl -s https://raw.githubusercontent.com/benbalter/dotfiles/master/script/bootstrap | bash`
+3. `bash ~/Downloads/strap.sh`
 
 ## How to update dependencies
 

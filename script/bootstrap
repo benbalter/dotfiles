@@ -2,11 +2,6 @@
 
 set -e
 
-# Strap
-#if [[ -f "$HOME/Downloads/strap.sh" ]]; then
-#  bash ~/Downloads/strap.sh
-#fi
-
 # Bootstrap dotfiles
 if [[ ! -d "$HOME/.files" ]]; then
   git clone https://github.com/benbalter/dotfiles ~/.files
