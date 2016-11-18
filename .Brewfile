@@ -71,12 +71,11 @@ cask "java"
 # Web stuffs
 cask "google-hangouts"
 cask "cloak"
-cask "flash"
+cask "flash-player"
 cask "zoomus"
 
 # Menubar stuffs
 cask "fitbit-connect"
-cask "google-photos-backup"
 cask "flux"
 cask "cloudup"
 
