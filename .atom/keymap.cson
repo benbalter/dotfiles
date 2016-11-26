@@ -1,0 +1,2 @@
+'atom-text-editor:not(.mini)[data-grammar~="gfm"]':
+  'tab': 'editor:indent-selected-rows'

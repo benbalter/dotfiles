@@ -10,6 +10,7 @@ source "/$DOTFILES_ROOT/lib/functions"
 
 mkdir_safe .atom
 link_safe .atom/config.cson
+link_safe .atom/keymap.cson
 
 brew cask install atom-beta
 apm install --packages-file "$DOTFILES_ROOT/.atom/packages.txt"

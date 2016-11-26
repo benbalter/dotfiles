@@ -9,6 +9,10 @@
   "code-links":
     displayMode: "always"
   core:
+    disabledPackages: [
+      "linter-r`ubocop"
+      "rubocop-auto-correct"
+    ]
     excludeVcsIgnoredPaths: false
     telemetryConsent: "no"
   editor:
