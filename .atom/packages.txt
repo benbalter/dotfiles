@@ -8,8 +8,6 @@ autocomplete-ruby
 editorconfig
 file-icons
 highlight-selected
-language-gfm2
-language-liquid
 language-lua
 line-ending-converter
 linter
