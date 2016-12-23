@@ -1,30 +1,30 @@
 [hub]
-	protocol = https
+  protocol = https
 
 [credential]
-	helper = osxkeychain
+  helper = osxkeychain
 
 [core]
   excludesfile = ~/.gitignore
   whitespace = trailing-space,space-before-tab
-	pager = "diff-so-fancy | less --tabs=1,5 -R"
-	autocrlf = input
-	whitespace = fix,-indent-with-non-tab,trailing-space,cr-at-eol
+  pager = "diff-so-fancy | less --tabs=1,5 -R"
+  autocrlf = input
+  whitespace = fix,-indent-with-non-tab,trailing-space,cr-at-eol
 
 [user]
-	name = Ben Balter
-	email = ben.balter@github.com
-	signingkey = 6AD356C4
+  name = Ben Balter
+  email = ben.balter@github.com
+  signingkey = 6AD356C4
 
 [color]
-	branch = always
-	diff = always
-	grep = always
-	interactive = always
-	pager = true
-	showbranch = auto
-	status = auto
-	ui = always
+  branch = always
+  diff = always
+  grep = always
+  interactive = always
+  pager = true
+  showbranch = auto
+  status = auto
+  ui = always
 
 [color "interactive"]
     error = red bold
@@ -55,33 +55,34 @@
   token = !security find-internet-password -a benbalter -s github.com -w
 
 [push]
-	default = current
+  default = current
 
 [git-up "bundler"]
-	check = true
+  check = true
   autoinstall = true
 
 [filter "media"]
-	required = true
-	clean = git media clean %f
-	smudge = git media smudge %f
+  required = true
+  clean = git media clean %f
+  smudge = git media smudge %f
 
 [filter "lfs"]
-	clean = git-lfs clean %f
-	smudge = git-lfs smudge %f
-	required = true
+  clean = git-lfs clean %f
+  smudge = git-lfs smudge %f
+  required = true
 
 [ghi]
-	token = !security find-internet-password -a benbalter -s github.com -l 'ghi token' -w
+  token = !security find-internet-password -a benbalter -s github.com -l 'ghi token' -w
 
 [branch "master"]
   remote = origin
   merge = refs/heads/master
 
 [color "diff-highlight"]
-	oldHighlight = red bold 52
-	newNormal = green bold
-	newHighlight = green bold 22
-	oldNormal = red bold
+  oldHighlight = red bold 52
+  newNormal = green bold
+  newHighlight = green bold 22
+  oldNormal = red bold
+
 [commit]
-	gpgsign = true.
+  gpgsign = true
