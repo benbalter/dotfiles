@@ -4,6 +4,8 @@
   "atom-beautify":
     _analyticsUserId: ""
   "autocomplete-plus": {}
+  "autocomplete-ruby":
+    rsensePath: "/Users/benbalter/.rbenv/shims/rsense"
   autosave:
     enabled: true
   "code-links":
@@ -12,6 +14,7 @@
     disabledPackages: [
       "linter-r`ubocop"
       "rubocop-auto-correct"
+      "linter-rubocop"
     ]
     excludeVcsIgnoredPaths: false
     telemetryConsent: "no"
@@ -38,8 +41,7 @@
     showErrorTabProject: false
     statusIconScope: "File"
   "linter-alex": {}
-  "linter-rubocop":
-    command: "rbenv which rubocop"
+  "linter-rubocop": {}
   "linter-ruby": {}
   "linter-shellcheck":
     enableNotice: true
@@ -57,6 +59,8 @@
       "git-diffDecorationsZIndex": 0
       "highlight-selected": true
       "highlight-selectedDecorationsZIndex": 0
+      linter: false
+      linterDecorationsZIndex: 0
   "one-dark-ui": {}
   "rubocop-auto-correct":
     autoRun: true

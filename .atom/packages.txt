@@ -14,7 +14,9 @@ linter
 linter-alex
 linter-coffeelint
 linter-csslint
+linter-just-say-no
 linter-markdown
+linter-proselint
 linter-rubocop
 linter-ruby
 linter-shellcheck
@@ -26,9 +28,11 @@ minimap
 minimap-find-and-replace
 minimap-git-diff
 minimap-highlight-selected
+minimap-linter
 pdf-view
 pretty-json
 qolor
+regex-railroad-diagram
 rubocop-auto-correct
 ruby-block
 ruby-test-switcher
