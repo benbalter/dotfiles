@@ -35,11 +35,7 @@
   "git-diff": {}
   "line-ending-converter":
     showEolInStatusBar: false
-  linter:
-    showErrorPanel: false
-    showErrorTabFile: false
-    showErrorTabProject: false
-    statusIconScope: "File"
+  linter: {}
   "linter-alex": {}
   "linter-rubocop": {}
   "linter-ruby": {}
@@ -47,10 +43,15 @@
     enableNotice: true
     shellcheckExecutablePath: "/usr/local/bin/shellcheck"
     userParameters: "-x"
+  "linter-ui-default": {}
   "linter-write-good": {}
   "markdown-preview":
     useGitHubStyle: true
-  "markdown-table-formatter": {}
+  "markdown-table-formatter":
+    markdownGrammarScopes: [
+      "source.gfm"
+      "text.plain.null-grammar"
+    ]
   minimap:
     plugins:
       "find-and-replace": true
