@@ -60,6 +60,8 @@ brew "automake"
 brew "redis"
 brew "grc"
 brew "shellcheck"
+brew "libxml2"
+brew "libxslt"
 
 # dev stuffs
 cask "yubiswitch"

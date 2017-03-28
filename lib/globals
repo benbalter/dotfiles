@@ -7,6 +7,7 @@ export DOTFILES_ROOT="$HOME/.files"
 # Setup cli tools
 export HOMEBREW_CASK_OPTS="--appdir=/Applications"
 export PATH="./bin:/usr/local/bin:/usr/local/sbin:$PATH"
+export NOKOGIRI_USE_SYSTEM_LIBRARIES=1
 
 # GitHub token with no scope, used to get around API limits
 export HOMEBREW_GITHUB_API_TOKEN=$(cat ~/.token)
