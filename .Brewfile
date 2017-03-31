@@ -39,9 +39,10 @@ brew "fasd"
 brew "libyaml"
 brew "mtr"
 brew "tmpreaper"
-brew "gnupg"
 brew "tccutil"
 brew "the_silver_searcher"
+brew "gpg-agent"
+brew "gnupg@2.1"
 
 # Dev stuffs
 brew "pcre"
@@ -64,7 +65,6 @@ brew "libxml2"
 brew "libxslt"
 
 # dev stuffs
-cask "yubiswitch"
 cask "github-desktop"
 cask "viscosity"
 cask "paw"
@@ -73,12 +73,9 @@ cask "java"
 # Web stuffs
 cask "google-hangouts"
 cask "cloak"
-cask "flash-player"
 cask "zoomus"
 
 # Menubar stuffs
-cask "fitbit-connect"
-cask "flux"
 cask "cloudup"
 
 # Misc stuffs
@@ -89,6 +86,13 @@ cask "slack-beta"
 cask "steam"
 cask "vlc"
 cask "gimp"
+cask "gpgtools"
+cask "keybase"
+cask "prey"
+cask "sling"
+cask "screenhero"
+cask "yubico-authenticator"
+cask "virtualbox"
 
 # quicklooks
 cask "quickgeojson"
@@ -106,9 +110,9 @@ cask "font-inconsolata"
 cask "font-open-sans"
 cask "font-source-code-pro"
 cask "font-source-sans-pro"
+cask "font-league-gothic"
 
 # Useful to have, but install the others first
-brew "keybase"
 brew "ack"
 brew "siege"
 brew "android-platform-tools"
