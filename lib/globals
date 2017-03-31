@@ -6,7 +6,7 @@ export DOTFILES_ROOT="$HOME/.files"
 
 # Setup cli tools
 export HOMEBREW_CASK_OPTS="--appdir=/Applications"
-export PATH="./bin:/usr/local/bin:/usr/local/sbin:$PATH"
+export PATH="./bin:/usr/local/bin:/usr/local/sbin:/usr/local/opt/gnupg@2.1/bin:$PATH"
 export NOKOGIRI_USE_SYSTEM_LIBRARIES=1
 
 # GitHub token with no scope, used to get around API limits

@@ -41,8 +41,8 @@ brew "mtr"
 brew "tmpreaper"
 brew "tccutil"
 brew "the_silver_searcher"
+brew "gnupg21"
 brew "gpg-agent"
-brew "gnupg@2.1"
 
 # Dev stuffs
 brew "pcre"
