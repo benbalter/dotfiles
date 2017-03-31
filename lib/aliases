@@ -31,6 +31,7 @@ alias console="script/console"
 alias jl="jekyll serve --watch"
 alias jd="jekyll build --trace"
 alias atom="atom-beta"
+alias apm="apm-beta"
 
 #atom
 unalias a

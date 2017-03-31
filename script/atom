@@ -1,4 +1,4 @@
 #!/bin/sh
 
-apm clean
-apm list --installed --bare | grep '^[^@]\+' -o | awk '{print tolower($0)}' | sort > ~/.files/.atom/packages.txt
+apm-beta clean
+apm-beta list --installed --bare | grep '^[^@]\+' -o | awk '{print tolower($0)}' | sort > ~/.files/.atom/packages.txt

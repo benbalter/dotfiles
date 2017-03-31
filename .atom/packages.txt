@@ -4,10 +4,15 @@ atom-alignment
 atom-beautify
 atomic-chrome
 autoclose-html
-autocomplete-ruby
+build
+build-scriptsdir
+busy
+busy-signal
 editorconfig
 file-icons
+github
 highlight-selected
+intentions
 language-lua
 line-ending-converter
 linter
@@ -20,6 +25,7 @@ linter-proselint
 linter-rubocop
 linter-ruby
 linter-shellcheck
+linter-ui-default
 linter-write-good
 markdown-lists
 markdown-table-formatter
