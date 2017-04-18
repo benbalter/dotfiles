@@ -2,7 +2,8 @@
   Zen: {}
   "atom-alignment": {}
   "atom-beautify":
-    _analyticsUserId: ""
+    general:
+      _analyticsUserId: ""
   "autocomplete-plus": {}
   "autocomplete-ruby":
     rsensePath: "/Users/benbalter/.rbenv/shims/rsense"
@@ -18,10 +19,11 @@
     ]
     excludeVcsIgnoredPaths: false
     telemetryConsent: "no"
+    titleBar: "custom-inset"
   editor:
     backUpBeforeSaving: true
     fontFamily: "Inconsolata"
-    fontSize: 19
+    fontSize: 20
     invisibles: {}
     showIndentGuide: true
     showInvisibles: true
