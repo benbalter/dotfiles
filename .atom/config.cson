@@ -13,7 +13,7 @@
     displayMode: "always"
   core:
     disabledPackages: [
-      "linter-r`ubocop"
+      "linter-rubocop"
       "rubocop-auto-correct"
       "linter-rubocop"
     ]
