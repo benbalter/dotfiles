@@ -86,4 +86,5 @@
     showOnStartup: false
   whitespace:
     keepMarkdownLineBreakWhitespace: false
-  wordcount: {}
+  wordcount:
+    noextension: true
