@@ -22,7 +22,7 @@
   editor:
     backUpBeforeSaving: true
     fontFamily: "Inconsolata"
-    fontSize: 20
+    fontSize: 16
     invisibles: {}
     showIndentGuide: true
     showInvisibles: true
@@ -44,7 +44,8 @@
     enableNotice: true
     shellcheckExecutablePath: "/usr/local/bin/shellcheck"
     userParameters: "-x"
-  "linter-ui-default": {}
+  "linter-ui-default":
+    panelHeight: 99
   "linter-write-good": {}
   "markdown-preview":
     useGitHubStyle: true
@@ -67,7 +68,15 @@
   "rubocop-auto-correct":
     autoRun: true
     rubocopCommandPath: "bundle exec rubocop"
-  "spell-check": {}
+  "spell-check":
+    grammars: [
+      "source.asciidoc"
+      "source.gfm"
+      "text.git-commit"
+      "text.plain"
+      "text.plain.null-grammar"
+      "source.yaml"
+    ]
   "status-bar": {}
   tabs:
     alwaysShowTabBar: false
