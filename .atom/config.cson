@@ -45,7 +45,8 @@
     enableNotice: true
     shellcheckExecutablePath: "/usr/local/bin/shellcheck"
     userParameters: "-x"
-  "linter-ui-default": {}
+  "linter-ui-default":
+    panelHeight: 99
   "linter-write-good": {}
   "markdown-preview":
     useGitHubStyle: true
