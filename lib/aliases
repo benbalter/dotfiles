@@ -64,5 +64,6 @@ alias todo-list="ghi list --global --mine"
 
 # Misc
 alias p="cd ~/projects"
+alias gg="cd ~/github/github"
 alias afk="/System/Library/CoreServices/Menu\ Extras/User.menu/Contents/Resources/CGSession -suspend"
 eval "$(thefuck --alias fu)"
