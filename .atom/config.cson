@@ -15,6 +15,7 @@
     disabledPackages: [
       "rubocop-auto-correct"
       "linter-rubocop"
+      "linter-proselint"
     ]
     excludeVcsIgnoredPaths: false
     telemetryConsent: "no"
@@ -44,8 +45,7 @@
     enableNotice: true
     shellcheckExecutablePath: "/usr/local/bin/shellcheck"
     userParameters: "-x"
-  "linter-ui-default":
-    panelHeight: 99
+  "linter-ui-default": {}
   "linter-write-good": {}
   "markdown-preview":
     useGitHubStyle: true
