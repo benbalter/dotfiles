@@ -74,21 +74,15 @@ cask "java"
 cask "encryptme"
 cask "zoomus"
 
-# Menubar stuffs
-cask "cloudup"
-
 # Misc stuffs
 cask "spotify"
 cask "skitch"
 cask "libreoffice"
 cask "slack-beta"
 cask "steam"
-cask "vlc"
-cask "gimp"
 cask "gpgtools"
 cask "keybase"
 cask "prey"
-cask "sling"
 cask "screenhero"
 cask "yubico-authenticator"
 cask "virtualbox"
