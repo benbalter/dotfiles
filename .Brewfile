@@ -71,8 +71,7 @@ cask "paw"
 cask "java"
 
 # Web stuffs
-cask "google-hangouts"
-cask "cloak"
+cask "encryptme"
 cask "zoomus"
 
 # Menubar stuffs
