@@ -65,7 +65,7 @@ brew "libxml2"
 brew "libxslt"
 
 # dev stuffs
-cask "github-desktop"
+# cask "github-desktop"
 cask "viscosity"
 cask "paw"
 cask "java"
