@@ -3,6 +3,7 @@
 
 exit 0
 
+
 # shellcheck source=lib/globals
 source "/$HOME/.files/lib/globals"
 
