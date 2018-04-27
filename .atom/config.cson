@@ -66,6 +66,9 @@
       linter: false
       linterDecorationsZIndex: 0
   "one-dark-ui": {}
+  "package-sync":
+    createOnChange: true
+    forceOverwrite: true
   "rubocop-auto-correct":
     autoRun: true
     rubocopCommandPath: "bundle exec rubocop"

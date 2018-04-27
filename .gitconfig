@@ -85,11 +85,11 @@
   newHighlight = green bold 22
   oldNormal = red bold
 
-#[commit]
-#	gpgsign = true
+[commit]
+	gpgsign = true
 
-[gpg]
-  program = gpg2
+#[gpg]
+#  program = gpg
 
 [url "https://github.com"]
   insteadOf = git://github.com
