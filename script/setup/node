@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+exit 0
+
 require 'json'
 
 path = File.expand_path "../../package.json", File.dirname(__FILE__)
