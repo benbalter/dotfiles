@@ -1,6 +1,7 @@
 #!/bin/bash
 # Sets up atom config and plugins
 
+exit 0
 
 # shellcheck source=lib/globals
 source "/$HOME/.files/lib/globals"
