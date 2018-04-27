@@ -2,6 +2,8 @@
 
 require 'json'
 
+exit 0
+
 path = File.expand_path "../../package.json", File.dirname(__FILE__)
 packages = JSON.parse File.read(path)
 packages = packages["dependencies"].map { |package, version| package }.join(" ")

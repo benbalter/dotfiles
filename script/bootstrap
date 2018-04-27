@@ -19,7 +19,8 @@ else
   sudo -n -v
 fi
 
-setups=(symlinks token homebrew ruby app-store dropbox dock atom node background-apps zsh chrome iterm app-store prey mackup)
+# atom
+setups=(symlinks token homebrew ruby dropbox dock node background-apps zsh chrome app-store prey mackup iterm)
 
 for setup in "${setups[@]}"; do
   script/title "Setting up $setup"
