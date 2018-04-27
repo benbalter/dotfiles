@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+exit 0
+
 require 'json'
 
 exit 0
