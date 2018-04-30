@@ -34,7 +34,7 @@ alias atom="atom-beta"
 alias apm="apm-beta"
 
 #atom
-#unalias a
+unalias a
 function a() {
 	if [ $# -eq 0 ]; then
 		atom .;

@@ -88,8 +88,8 @@
 [commit]
 	gpgsign = true
 
-#[gpg]
-#  program = gpg
+[gpg]
+  program = gpg
 
 [url "https://github.com"]
   insteadOf = git://github.com
