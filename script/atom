@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'json'
-#`apm-beta clean`
+`apm-beta clean`
 
 plugins = `apm-beta list --installed --bare`
 packages = plugins.split("\n").map { |p| p.split('@').first }.sort_by(&:downcase)
