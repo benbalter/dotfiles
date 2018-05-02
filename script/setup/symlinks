@@ -16,7 +16,6 @@ link_safe .gemrc
 link_safe .mackup.cfg
 link_safe .digrc
 link_safe .osx.yml
-link_safe .mas.yml
 link_safe .remarkrc
 
 mkdir_safe "Library/LaunchAgents/"

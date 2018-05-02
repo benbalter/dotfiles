@@ -20,7 +20,7 @@ else
 fi
 
 # atom
-setups=(symlinks token homebrew ruby dropbox dock node background-apps zsh chrome app-store prey mackup iterm)
+setups=(symlinks token homebrew ruby dropbox dock node background-apps zsh chrome prey mackup iterm)
 
 for setup in "${setups[@]}"; do
   script/title "Setting up $setup"
