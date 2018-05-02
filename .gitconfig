@@ -2,7 +2,7 @@
   protocol = https
 
 [credential]
-  helper = osxkeychain
+	helper = osxkeychain
 
 [core]
   excludesfile = ~/.gitignore
