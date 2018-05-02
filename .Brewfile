@@ -44,6 +44,7 @@ brew "tccutil"
 brew "the_silver_searcher"
 # brew "gnupg21"
 brew "gpg-agent"
+brew "pinetry-mac"
 
 # Dev stuffs
 brew "pcre"

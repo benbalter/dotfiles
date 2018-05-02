@@ -21,7 +21,6 @@ export SHELL=$(which zsh)
 export ZSH_THEME="robbyrussell"
 export DISABLE_UPDATE_PROMPT=true
 export COMPLETION_WAITING_DOTS="true"
-export GPG_TTY=$(tty)
 
 # You've got mail
 unset MAILCHECK
