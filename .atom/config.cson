@@ -16,6 +16,7 @@
       "rubocop-auto-correct"
       "linter-rubocop"
       "linter-proselint"
+      "github"
     ]
     excludeVcsIgnoredPaths: false
     telemetryConsent: "no"

@@ -12,7 +12,6 @@ packages: [
   "busy-signal"
   "editorconfig"
   "file-icons"
-  "github"
   "highlight-selected"
   "intentions"
   "language-lua"
