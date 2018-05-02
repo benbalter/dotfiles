@@ -1,4 +1,9 @@
-#!/bin/sh
+#!/usr/bin/env ruby
 
-apm-beta clean
-apm-beta list --installed --bare | grep '^[^@]\+' -o | awk '{print tolower($0)}' | sort > ~/.files/.atom/packages.txt
+require 'json'
+#`apm-beta clean`
+
+plugins = `apm-beta list --installed --bare`
+packages = plugins.split("\n").map { |p| p.split('@').first }.sort_by(&:downcase)
+path = File.expand_path "../.atom/packages.cson", __dir__
+File.write path, "packages: #{JSON.pretty_generate(packages).gsub(",", "")}"

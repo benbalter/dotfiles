@@ -1,9 +1,6 @@
 #!/bin/bash
 # Sets up atom config and plugins
 
-exit 0
-
-
 # shellcheck source=lib/globals
 source "/$HOME/.files/lib/globals"
 
@@ -13,6 +10,7 @@ source "/$DOTFILES_ROOT/lib/functions"
 mkdir_safe .atom
 link_safe .atom/config.cson
 link_safe .atom/keymap.cson
+link_safe .atom/packages.cson
 
 brew cask install atom-beta
-apm-beta install --packages-file "$DOTFILES_ROOT/.atom/packages.txt"
+apm-beta install $(sed '$d' < .atom/packages.cson | sed "1d" | tr -d '\n' | tr -d '"')
