@@ -25,9 +25,11 @@ brew "git-lfs"
 brew "go"
 brew "glide"
 brew "gmp"
-brew "gnupg"
+brew "gnupg", link: false
 brew "gpg-agent"
 brew "grc"
+brew "node"
+brew "heroku"
 brew "hub"
 brew "hyperscan"
 brew "libtool"
@@ -47,7 +49,6 @@ brew "memcached", restart_service: true
 brew "mtr"
 brew "mysql", restart_service: true
 brew "nginx", restart_service: true
-brew "node"
 brew "node-build"
 brew "nodenv"
 brew "pandoc"
