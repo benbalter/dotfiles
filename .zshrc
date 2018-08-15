@@ -21,6 +21,7 @@ plugins=(
   gem
   git
   git-extras
+  golang
   history-substring-search
   heroku
   iwhois
