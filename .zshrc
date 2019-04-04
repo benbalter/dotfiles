@@ -3,19 +3,18 @@ source "/$HOME/.files/lib/globals"
 
 local plugins
 plugins=(
-  atom
   battery
   bower
   brew
-  brew-cask
   bundler
   cloudapp
   coffee
-  colored-man
+  colored-man-pages
   colorize
   command-not-found
   common-aliases
   cp
+  dotenv
   extract
   fasd
   gem
