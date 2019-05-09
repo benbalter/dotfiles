@@ -23,7 +23,6 @@ plugins=(
   golang
   history-substring-search
   heroku
-  iwhois
   node
   npm
   osx
