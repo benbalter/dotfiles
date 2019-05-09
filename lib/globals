@@ -8,7 +8,6 @@ export DOTFILES_ROOT="$HOME/.files"
 export HOMEBREW_CASK_OPTS="--appdir=/Applications"
 export GOPATH=$HOME/go
 export PATH="./bin:/usr/local/bin:/usr/local/sbin:$GOPATH/bin:/usr/local/opt/gnupg@2.1/bin:$PATH"
-export NOKOGIRI_USE_SYSTEM_LIBRARIES=1
 
 # GitHub token with no scope, used to get around API limits
 export HOMEBREW_GITHUB_API_TOKEN=$(cat ~/.token)
