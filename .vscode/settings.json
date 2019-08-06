@@ -1,0 +1,14 @@
+{
+    "editor.renderWhitespace": "boundary",
+    "editor.formatOnPaste": true,
+    "editor.formatOnSave": true,
+    "telemetry.enableCrashReporter": false,
+    "telemetry.enableTelemetry": false,
+    "git.enableCommitSigning": true,
+    "githubPullRequests.telemetry.enabled": false,
+    "markdown.extension.list.indentationSize": "inherit",
+    "markdown.extension.toc.unorderedList.marker": "*",
+    "ruby.codeCompletion": "rcodetools",
+    "ruby.format": "rubocop",
+    "ruby.intellisense": "rubyLocate"
+}

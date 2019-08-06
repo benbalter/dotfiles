@@ -10,4 +10,4 @@ source "/$HOME/.files/lib/globals"
 # shellcheck source=lib/functions
 source "/$DOTFILES_ROOT/lib/functions"
 
-link_safe $@
+link_safe "$@"
