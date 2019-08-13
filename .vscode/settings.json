@@ -10,5 +10,45 @@
     "markdown.extension.toc.unorderedList.marker": "*",
     "ruby.codeCompletion": "rcodetools",
     "ruby.format": "rubocop",
-    "ruby.intellisense": "rubyLocate"
+    "ruby.intellisense": "rubyLocate",
+    "window.zoomLevel": 0,
+    "git.autofetch": true,
+    "[yaml]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[markdown]": {
+        "editor.defaultFormatter": "yzhang.markdown-all-in-one"
+    },
+    "cSpell.enabledLanguageIds": [
+        "asciidoc",
+        "c",
+        "cpp",
+        "csharp",
+        "css",
+        "git-commit",
+        "handlebars",
+        "html",
+        "jade",
+        "java",
+        "javascript",
+        "javascriptreact",
+        "json",
+        "jsonc",
+        "latex",
+        "less",
+        "markdown",
+        "php",
+        "plaintext",
+        "pug",
+        "python",
+        "restructuredtext",
+        "rust",
+        "scala",
+        "scss",
+        "text",
+        "typescript",
+        "typescriptreact",
+        "yaml",
+        "yml"
+    ]
 }
