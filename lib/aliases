@@ -12,11 +12,12 @@ alias gcm="git commit -m"
 alias gl="git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative"
 alias gp="git push"
 alias gd="git diff"
-alias gb="git browse"
+alias gb="gh repo view --web"
+alias gr="gh repo view"
 alias reset="git reset HEAD --hard; git clean -f -d"
 alias clean="git branch --merged | grep -v '\*' | xargs -n 1 git branch -d"
 alias ggb="git commit -m ':gem: bump'"
-function gccd(){ git clone $1; cd $(basename $1); }
+function gccd(){ gh repo clone $1; cd $(basename $1); }
 alias branches="git branch -v"
 
 # fasd
