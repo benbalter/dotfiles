@@ -1,6 +1,6 @@
 #!/bin/sh
 
-brew bundle dump --global --description --force
+brew bundle dump --global --describe --force
 git add .
 git commit -m 'Update Brewfile'
 git push
