@@ -32,7 +32,9 @@ plugins=(
   safe-paste
   ssh-agent
   sudo
+  vscode
   zsh_reload
+  zsh-interactive-cd
 )
 
 source $ZSH/oh-my-zsh.sh

@@ -50,5 +50,7 @@
         "typescriptreact",
         "yaml",
         "yml"
-    ]
+    ],
+    "files.defaultLanguage": "markdown",
+    "editor.tabSize": 2
 }
