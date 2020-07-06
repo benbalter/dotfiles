@@ -7,7 +7,6 @@ plugins=(
   bower
   brew
   bundler
-  cloudapp
   coffee
   colored-man-pages
   colorize
