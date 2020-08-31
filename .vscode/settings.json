@@ -52,5 +52,11 @@
         "yml"
     ],
     "files.defaultLanguage": "markdown",
-    "editor.tabSize": 2
+    "editor.tabSize": 2,
+    "todo.archive.name": "Done",
+    "todo.archive.sortByDate": true,
+    "todo.symbols.box": "[ ]",
+    "todo.symbols.cancelled": "x",
+    "todo.symbols.done": "[x]",
+    "markdown.todo.symbols.bullet": "*"
 }
