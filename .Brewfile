@@ -222,24 +222,12 @@ brew "github/bootstrap/kustomize@2.0"
 # Everything you need to get started with Heroku
 brew "heroku/brew/heroku"
 cask "1password"
-cask "adobe-acrobat-reader"
-cask "alfred"
-cask "android-platform-tools"
-cask "atom-beta"
-cask "blue-jeans"
-cask "chromedriver-beta"
-cask "colloquy"
 cask "docker"
 cask "dropbox"
 cask "encryptme"
-cask "font-inconsolata"
-cask "font-league-gothic"
 cask "font-open-sans"
 cask "font-source-code-pro"
 cask "font-source-sans-pro"
-cask "gimp"
-cask "google-chrome-beta"
-cask "google-hangouts"
 cask "gpg-suite"
 cask "gqrx"
 cask "graphiql"
@@ -250,11 +238,7 @@ cask "java"
 cask "java8"
 cask "karabiner-elements"
 cask "keybase"
-cask "libreoffice"
 cask "logitech-options"
-cask "paw"
-cask "phantomjs"
-cask "prey"
 cask "qlcolorcode"
 cask "qlimagesize"
 cask "qlmarkdown"
@@ -264,37 +248,20 @@ cask "quicklook-csv"
 cask "quicklook-json"
 cask "skitch"
 cask "slack-beta"
-cask "sling"
 cask "spotify"
 cask "steam"
-cask "tabula"
 cask "textexpander"
 cask "virtualbox"
 cask "viscosity"
 cask "visual-studio-code"
-cask "vlc"
-cask "yubico-authenticator"
+`cask "yubico-authenticator"
 cask "zoomus"
 mas "24 Hour Wallpaper", id: 1226087575
 mas "AdGuard for Safari", id: 1440147259
 mas "Bear", id: 1091189122
 mas "Calca", id: 635758264
 mas "Colors for Hue", id: 581915465
-mas "FitFileExplorer", id: 1244431640
-mas "GarageBand", id: 682658836
 mas "GIF Brewery 3", id: 1081413713
-mas "iMovie", id: 408981434
-mas "Keynote", id: 409183694
 mas "Kindle", id: 405399194
-mas "Magic Window", id: 432840866
-mas "Max Planes", id: 1450483676
-mas "Numbers", id: 409203825
-mas "Pages", id: 409201541
-mas "Thessa", id: 942305623
 mas "Things", id: 904280696
-mas "TickTick", id: 966085870
-mas "Tweetbot", id: 557168941
-mas "Tweetbot", id: 1384080005
 mas "TweetDeck", id: 485812721
-mas "Twitter", id: 1482454543
-mas "Xcode", id: 497799835
