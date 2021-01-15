@@ -28,23 +28,6 @@ alias sb="script/bootstrap"
 alias sc="script/cibuild"
 alias console="script/console"
 
-#jekyll
-alias jl="jekyll serve --watch"
-alias jd="jekyll build --trace"
-alias atom="atom-beta"
-alias apm="apm-beta"
-
-#atom
-unalias a
-function a() {
-	if [ $# -eq 0 ]; then
-		atom .;
-	else
-		atom "$@";
-	fi;
-}
-function ja() { j "$@" ; a; }
-
 #simple server
 alias server="python -m SimpleHTTPServer"
 
@@ -55,13 +38,6 @@ alias flushdns="sudo dscacheutil -flushcache;sudo killall -HUP mDNSResponder; ec
 # .files
 alias up="~/.files/script/update"
 alias setup="~/.files/script/setup"
-
-# Libre office
-alias soffice="/Applications/LibreOffice.app/Contents/MacOS/soffice"
-
-# Todo
-function todo(){ ghi open -m "${*}" --claim -- benbalter/todo; }
-alias todo-list="ghi list --global --mine"
 
 # Misc
 alias p="cd ~/projects"
