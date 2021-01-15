@@ -254,7 +254,7 @@ cask "textexpander"
 cask "virtualbox"
 cask "viscosity"
 cask "visual-studio-code"
-`cask "yubico-authenticator"
+cask "yubico-authenticator"
 cask "zoomus"
 mas "24 Hour Wallpaper", id: 1226087575
 mas "AdGuard for Safari", id: 1440147259
