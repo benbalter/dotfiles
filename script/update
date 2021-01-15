@@ -19,10 +19,6 @@ brew upgrade
 script/title "Updating App Store apps"
 mas upgrade
 
-script/title "Updating Atom..."
-apm-beta update --no-confirm
-apm-beta upgrade --no-confirm
-
 script/title "Updating global Node packages..."
 npm update --global
 npm upgrade --global
