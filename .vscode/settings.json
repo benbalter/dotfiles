@@ -58,5 +58,14 @@
     "todo.symbols.box": "[ ]",
     "todo.symbols.cancelled": "x",
     "todo.symbols.done": "[x]",
-    "markdown.todo.symbols.bullet": "*"
+    "markdown.todo.symbols.bullet": "*",
+    "markdownShortcuts.icons.bold": false,
+    "markdownShortcuts.icons.bullets": false,
+    "markdownShortcuts.icons.italic": false,
+    "markdownShortcuts.icons.strikethrough": false,
+    "workbench.activityBar.visible": false,
+    "languageToolLinter.external.url": "http://localhost:7778",
+    "languageToolLinter.languageTool.motherTongue": "en-US",
+    "languageToolLinter.languageTool.language": "en-US",
+    "workbench.sideBar.location": "left"
 }

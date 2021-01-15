@@ -1,5 +1,3 @@
-Pry.config.history.file = File.expand_path('~/.history/ruby')
-
 begin
   require 'awesome_print'
   # The following line enables awesome_print for all pry output,
