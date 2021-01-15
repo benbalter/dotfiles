@@ -37,9 +37,6 @@ user:
         arrangeBy: name
     EmptyTrashSecurely: true
 
-  com.google.Chrome:
-    AppleEnableSwipeNavigateWithScrolls: false
-
   com.apple.Safari:
     com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabled: false
     com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabledForLocalFiles: false
@@ -69,21 +66,3 @@ user:
     NSAutomaticQuoteSubstitutionEnabled: false
     WebAutomaticTextReplacementEnabled: true
     WebKitDeveloperExtras: true
-
-# Host specific settings stored in ~/Library/Prefrences/ByHost (currentHost)
-host:
-  com.apple.screensaver:
-    moduleDict:
-      moduleName: iLifeSlideshows
-      path: "/System/Library/Frameworks/ScreenSaver.framework/Resources/iLifeSlideshows.saver"
-      type: 0
-
-  com.apple.ScreenSaver.iLifeSlideShows:
-    styleKey: VintagePrints
-
-  com.apple.ScreenSaverPhotoChooser:
-    SelectedFolderPath: "/Users/benbalter/github/octodex.github.com/images"
-    SelectedSource: 4
-    CustomFolderDict:
-      identifier: "/Users/benbalter/github/octodex.github.com/images"
-      name: octodex
