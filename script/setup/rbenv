@@ -5,11 +5,16 @@
 source "$HOME/.files/lib/globals"
 source "$DOTFILES_ROOT/lib/functions"
 
-command -v rbenv >/dev/null 2>&1 || { echo >&2 brew install rbenv; eval "$(rbenv init -)"; }
+command -v rbenv >/dev/null 2>&1 || { echo >&2 brew install rbenv; }
+
+if [ $(rbenv which ruby) == "/usr/bin/ruby" ]; then
+  eval "$(rbenv init -)"
+fi
 
 link_safe default_gems $(rbenv root)
 
 echo "Latest Ruby version is $(latest_ruby)"
+echo "Global ruby version is $(rbenv global)"
 
 if [ "$(rbenv global)" = "system" ]; then
   brew install ruby-build
@@ -17,3 +22,6 @@ if [ "$(rbenv global)" = "system" ]; then
   rbenv global "$(latest_ruby)"
   rbenv rehash
 fi
+
+curl -fsSL https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-doctor | bash
+ 

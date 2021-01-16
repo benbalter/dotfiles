@@ -1,6 +1,6 @@
 #!/bin/sh
 # Set up Homebrew
 
-if ! brew bundle check --global --vebose; then
+if ! brew bundle check --global; then
   brew bundle install --global --verbose
 fi

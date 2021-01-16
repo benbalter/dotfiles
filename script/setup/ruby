@@ -3,4 +3,10 @@
 
 script/setup/rbenv
 script/setup/bundler
-gem update --system
+
+if [ $(rbenv which ruby) == "/usr/bin/ruby" ]; then
+  eval "$(rbenv init -)"
+fi
+
+echo "Using Ruby $(rbenv which ruby)"
+$(rbenv which gem) update --system --no-document

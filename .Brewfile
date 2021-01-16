@@ -1,7 +1,7 @@
-tap "caskroom/cask"
-tap "caskroom/drivers"
-tap "caskroom/fonts"
-tap "caskroom/versions"
+# tap "caskroom/cask"
+# tap "caskroom/drivers"
+# tap "caskroom/fonts"
+# tap "caskroom/versions"
 tap "codeclimate/formulae"
 tap "github/bootstrap"
 tap "github/gh"
@@ -80,7 +80,7 @@ brew "gnupg", link: false
 # Deliver Go binaries as fast and easily as possible
 brew "goreleaser"
 # GPG key agent
-brew "gpg-agent"
+#brew "gpg-agent"
 # Colorize logfiles and command output
 brew "grc"
 # GNU grep, egrep and fgrep
@@ -93,8 +93,6 @@ brew "hadolint"
 brew "hivemind"
 # User-friendly cURL replacement (command-line HTTP client)
 brew "httpie"
-# Add GitHub support to git on the command-line
-brew "hub"
 # High-performance regular expression matching library
 brew "hyperscan"
 # Interpreted, interactive, object-oriented programming language
@@ -225,7 +223,7 @@ cask "1password"
 cask "docker"
 cask "dropbox"
 cask "encryptme"
-cask "font-open-sans"
+#cask "font-open-sans"
 cask "font-source-code-pro"
 cask "font-source-sans-pro"
 cask "gpg-suite"
@@ -234,8 +232,8 @@ cask "graphiql"
 cask "graphql-playground"
 cask "insomnia"
 cask "iterm2-beta"
-cask "java"
-cask "java8"
+#cask "java"
+#cask "java8"
 cask "karabiner-elements"
 cask "keybase"
 cask "logitech-options"
@@ -251,16 +249,16 @@ cask "slack-beta"
 cask "spotify"
 cask "steam"
 cask "textexpander"
-cask "virtualbox"
+#cask "virtualbox"
 cask "viscosity"
 cask "visual-studio-code"
 cask "yubico-authenticator"
-cask "zoomus"
+cask "zoom"
 mas "24 Hour Wallpaper", id: 1226087575
 mas "AdGuard for Safari", id: 1440147259
 mas "Bear", id: 1091189122
 mas "Calca", id: 635758264
-mas "Colors for Hue", id: 581915465
+#mas "Colors for Hue", id: 581915465
 mas "GIF Brewery 3", id: 1081413713
 mas "Kindle", id: 405399194
 mas "Things", id: 904280696
