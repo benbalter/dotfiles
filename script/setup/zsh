@@ -8,11 +8,8 @@ source "/$HOME/.files/lib/globals"
 source "/$DOTFILES_ROOT/lib/functions"
 
 if [ ! -d ~/.oh-my-zsh ] && [ "$TRAVIS" != "true" ]; then
-  brew install wget
-  #sh -c "$(wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"
-  # need to remove "env zsh -l" at end of script to avoid exiting before the rest of this script
-  # (will revert when oh-my-zsh adds a --silent option, see https://github.com/robbyrussell/oh-my-zsh/pull/6547)
-  sh -c "$(wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O - | sed 's:env zsh -l::g' | sed 's:chsh -s .*$::g')"
+  brew install curl
+  sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 
   # Remove default .zshrc file so we can link_safe our own
   rm -f ~/.zshrc
