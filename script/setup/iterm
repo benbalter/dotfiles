@@ -20,6 +20,12 @@ plist = CFPropertyList::List.new file: file
 data = CFPropertyList.native_types(plist.value)
 
 hotkey_profile = data['New Bookmarks'].find { |p| p['Name'] == 'Hotkey Window' }
+
+unless hotkey_profile
+  echo "Hot key window not yet created. Please create the hotkey window and rerun."
+  exit
+end
+
 data['HotKeyBookmark'] = hotkey_profile['Guid']
 
 data['New Bookmarks'].each do |profile|
