@@ -1,7 +1,3 @@
-# tap "caskroom/cask"
-# tap "caskroom/drivers"
-# tap "caskroom/fonts"
-# tap "caskroom/versions"
 tap "codeclimate/formulae"
 tap "github/bootstrap"
 tap "github/gh"
@@ -28,13 +24,9 @@ brew "composer"
 # Diff your Docker containers
 brew "container-diff"
 # GNU File, Shell, and Text utilities
-brew "coreutils"
-# C library for encoding, decoding, and manipulating JSON
-brew "jansson"
+brew "coreutils", link: false
 # Implementation of malloc emphasizing fragmentation avoidance
 brew "jemalloc"
-# International domain name library
-brew "libidn"
 # Open source suite of directory software
 brew "openldap"
 # Get a file from an HTTP, HTTPS or FTP server
@@ -44,7 +36,7 @@ brew "go"
 # Go dependency management tool
 brew "dep"
 # Good-lookin' diffs with diff-highlight and more
-brew "diff-so-fancy", link: false
+brew "diff-so-fancy"
 # Standard SGML representation system for technical documents
 brew "docbook"
 # XML vocabulary to create presentation-neutral documents
@@ -63,6 +55,8 @@ brew "libtool"
 brew "gmp"
 # GNU compiler collection
 brew "gcc"
+# GitHub command-line tool
+brew "gh"
 # Distributed revision control system
 brew "git"
 # Git extension for versioning large files
@@ -79,8 +73,6 @@ brew "pkg-config"
 brew "gnupg", link: false
 # Deliver Go binaries as fast and easily as possible
 brew "goreleaser"
-# GPG key agent
-#brew "gpg-agent"
 # Colorize logfiles and command output
 brew "grc"
 # GNU grep, egrep and fgrep
@@ -93,14 +85,16 @@ brew "hadolint"
 brew "hivemind"
 # User-friendly cURL replacement (command-line HTTP client)
 brew "httpie"
+# Add GitHub support to git on the command-line
+brew "hub"
 # High-performance regular expression matching library
 brew "hyperscan"
-# Interpreted, interactive, object-oriented programming language
-brew "python@3.8"
 # Convert XML to another format (based on XSL or other tools)
 brew "xmlto"
 # Tools and libraries to manipulate images in many formats
 brew "imagemagick"
+# C library for encoding, decoding, and manipulating JSON
+brew "jansson"
 # Lightweight and flexible command-line JSON processor
 brew "jq"
 # Kubernetes command-line interface
@@ -113,6 +107,8 @@ brew "launchdns", restart_service: true
 brew "lcov"
 # Conversion library
 brew "libiconv"
+# International domain name library
+brew "libidn"
 # Postgres C API library
 brew "libpq"
 # GNOME XML library
@@ -126,7 +122,7 @@ brew "mackup"
 # Mac App Store command-line interface
 brew "mas"
 # Hash utilities
-brew "md5sha1sum"
+brew "md5sha1sum", link: false
 # High performance, distributed memory object caching system
 brew "memcached"
 # Simple tool to make locally trusted development certificates
@@ -171,6 +167,8 @@ brew "pinentry-mac"
 brew "postgresql"
 # Protocol buffers (Google's data interchange format)
 brew "protobuf"
+# Interpreted, interactive, object-oriented programming language
+brew "python@3.8"
 # Rakudo compiler and commonly used packages
 brew "rakudo-star"
 # Install various Ruby versions and implementations
@@ -220,10 +218,14 @@ brew "github/bootstrap/kustomize@2.0"
 # Everything you need to get started with Heroku
 brew "heroku/brew/heroku"
 cask "1password"
+cask "authy"
+cask "blue-sherpa"
 cask "docker"
 cask "dropbox"
+cask "elgato-control-center"
+cask "elgato-stream-deck"
 cask "encryptme"
-#cask "font-open-sans"
+cask "firefox-beta"
 cask "font-source-code-pro"
 cask "font-source-sans-pro"
 cask "gpg-suite"
@@ -232,11 +234,10 @@ cask "graphiql"
 cask "graphql-playground"
 cask "insomnia"
 cask "iterm2-beta"
-#cask "java"
-#cask "java8"
 cask "karabiner-elements"
 cask "keybase"
 cask "logitech-options"
+cask "pocket-casts"
 cask "qlcolorcode"
 cask "qlimagesize"
 cask "qlmarkdown"
@@ -249,7 +250,6 @@ cask "slack-beta"
 cask "spotify"
 cask "steam"
 cask "textexpander"
-#cask "virtualbox"
 cask "viscosity"
 cask "visual-studio-code"
 cask "yubico-authenticator"
@@ -258,7 +258,6 @@ mas "24 Hour Wallpaper", id: 1226087575
 mas "AdGuard for Safari", id: 1440147259
 mas "Bear", id: 1091189122
 mas "Calca", id: 635758264
-#mas "Colors for Hue", id: 581915465
 mas "GIF Brewery 3", id: 1081413713
 mas "Kindle", id: 405399194
 mas "Things", id: 904280696
