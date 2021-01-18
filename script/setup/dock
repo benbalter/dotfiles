@@ -9,11 +9,11 @@ done
 sleep 1
 
 # Apps wanted in the dock, in order
-apps=(Slack Spotify TweetDeck Firefox Things "Visual Studio Code")
+apps=(Slack Spotify TweetDeck Firefox Things3 "Visual Studio Code")
 
 # Re-add the apps we want
 for app in "${apps[@]}"; do
   echo "adding $app to dock"
-  dockutil --add "/Applications/$app.app"
+  dockutil --add "/Applications/$app.app" 
   sleep 1
 done
