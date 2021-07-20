@@ -2,7 +2,6 @@
 # Alias all the things!
 
 # Git
-alias git="hub"
 alias gs="git status"
 alias ga="git add"
 alias gad="git add ."
