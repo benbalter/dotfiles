@@ -10,7 +10,7 @@ export GOPATH=$HOME/go
 export PATH="./bin:/usr/local/bin:/usr/local/sbin:$GOPATH/bin:/usr/local/opt/gnupg@2.1/bin:$PATH"
 
 # GitHub token with no scope, used to get around API limits
-if [ "$(uname)" == "Darwin" ]; then
+if [ "$(uname)" = "Darwin" ]; then
   export HOMEBREW_GITHUB_API_TOKEN=$(cat ~/.token)
 fi
 

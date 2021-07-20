@@ -25,7 +25,7 @@ link_safe .osx.yml
 link_safe .remarkrc
 link_safe .hushlogin
 
-if [ "$(uname)" == "Darwin" ]; then
+if [ "$(uname)" = "Darwin" ]; then
   mkdir_safe "Library/LaunchAgents/"
   link_safe Library/LaunchAgents/com.balter.ben.tmpreaper.plist
   link_safe Library/LaunchAgents/com.balter.ben.update.plist

@@ -1,5 +1,11 @@
+if [[ -d "/workspaces/.codespaces/.persistedshare/dotfiles/" ]]; then
+  export DOTFILES_ROOT="/workspaces/.codespaces/.persistedshare/dotfiles/"
+else 
+  export DOTFILES_ROOT="$HOME/.files"
+fi 
+
 # shellcheck source=lib/globals
-source "/$HOME/.files/lib/globals"
+source "$DOTFILES_ROOT/lib/globals"
 
 local plugins
 plugins=(
