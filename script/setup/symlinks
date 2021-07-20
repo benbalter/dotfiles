@@ -19,12 +19,14 @@ link_safe .osx.yml
 link_safe .remarkrc
 link_safe .hushlogin
 
-mkdir_safe "Library/LaunchAgents/"
-link_safe Library/LaunchAgents/com.balter.ben.tmpreaper.plist
-link_safe Library/LaunchAgents/com.balter.ben.update.plist
+if [ "$(uname)" == "Darwin" ]; then
+  mkdir_safe "Library/LaunchAgents/"
+  link_safe Library/LaunchAgents/com.balter.ben.tmpreaper.plist
+  link_safe Library/LaunchAgents/com.balter.ben.update.plist
 
-mkdir_safe "Library/Spelling/"
-link_safe Library/Spelling/LocalDictionary
+  mkdir_safe "Library/Spelling/"
+  link_safe Library/Spelling/LocalDictionary
+fi
 
 mkdir_safe projects
 mkdir_safe github
