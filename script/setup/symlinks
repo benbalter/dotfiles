@@ -2,10 +2,10 @@
 # Setups up symlinks from .files to home directory
 
 # shellcheck source=lib/globals
-source "/$HOME/.files/lib/globals"
+source "$DOTFILES_ROOT/lib/globals"
 
 # shellcheck source=lib/functions
-source "/$DOTFILES_ROOT/lib/functions"
+source "$DOTFILES_ROOT/lib/functions"
 
 link_safe .gitconfig
 link_safe .gitignore

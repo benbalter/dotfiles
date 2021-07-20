@@ -3,8 +3,11 @@
 # Usage source script/init
 
 # Init some stuff
-if brew command command-not-found-init > /dev/null; then eval "$(brew command-not-found-init)"; fi
 if which nodenv > /dev/null; then eval "$(nodenv init -)"; fi
 if which rbenv > /dev/null;  then eval "$(rbenv init -)"; fi
 if which fasd > /dev/null; then eval "$(fasd --init auto)"; fi
 if which gh > /dev/null; then eval "$(gh completion --shell zsh)"; fi
+
+if [ "$(uname)" == "Darwin" ]; then
+  if brew command command-not-found-init > /dev/null; then eval "$(brew command-not-found-init)"; fi
+fi

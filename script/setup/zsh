@@ -2,10 +2,10 @@
 # Setup Oh my ZSH
 
 # shellcheck source=lib/globals
-source "/$HOME/.files/lib/globals"
+source "$DOTFILES_ROOT/lib/globals"
 
 # shellcheck source=lib/functions
-source "/$DOTFILES_ROOT/lib/functions"
+source "$DOTFILES_ROOT/lib/functions"
 
 if [ ! -d ~/.oh-my-zsh ] && [ "$TRAVIS" != "true" ]; then
   sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended

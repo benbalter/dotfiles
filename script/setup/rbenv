@@ -2,7 +2,7 @@
 # Setup up rbenv
 
 # shellcheck source=lib/globals
-source "$HOME/.files/lib/globals"
+source "$DOTFILES_ROOT/lib/globals"
 source "$DOTFILES_ROOT/lib/functions"
 
 command -v rbenv >/dev/null 2>&1 || { echo >&2 brew install rbenv; }
