@@ -12,7 +12,7 @@ export PATH="./bin:/usr/local/bin:/usr/local/sbin:$GOPATH/bin:/usr/local/opt/gnu
 # GitHub token with no scope, used to get around API limits
 if [ "$(uname)" == "Darwin" ]; then
   export HOMEBREW_GITHUB_API_TOKEN=$(cat ~/.token)
-end
+fi
 
 # Fix for global node modules
 export NODE_PATH=./node_modules:/usr/local/lib/node_modules
