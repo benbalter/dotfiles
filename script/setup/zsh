@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Setup Oh my ZSH
 
 if [[ -d "/workspaces/.codespaces/.persistedshare/dotfiles/" ]]; then

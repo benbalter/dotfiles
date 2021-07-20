@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Prompts to create a `~/.token` file with a GitHub public token
 
 if [ ! -f "$HOME/.token" ]; then
@@ -6,7 +6,7 @@ if [ ! -f "$HOME/.token" ]; then
   echo "by going to https://github.com/settings/tokens"
   echo "and enter it below:"
 
-  if [ "$TRAVIS" != "true" ] && [ $CODESPACES != "true"]; then
+  if [ "$TRAVIS" != "true" ] && [ "$CODESPACES" != "true" ]; then
     read -r token
   else
     token=""

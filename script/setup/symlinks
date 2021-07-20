@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Setups up symlinks from .files to home directory
 
 if [[ -d "/workspaces/.codespaces/.persistedshare/dotfiles/" ]]; then

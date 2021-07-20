@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Functions shared between script/setup and script/update
 
 # Link a file if it doesn't already exist
