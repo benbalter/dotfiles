@@ -1,6 +1,11 @@
 #!/usr/bin/env ruby
 # Sets iTerm2 preferences
 
+unless RUBY_PLATFORM.match?(/darwin/i)
+  puts "Running in non-Mac enviroment, skipping."
+  exit 0
+end
+
 require 'CFPropertyList'
 
 # Per profile preferences

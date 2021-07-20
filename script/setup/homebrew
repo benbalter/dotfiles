@@ -1,6 +1,11 @@
 #!/bin/sh
 # Set up Homebrew
 
+if [ "$(uname)" != "Darwin" ]; then
+  echo "Running in a non-Mac environment. Skipping."
+  exit 0
+fi
+
 if ! brew bundle check --global; then
   brew bundle install --global --verbose
 fi

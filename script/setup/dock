@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ "$(uname)" != "Darwin" ]; then
+  echo "Running in a non-Mac environment. Skipping."
+  exit 0
+fi
+
 # Remove all apps from the dock
 dockutil --list | awk -F"\t" '{print $1}' | while read -r line; do
   dockutil --remove "$line"

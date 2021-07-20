@@ -1,4 +1,9 @@
 #!/bin/sh
 # Link Dropbox-stored config
 
+if [ "$(uname)" != "Darwin" ]; then
+  echo "Running in a non-Mac environment. Skipping."
+  exit 0
+fi
+
 mackup restore
