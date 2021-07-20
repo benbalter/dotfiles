@@ -2,13 +2,21 @@
 
 set -e
 
+if [[ -d "/workspaces/.codespaces/.persistedshare/dotfiles/" ]]; then
+  export $DOTFILES_ROOT="/workspaces/.codespaces/.persistedshare/dotfiles/"
+else 
+  export $DOTFILES_ROOT="$HOME/.files"
+fi 
+
+echo "Using $DOTFILES_ROOT as the dotfiles root."
+
 # Bootstrap dotfiles
-if [[ ! -d "$HOME/.files" ]]; then
-  git clone https://github.com/benbalter/dotfiles ~/.files
+if [[ ! -d "$DOTFILES_ROOT" ]]; then
+  git clone https://github.com/benbalter/dotfiles "$DOTFILES_ROOT"
 fi
 
 # shellcheck source=lib/globals
-source "$HOME/.files/lib/globals"
+source "$DOTFILES_ROOT/lib/globals"
 
 # shellcheck source=lib/functions
 source "$DOTFILES_ROOT/lib/functions"

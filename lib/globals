@@ -2,7 +2,7 @@
 # Set up some common global variables
 
 # Used internally
-export DOTFILES_ROOT="$HOME/.files"
+export DOTFILES_ROOT=${DOTFILES_ROOT-"$HOME/.files"}
 
 # Setup cli tools
 export HOMEBREW_CASK_OPTS="--appdir=/Applications"
