@@ -2,7 +2,7 @@
 # Set up some common global variables
 
 # Used internally
-export DOTFILES_ROOT=${DOTFILES_ROOT-"$HOME/.files"}
+export DOTFILES_ROOT=${DOTFILES_ROOT:-"$HOME/.files"}
 
 # Setup cli tools
 export HOMEBREW_CASK_OPTS="--appdir=/Applications"
@@ -10,7 +10,9 @@ export GOPATH=$HOME/go
 export PATH="./bin:/usr/local/bin:/usr/local/sbin:$GOPATH/bin:/usr/local/opt/gnupg@2.1/bin:$PATH"
 
 # GitHub token with no scope, used to get around API limits
-export HOMEBREW_GITHUB_API_TOKEN=$(cat ~/.token)
+if [ "$(uname)" == "Darwin" ]; then
+  export HOMEBREW_GITHUB_API_TOKEN=$(cat ~/.token)
+end
 
 # Fix for global node modules
 export NODE_PATH=./node_modules:/usr/local/lib/node_modules
