@@ -1,5 +1,5 @@
 if [[ -d "/workspaces/.codespaces/.persistedshare/dotfiles/" ]]; then
-  export DOTFILES_ROOT="/workspaces/.codespaces/.persistedshare/dotfiles/"
+  export DOTFILES_ROOT="/workspaces/.codespaces/.persistedshare/dotfiles"
 else 
   export DOTFILES_ROOT="$HOME/.files"
 fi 
