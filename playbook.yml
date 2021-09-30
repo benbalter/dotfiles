@@ -1,0 +1,31 @@
+- hosts: localhost
+  connection: local
+  gather_facts: no
+
+  pre_tasks:
+    - name: Include playbook configuration.
+      include_vars: "{{ playbook_dir }}/config.yml"
+
+  roles:
+    - role: geerlingguy.mac.dock
+    - role: geerlingguy.dotfiles
+
+  tasks:
+    - name: Create ssh directory
+      ansible.builtin.file:
+        path: /users/benbalter/.ssh
+        state: directory
+    - name: Create projects directory
+      ansible.builtin.file:
+        path: /users/benbalter/projects
+        state: directory
+    - name: Create github directory
+      ansible.builtin.file:
+        path: /users/benbalter/github
+        state: directory
+    - name: Update homebrew
+      community.general.homebrew:
+        update_homebrew: yes
+        upgrade_all: yes
+    - name: Brew bundle
+      command: brew bundle install --global --verbose

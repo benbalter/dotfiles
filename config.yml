@@ -1,0 +1,47 @@
+---
+configure_dock: true
+dockitems_remove: []
+dockitems_persist:
+  - name: Safari
+    path: "/Applications/Safari.app/"
+    pos: 1
+  - name: Pocket Casts
+    path: "/Applications/Pocket Casts.app/"
+    pos: 2
+  - name: Things
+    path: "/Applications/Things3.app/"
+    pos: 3
+  - name: Bear
+    path: "/Applications/Bear.app/"
+    pos: 4
+  - name: Spotify
+    path: "/Applications/Spotify.app/"
+    pos: 5
+  - name: Visual Studio Code
+    path: "/Applications/Visual Studio Code.app/"
+    pos: 6
+  - name: Slack
+    path: "/Applications/Slack.app/"
+    pos: 7
+
+configure_sudoers: false
+
+dotfiles_repo: https://github.com/benbalter/dotfiles
+dotfiles_repo_accept_hostkey: true
+dotfiles_repo_local_destination: ~/.files
+dotfiles_files:
+  - .gitconfig
+  - .gitignore
+  - .irbrc
+  - .pryrc
+  - .Brewfile
+  - .gemrc
+  - .mackup.cfg
+  - .digrc
+  - .osx.yml
+  - .remarkrc
+  - .hushlogin
+  - .ssh/config
+
+homebrew_installed_packages: []
+homebrew_cask_apps: []
