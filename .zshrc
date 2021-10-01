@@ -9,11 +9,13 @@ source "$DOTFILES_ROOT/lib/globals"
 
 local plugins
 plugins=(
+  ansible
+  zsh-apple-touchbar
+  auto-color-ls
+  autoupdate
   battery
-  bower
   brew
   bundler
-  coffee
   colored-man-pages
   colorize
   command-not-found
@@ -26,13 +28,13 @@ plugins=(
   git
   git-extras
   golang
-  history-substring-search
   heroku
+  history-substring-search
+  iterm2 
+  zsh-lazyload 
   node
   npm
   osx
-  rake
-  rake-fast
   ruby
   safe-paste
   ssh-agent
