@@ -1,41 +1,8 @@
-#!/bin/bash
+#!/bin/sh
 
 set -e
 
-if [[ -d "/workspaces/.codespaces/.persistedshare/dotfiles/" ]]; then
-  export DOTFILES_ROOT="/workspaces/.codespaces/.persistedshare/dotfiles"
-else 
-  export DOTFILES_ROOT="$HOME/.files"
-fi 
-
-echo "Using $DOTFILES_ROOT as the dotfiles root."
-
-# Bootstrap dotfiles
-if [[ ! -d "$DOTFILES_ROOT" ]]; then
-  git clone https://github.com/benbalter/dotfiles "$DOTFILES_ROOT"
-fi
-
-# shellcheck source=lib/globals
-source "$DOTFILES_ROOT/lib/globals"
-
-# shellcheck source=lib/functions
-source "$DOTFILES_ROOT/lib/functions"
-
-if [ "$TRAVIS" != "true" ]; then
-  sudo -v
-else
-  sudo -n -v
-fi
-
-# atom
-setups=(symlinks token homebrew ruby dock node background-apps zsh mackup iterm)
-
-for setup in "${setups[@]}"; do
-  script/title "Setting up $setup"
-  "script/setup/$setup"
-done
-
-# Remove strap.sh, which contains tokens
-rm -f "$HOME/Downloads/strap.sh"
-
-script/title "Fin."
+virtualenv ansible
+source ansible/bin/activate
+pip install -r requirements.txt
+ansible-galaxy install -r requirements.yml

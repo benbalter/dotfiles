@@ -8,12 +8,16 @@
 
   roles:
     - role: geerlingguy.mac.dock
-    - role: geerlingguy.dotfiles
+    #- role: geerlingguy.dotfiles
 
   tasks:
     - name: Create ssh directory
       ansible.builtin.file:
         path: /users/benbalter/.ssh
+        state: directory
+    - name: Create .bundle directory
+      ansible.builtin.file:
+        path: /users/benbalter/.bundle
         state: directory
     - name: Create projects directory
       ansible.builtin.file:
@@ -29,3 +33,113 @@
         upgrade_all: yes
     - name: Brew bundle
       command: brew bundle install --global --verbose
+    - name: Check if ZSH is the default shell
+      shell: "echo $SHELL"
+      register: default_shell
+      changed_when: False
+    - name: make zsh default
+      shell: chsh -s /bin/zsh
+      when: default_shell.stdout.find('/bin/zsh') == -1
+    - name: Setup mackup
+      ansible.builtin.command: mackup restore
+    - name: Update App Store
+      command: mas upgrade
+    - name: App Store Auto-update
+      community.general.osx_defaults:
+        domain: com.apple.commerce
+        key: AutoUpdate
+        type: bool
+        value: true
+      become: yes
+    - name: App Store auto restart
+      community.general.osx_defaults:
+        domain: com.apple.commerce
+        key: AutoUpdateRestartRequired
+        type: bool
+        value: true
+      become: yes
+    - name: App Store Auto check
+      community.general.osx_defaults:
+        domain: com.apple.SoftwareUpdate
+        key: AutomaticCheckEnabled
+        type: bool
+        value: true
+      become: yes
+    - name: Hot corner
+      community.general.osx_defaults:
+        domain: com.apple.dock
+        key: wvous-br-corne
+        type: integer
+        value: 5
+    - name: Auto hide dock
+      community.general.osx_defaults:
+        domain: com.apple.dock
+        key: autohide
+        type: bool
+        value: true
+    - name: Screensaver ask for password
+      community.general.osx_defaults:
+        domain: com.apple.dock
+        key: askForPassword
+        type: bool
+        value: true
+    - name: Screensaver delay
+      community.general.osx_defaults:
+        domain: com.apple.dock
+        key: askForPasswordDelay
+        type: integer
+        value: 0
+    - name: Screenshot locatoin
+      community.general.osx_defaults:
+        domain: com.apple.screencapture
+        key: location
+        type: string
+        value: ~/Desktop
+    - name: Screenshot format
+      community.general.osx_defaults:
+        domain: com.apple.screencapture
+        key: type
+        type: string
+        value: png
+    - name: Safari disable Java
+      community.general.osx_defaults:
+        domain: com.apple.Safari
+        key: com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabled
+        type: bool
+        value: false
+    - name: Safari disable Java for local
+      community.general.osx_defaults:
+        domain: com.apple.Safari
+        key: com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabledForLocalFiles
+        type: bool
+        value: false
+    - name: Safari enable developer tools
+      community.general.osx_defaults:
+        domain: com.apple.Safari
+        key: com.apple.Safari.ContentPageGroupIdentifier.WebKit2DeveloperExtrasEnabled
+        type: bool
+        value: true
+    - name: Safari enable developer menu
+      community.general.osx_defaults:
+        domain: com.apple.Safari
+        key: IncludeDevelopMenu
+        type: bool
+        value: true
+    - name: Schedule auto update
+      community.general.osx_defaults:
+        domain: com.apple.SoftwareUpdate
+        key: ScheduleFrequency
+        type: integer
+        value: 1
+    - name: Safari Do not track
+      community.general.osx_defaults:
+        domain: com.apple.Safari
+        key: ScheduleFreSendDoNotTrackHTTPHeaderquency
+        type: bool
+        value: true
+    - name: Safari update extensions
+      community.general.osx_defaults:
+        domain: com.apple.Safari
+        key: InstallExtensionUpdatesAutomatically
+        type: bool
+        value: true

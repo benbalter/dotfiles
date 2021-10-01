@@ -2,5 +2,7 @@
 
 set -ex
 
-rubocop -S -D
 script/bootstrap
+ansible-lint playbook.yml
+ansible playbook.yml --check
+rubocop -S -D
