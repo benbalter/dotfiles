@@ -2,6 +2,7 @@
 
 set -e
 
+python -m pip install virtualenv
 virtualenv ansible
 source ansible/bin/activate
 pip install -r requirements.txt
