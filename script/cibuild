@@ -2,7 +2,8 @@
 
 set -ex
 
-script/bootstrap
+pip install -r requirements.txt
+ansible-galaxy install -r requirements.yml
 ansible-lint playbook.yml
 ansible playbook.yml --check
 rubocop -S -D

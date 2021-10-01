@@ -6,5 +6,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
       - run: script/bootstrap
       - run: script/cibuild
