@@ -1,7 +1,9 @@
 #!/bin/sh
 
-set -ex
+set -e
 
+source ansible/bin/activate
 ansible-lint playbook.yml
 ansible playbook.yml --check
 rubocop -S -D
+deactivate
