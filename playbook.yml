@@ -38,7 +38,7 @@
     - name: Check if Brew Bundle is up to date
       command: brew bundle check --global
       register: brew_bundle_check
-      when: false
+      changed_when: false
     - name: Brew bundle
       command: brew bundle install --global --verbose
       when: brew_bundle_check.rc != 0
@@ -55,7 +55,7 @@
     - name: Check for app store updates
       command: mas outdated
       register: mas_updates
-      when: false
+      changed_when: false
     - name: Update App Store
       command: mas upgrade
       when: mas_updates.rc != 0
