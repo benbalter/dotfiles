@@ -15,3 +15,4 @@ jobs:
             ${{ runner.os }}-pip-
       - run: script/bootstrap
       - run: script/cibuild
+      - run: script/ansible
