@@ -2,7 +2,6 @@
 
 set -e
 
-virtualenv ansible
 source ansible/bin/activate
 ansible-playbook playbook.yml
 deactivate

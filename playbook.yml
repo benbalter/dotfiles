@@ -1,6 +1,6 @@
 - hosts: localhost
   connection: local
-  gather_facts: no
+  gather_facts: false
 
   pre_tasks:
     - name: Include playbook configuration.
@@ -15,56 +15,69 @@
       ansible.builtin.file:
         path: /users/benbalter/.ssh
         state: directory
+        mode: 0755
     - name: Create .bundle directory
       ansible.builtin.file:
         path: /users/benbalter/.bundle
         state: directory
+        mode: 0755
     - name: Create projects directory
       ansible.builtin.file:
         path: /users/benbalter/projects
         state: directory
+        mode: 0755
     - name: Create github directory
       ansible.builtin.file:
         path: /users/benbalter/github
         state: directory
+        mode: 0755
     - name: Update homebrew
       community.general.homebrew:
-        update_homebrew: yes
-        upgrade_all: yes
+        update_homebrew: true
+        upgrade_all: true
+    - name: Check if Brew Bundle is up to date
+      command: brew bundle check --global
+      register: brew_bundle_check
     - name: Brew bundle
       command: brew bundle install --global --verbose
+      when: brew_bundle_check
     - name: Check if ZSH is the default shell
       shell: "echo $SHELL"
       register: default_shell
-      changed_when: False
+      changed_when: false
     - name: make zsh default
-      shell: chsh -s /bin/zsh
+      command: chsh -s /bin/zsh
       when: default_shell.stdout.find('/bin/zsh') == -1
     - name: Setup mackup
       ansible.builtin.command: mackup restore
+      changed_when: false
+    - name: Check for app store updates
+      command: mas outdated
+      register: mas_updates
     - name: Update App Store
       command: mas upgrade
+      when: mas_updates
     - name: App Store Auto-update
       community.general.osx_defaults:
         domain: com.apple.commerce
         key: AutoUpdate
         type: bool
         value: true
-      become: yes
+      become: true
     - name: App Store auto restart
       community.general.osx_defaults:
         domain: com.apple.commerce
         key: AutoUpdateRestartRequired
         type: bool
         value: true
-      become: yes
+      become: true
     - name: App Store Auto check
       community.general.osx_defaults:
         domain: com.apple.SoftwareUpdate
         key: AutomaticCheckEnabled
         type: bool
         value: true
-      become: yes
+      become: true
     - name: Hot corner
       community.general.osx_defaults:
         domain: com.apple.dock
