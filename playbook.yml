@@ -40,7 +40,7 @@
       register: brew_bundle_check
     - name: Brew bundle
       command: brew bundle install --global --verbose
-      when: brew_bundle_check
+      when: brew_bundle_check.rc != 0
     - name: Check if ZSH is the default shell
       shell: "echo $SHELL"
       register: default_shell
@@ -56,7 +56,7 @@
       register: mas_updates
     - name: Update App Store
       command: mas upgrade
-      when: mas_updates
+      when: mas_updates.rc != 0
     - name: App Store Auto-update
       community.general.osx_defaults:
         domain: com.apple.commerce
