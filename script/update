@@ -4,29 +4,4 @@
 
 set -e
 
-# shellcheck source=lib/globals
-source "/$HOME/.files/lib/globals"
-
-# shellcheck source=lib/functions
-source "/$DOTFILES_ROOT/lib/functions"
-
-pushd $DOTFILES_ROOT
-
-script/title "Updating Homebrew..."
-brew update
-brew upgrade
-
-script/title "Updating App Store apps"
-mas upgrade
-
-script/title "Updating global Node packages..."
-npm update --global
-npm upgrade --global
-
-script/title "Updating Ruby"
-script/setup/ruby
-
-script/title "Updating Oh My ZSH"
-/bin/sh "$ZSH/tools/upgrade.sh"
-
-popd
+script/ansible
