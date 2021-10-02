@@ -4,5 +4,5 @@ set -e
 
 source ansible/bin/activate
 ansible-lint playbook.yml
-ansible playbook.yml --check
+ansible-playbook playbook.yml --check
 deactivate
