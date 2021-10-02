@@ -38,7 +38,6 @@ dotfiles_files:
   - .gemrc
   - .mackup.cfg
   - .digrc
-  - .osx.yml
   - .remarkrc
   - .hushlogin
   - .ssh/config
