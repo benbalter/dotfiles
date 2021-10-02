@@ -49,9 +49,6 @@
     - name: make zsh default
       command: chsh -s /bin/zsh
       when: default_shell.stdout.find('/bin/zsh') == -1
-    - name: Setup mackup
-      ansible.builtin.command: mackup restore
-      changed_when: false
     - name: Check for app store updates
       command: mas outdated
       register: mas_updates
