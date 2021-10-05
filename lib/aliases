@@ -42,3 +42,4 @@ alias setup="~/.files/script/setup"
 alias p="cd ~/projects"
 alias gg="cd ~/github/github"
 alias afk="/System/Library/CoreServices/Menu\ Extras/User.menu/Contents/Resources/CGSession -suspend"
+alias lc='colorls -lA --sd'
