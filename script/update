@@ -4,4 +4,6 @@
 
 set -e
 
+pushd ~/.files
 script/ansible
+popd
