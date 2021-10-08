@@ -43,8 +43,8 @@ dotfiles_files:
   - .bundle/config
   - .hushlogin
 
-homebrew_upgrade_all_packages: true
-mas_upgrade_all_apps: true
+#homebrew_upgrade_all_packages: true
+#mas_upgrade_all_apps: true
 mas_installed_apps: []
 
 directories_to_create:
