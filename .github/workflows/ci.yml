@@ -5,15 +5,31 @@ jobs:
     runs-on: macos-latest
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Restore Python cache
+        uses: actions/cache@v2
         id: cache-venv
         with:
           path: ./venv
-          key: ${{ runner.os }}-venv-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-venv-
-      - uses: actions/setup-python@v2
-      - run: script/bootstrap
-      - run: script/cibuild
-      - run: script/ansible
+          key: ${{ runner.os }}-venv-${{ hashFiles('requirements.txt') }}
+
+      - name: Restore Asible cache
+        uses: actions/cache@v2
+        id: cache-ansible
+        with:
+          path: ~/.ansible
+          key: ${{ runner.os }}-ansible-${{ hashFiles('requirements.yml') }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+
+      - name: Bootstrap
+        run: script/bootstrap
+
+      - name: Lint
+        run: script/cibuild
+
+      - name: Run playbook
+        run: script/ansible
