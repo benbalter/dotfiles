@@ -8,14 +8,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Restore Python cache
+      - name: Pip Cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+
+      - name: Python cache
         uses: actions/cache@v2
         id: cache-venv
         with:
           path: ./venv
           key: ${{ runner.os }}-venv-${{ hashFiles('requirements.txt') }}
 
-      - name: Restore Asible cache
+      - name: Asible cache
         uses: actions/cache@v2
         id: cache-ansible
         with:
