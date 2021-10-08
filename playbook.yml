@@ -31,17 +31,6 @@
         path: /users/benbalter/github
         state: directory
         mode: 0755
-    - name: Update homebrew
-      community.general.homebrew:
-        update_homebrew: true
-        upgrade_all: true
-    - name: Check if Brew Bundle is up to date
-      command: brew bundle check --global
-      register: brew_bundle_check
-      changed_when: false
-    - name: Brew bundle
-      command: brew bundle install --global --verbose
-      when: brew_bundle_check.rc != 0
     - name: Check if ZSH is the default shell
       shell: "echo $SHELL"
       register: default_shell

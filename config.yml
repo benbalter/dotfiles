@@ -44,6 +44,4 @@ dotfiles_files:
   - .bundle/config
   - .hushlogin
 
-homebrew_installed_packages: []
-homebrew_cask_apps: []
-homebrew_use_brewfile: false
+homebrew_upgrade_all_packages: true
