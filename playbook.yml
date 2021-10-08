@@ -12,12 +12,12 @@
   tasks:
     - name: Create ssh directory
       ansible.builtin.file:
-        path: /users/benbalter/.ssh
+        path: ~/.ssh
         state: directory
         mode: 0755
     - name: Create .bundle directory
       ansible.builtin.file:
-        path: /users/benbalter/.bundle
+        path: ~/.bundle
         state: directory
         mode: 0755
     - name: Setup Dotfiles
@@ -28,12 +28,12 @@
         name: geerlingguy.mac.homebrew
     - name: Create projects directory
       ansible.builtin.file:
-        path: /users/benbalter/projects
+        path: ~/projects
         state: directory
         mode: 0755
     - name: Create github directory
       ansible.builtin.file:
-        path: /users/benbalter/github
+        path: ~/github
         state: directory
         mode: 0755
     - name: Check if ZSH is the default shell
