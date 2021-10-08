@@ -5,10 +5,6 @@
     - name: Include playbook configuration.
       include_vars: "{{ playbook_dir }}/config.yml"
 
-  roles:
-    - role: geerlingguy.mac.homebrew
-    - role: geerlingguy.mac.dock
-
   tasks:
     - name: Create ssh directory
       ansible.builtin.file:
