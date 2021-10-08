@@ -6,7 +6,6 @@
       include_vars: "{{ playbook_dir }}/config.yml"
 
   roles:
-    - role: geerlingguy.dotfiles
     - role: geerlingguy.mac.homebrew
     - role: geerlingguy.mac.dock
 
@@ -21,6 +20,12 @@
         path: /users/benbalter/.bundle
         state: directory
         mode: 0755
+    - name: Setup Dotfiles
+      include_role:
+        name: geerlingguy.dotfiles
+    - name: Setup Homebrew
+      include_role:
+        name: geerlingguy.mac.homebrew
     - name: Create projects directory
       ansible.builtin.file:
         path: /users/benbalter/projects
@@ -45,6 +50,9 @@
     - name: Update App Store
       command: mas upgrade
       when: mas_updates.rc != 0
+    - name: Setup Dock
+      include_role:
+        name: geerlingguy.mac.dock
     - name: App Store Auto-update
       community.general.osx_defaults:
         domain: com.apple.commerce

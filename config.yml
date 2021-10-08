@@ -41,7 +41,7 @@ dotfiles_files:
   - .remarkrc
   - .hushlogin
   - .ssh/config
-  # - .bundle/config
+  - .bundle/config
   - .hushlogin
 
 homebrew_upgrade_all_packages: true
