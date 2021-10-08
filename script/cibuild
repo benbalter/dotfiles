@@ -4,5 +4,5 @@ set -e
 
 source env/bin/activate
 ansible-lint playbook.yml
-yamllint *.yml
+yamllint *.yml .github/workflows/*.yml
 deactivate
