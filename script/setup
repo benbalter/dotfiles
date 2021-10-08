@@ -2,4 +2,5 @@
 
 set -ex
 
+script/bootstrap
 script/ansible

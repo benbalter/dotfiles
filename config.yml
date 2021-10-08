@@ -71,6 +71,15 @@ macos_defaults:
       key: AutomaticCheckEnabled
       type: bool
       value: true
+    - name: Set lock screen message
+      domain: /Library/Preferences/com.apple.loginwindow.plist
+      key: LoginwindowText
+      value: "Found this computer? Please contact Ben Balter at ben@balter.com."
+    - name: Enable firewall
+      domain: /Library/Preferences/com.apple.alf
+      key: globalstate
+      value: 1
+      type: integer
   user:
     - name: Hot corner
       domain: com.apple.dock
