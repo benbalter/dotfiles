@@ -7,9 +7,9 @@
       include_vars: "{{ playbook_dir }}/config.yml"
 
   roles:
-    - role: geerlingguy.mac.dock
     - role: geerlingguy.dotfiles
     - role: geerlingguy.mac.homebrew
+    - role: geerlingguy.mac.dock
 
   tasks:
     - name: Create ssh directory

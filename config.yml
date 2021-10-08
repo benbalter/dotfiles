@@ -47,3 +47,4 @@ dotfiles_files:
 homebrew_installed_packages: []
 homebrew_cask_apps: []
 homebrew_use_brewfile: false
+homebrew_user: benbalter
