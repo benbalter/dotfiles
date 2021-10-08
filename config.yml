@@ -48,4 +48,4 @@ homebrew_installed_packages: []
 homebrew_cask_apps: []
 homebrew_use_brewfile: false
 homebrew_user: benbalter
-hombrew_user_gid: staff
+homebrew_user_gid: staff
