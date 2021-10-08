@@ -1,6 +1,5 @@
 ---
 configure_dock: true
-dockitems_remove: []
 dockitems_persist:
   - name: Safari
     path: "/Applications/Safari.app/"
@@ -45,3 +44,5 @@ dotfiles_files:
   - .hushlogin
 
 homebrew_upgrade_all_packages: true
+mas_upgrade_all_apps: true
+mas_installed_apps: []
