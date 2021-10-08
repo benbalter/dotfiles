@@ -1,6 +1,6 @@
 # @BenBalter's dotfiles
 
-[![Build Status](https://travis-ci.org/benbalter/dotfiles.svg?branch=master)](https://travis-ci.org/benbalter/dotfiles)
+[![CI](https://github.com/benbalter/dotfiles/actions/workflows/ci.yml/badge.svg)](https://github.com/benbalter/dotfiles/actions/workflows/ci.yml)
 
 @BenBalter's development environment and the scripts to initialize it and keep it up to date.
 
