@@ -29,8 +29,22 @@ jobs:
       - name: Bootstrap
         run: script/bootstrap
 
-      - name: Lint
-        run: script/cibuild
-
       - name: Run playbook
         run: script/ansible
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Lint Ansible Playbook
+        uses: ansible/ansible-lint-action@master
+        with:
+          targets: |
+            playbook.yml
+
+      - name: yamllint
+        run: |
+          yamllint *.yml .github/workflows/*.yml
