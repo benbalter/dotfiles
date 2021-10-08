@@ -44,6 +44,7 @@ dotfiles_files:
   - .hushlogin
 
 homebrew_upgrade_all_packages: true
+homebrew_brewfile_dir: ~/.files
 mas_upgrade_all_apps: true
 mas_installed_apps: []
 
