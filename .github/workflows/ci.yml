@@ -22,8 +22,8 @@ jobs:
           path: ~/.ansible
           key: ${{ runner.os }}-ansible-${{ hashFiles('requirements.yml') }}
 
-      - name: Setup Python
-        uses: actions/setup-python@v2
+      # - name: Setup Python
+      #   uses: actions/setup-python@v2
 
       - name: Bootstrap
         run: script/bootstrap
