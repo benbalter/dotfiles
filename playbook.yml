@@ -2,8 +2,11 @@
   connection: local
 
   pre_tasks:
-    - name: Include playbook configuration.
+    - name: Include config
       include_vars: "{{ playbook_dir }}/config.yml"
+    - name: Include dev config
+      include_vars: "{{ playbook_dir }}/config_ci.yml"
+      when: lookup('env','CI') == "true"
 
   tasks:
     - name: Create directories

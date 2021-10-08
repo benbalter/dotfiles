@@ -1,0 +1,5 @@
+---
+# Skip expensive update operations in CI
+homebrew_upgrade_all_packages: false
+mas_upgrade_all_apps: false
+homebrew_use_brewfile: false
