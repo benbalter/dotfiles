@@ -131,9 +131,9 @@ macos_defaults:
       key: WebKitDeveloperExtrasEnabledPreferenceKey
       type: bool
       value: true
-    - name: Safari enable developer menu
-      domain: com.apple.Safari
-      key: IncludeDevelopMenu
-      type: bool
-      value: true
-      ignore_errors: true
+  #  - name: Safari enable developer menu
+  #   domain: com.apple.Safari
+  #    key: IncludeDevelopMenu
+  #    type: bool
+  #    value: true
+  #    ignore_errors: true
