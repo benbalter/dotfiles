@@ -2,6 +2,6 @@
 
 set -e
 
-source ansible/bin/activate
+source env/bin/activate
 ansible-playbook playbook.yml --ask-become-pass
 deactivate

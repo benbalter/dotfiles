@@ -2,7 +2,7 @@
 
 set -e
 
-source ansible/bin/activate
+source env/bin/activate
 ansible-lint playbook.yml
 yamllint *.yml
 deactivate
