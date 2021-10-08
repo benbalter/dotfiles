@@ -46,3 +46,94 @@ dotfiles_files:
 homebrew_upgrade_all_packages: true
 mas_upgrade_all_apps: true
 mas_installed_apps: []
+
+directories_to_create:
+  - ~/.ssh
+  - ~/.bundle
+  - ~/projects
+  - ~/github
+
+macos_defaults:
+  system:
+    - name: App Store Auto-update
+      domain: com.apple.commerce
+      key: AutoUpdate
+      type: bool
+      value: true
+    - name: App Store auto restart
+      domain: com.apple.commerce
+      key: AutoUpdateRestartRequired
+      type: bool
+      value: true
+    - name: App Store Auto check
+      domain: com.apple.SoftwareUpdate
+      key: AutomaticCheckEnabled
+      type: bool
+      value: true
+  user:
+    - name: Hot corner
+      domain: com.apple.dock
+      key: wvous-br-corne
+      type: integer
+      value: 5
+    - name: Auto hide dock
+      domain: com.apple.dock
+      key: autohide
+      type: bool
+      value: true
+    - name: Screensaver ask for password
+      domain: com.apple.dock
+      key: askForPassword
+      type: bool
+      value: true
+    - name: Screensaver delay
+      domain: com.apple.dock
+      key: askForPasswordDelay
+      type: integer
+      value: 0
+    - name: Screenshot location
+      domain: com.apple.screencapture
+      key: location
+      type: string
+      value: ~/Desktop
+    - name: Screenshot format
+      domain: com.apple.screencapture
+      key: type
+      type: string
+      value: png
+    - name: Safari disable Java
+      domain: com.apple.Safari
+      key: com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabled
+      type: bool
+      value: false
+    - name: Safari disable Java for local
+      domain: com.apple.Safari
+      key: com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabledForLocalFiles
+      type: bool
+      value: false
+    - name: Schedule auto update
+      domain: com.apple.SoftwareUpdate
+      key: ScheduleFrequency
+      type: integer
+      value: 1
+    - name: Safari Do not track
+      domain: com.apple.Safari
+      key: ScheduleFreSendDoNotTrackHTTPHeaderquency
+      type: bool
+      value: true
+    - name: Safari update extensions
+      domain: com.apple.Safari
+      key: InstallExtensionUpdatesAutomatically
+      type: bool
+      value: true
+    - name: Safari enable developer tools
+      domain: com.apple.Safari
+      key: WebKitDeveloperExtrasEnabledPreferenceKey
+      type: bool
+      value: true
+    - name: Safari enable developer menu
+      domain: com.apple.Safari
+      key: IncludeDevelopMenu
+      type: bool
+      value: true
+      ignore_errors: true
