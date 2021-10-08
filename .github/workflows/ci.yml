@@ -20,14 +20,11 @@ jobs:
           path: ./env
           key: ${{ runner.os }}-env-${{ hashFiles('requirements.txt') }}
 
-      - name: Asible cache
+      - name: Ansible cache
         uses: actions/cache@v2
         with:
           path: ~/.ansible
           key: ${{ runner.os }}-ansible-${{ hashFiles('requirements.yml') }}
-
-      # - name: Setup Python
-      #   uses: actions/setup-python@v2
 
       - name: Bootstrap
         run: script/bootstrap
