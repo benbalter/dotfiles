@@ -46,8 +46,8 @@ plugins=(
 
 source $ZSH/oh-my-zsh.sh
 
-# shellcheck source=script/setup/shell
-source "$DOTFILES_ROOT/script/setup/shell"
+# shellcheck source=lib/auto-complete
+source "$DOTFILES_ROOT/lib/auto-complete"
 
 # shellcheck source=lib/aliases
 source "$DOTFILES_ROOT/lib/aliases"
