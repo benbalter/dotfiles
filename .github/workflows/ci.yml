@@ -39,12 +39,26 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Lint Ansible Playbook
-        uses: ansible/ansible-lint-action@master
+      - name: Pip Cache
+        uses: actions/cache@v2
         with:
-          targets: |
-            playbook.yml
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
 
-      - name: yamllint
-        run: |
-          yamllint *.yml .github/workflows/*.yml
+      - name: Venv cache
+        uses: actions/cache@v2
+        with:
+          path: ./env
+          key: ${{ runner.os }}-env-${{ hashFiles('requirements.txt') }}
+
+      - name: Ansible cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.ansible
+          key: ${{ runner.os }}-ansible-${{ hashFiles('requirements.yml') }}
+
+      - name: Bootstrap
+        run: script/bootstrap
+
+      - name: lint
+        run: script/lint
