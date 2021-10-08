@@ -9,6 +9,7 @@
   roles:
     - role: geerlingguy.mac.dock
     - role: geerlingguy.dotfiles
+    - role: geerlingguy.mac.homebrew
 
   tasks:
     - name: Create ssh directory
