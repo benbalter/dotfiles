@@ -16,14 +16,12 @@ jobs:
 
       - name: Python cache
         uses: actions/cache@v2
-        id: cache-venv
         with:
           path: ./env
-          key: ${{ runner.os }}-venv-${{ hashFiles('requirements.txt') }}
+          key: ${{ runner.os }}-env-${{ hashFiles('requirements.txt') }}
 
       - name: Asible cache
         uses: actions/cache@v2
-        id: cache-ansible
         with:
           path: ~/.ansible
           key: ${{ runner.os }}-ansible-${{ hashFiles('requirements.yml') }}
