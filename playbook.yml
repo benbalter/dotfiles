@@ -110,7 +110,7 @@
     - name: Safari enable developer tools
       community.general.osx_defaults:
         domain: com.apple.Safari
-        key: com.apple.Safari.ContentPageGroupIdentifier.WebKit2DeveloperExtrasEnabled
+        key: WebKitDeveloperExtrasEnabledPreferenceKey
         type: bool
         value: true
     - name: Safari enable developer menu
@@ -119,6 +119,7 @@
         key: IncludeDevelopMenu
         type: bool
         value: true
+      ignore_errors: true
     - name: Schedule auto update
       community.general.osx_defaults:
         domain: com.apple.SoftwareUpdate
