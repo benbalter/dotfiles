@@ -75,6 +75,7 @@ macos_defaults:
       domain: /Library/Preferences/com.apple.loginwindow.plist
       key: LoginwindowText
       value: "Found this computer? Please contact Ben Balter at ben@balter.com."
+      type: string
     - name: Enable firewall
       domain: /Library/Preferences/com.apple.alf
       key: globalstate
