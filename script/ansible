@@ -3,5 +3,5 @@
 set -e
 
 source ansible/bin/activate
-ansible-playbook playbook.yml --ask-become-pass
+ansible-playbook playbook.yml --ask-become-pass --verbose
 deactivate
