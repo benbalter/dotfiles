@@ -9,7 +9,6 @@
 ### Scripts
 
 * `script/setup` - Set up all the things!
-* `script/setup/*` - Individual setup scripts
 * `script/update` - Update all the things!
 
 ### Everything else
