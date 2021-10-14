@@ -5,5 +5,7 @@
 set -e
 
 pushd ~/.files
-script/ansible
+brew update
+brew upgrade
+mas upgrade
 popd
