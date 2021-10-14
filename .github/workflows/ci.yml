@@ -32,9 +32,6 @@ jobs:
       - name: Run playbook
         run: script/ansible
 
-      - name: Update
-        run: script/update
-
   lint:
     runs-on: macos-latest
 
