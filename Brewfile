@@ -6,10 +6,10 @@ tap "homebrew/cask-versions"
 tap "homebrew/command-not-found"
 tap "homebrew/core"
 tap "homebrew/services"
-
 # Search tool like grep, but optimized for programmers
 brew "ack"
-brew "aspell"
+# Open source suite of directory software
+brew "openldap"
 # Get a file from an HTTP, HTTPS or FTP server
 brew "curl"
 # Open source programming language to build simple/reliable/efficient software
@@ -30,8 +30,18 @@ brew "git"
 brew "git-lfs"
 # Declarative configuration for Gmail filters
 brew "gmailctl"
+# GNU multiple precision arithmetic library
+brew "gmp"
+# Generic library support script
+brew "libtool"
+# Manage compile and link flags for libraries
+brew "pkg-config"
+# Library for command-line editing
+brew "readline"
+# Implementation of malloc emphasizing fragmentation avoidance
+brew "jemalloc"
 # GNU Pretty Good Privacy (PGP) package
-brew "gnupg"
+brew "gnupg", link: false
 # Colorize logfiles and command output
 brew "grc"
 # GNU grep, egrep and fgrep
@@ -40,6 +50,8 @@ brew "grep"
 brew "httpie"
 # Lightweight and flexible command-line JSON processor
 brew "jq"
+# YAML Parser
+brew "libyaml"
 # Keep your Mac's application settings in sync
 brew "mackup"
 # Mac App Store command-line interface
@@ -48,14 +60,14 @@ brew "mas"
 brew "namebench"
 # Port scanning utility for large networks
 brew "nmap"
+# Interpreted, interactive, object-oriented programming language
+brew "python@3.9"
 # Platform built on V8 to build network applications
 brew "node"
 # Cryptography and SSL/TLS Toolkit
-brew "openssl"
+brew "openssl@3"
 # Pinentry for GPG on Mac
 brew "pinentry-mac"
-# Interpreted, interactive, object-oriented programming language
-brew "python@"
 # Install various Ruby versions and implementations
 brew "ruby-build"
 # Ruby version manager
@@ -84,7 +96,6 @@ brew "wget"
 brew "yamllint", link: false
 # UNIX shell (command interpreter)
 brew "zsh"
-
 # Password manager that keeps all passwords secure behind one password
 cask "1password"
 # Two-factor authentication software
@@ -145,7 +156,6 @@ cask "visual-studio-code"
 cask "yubico-authenticator"
 # Video communication and virtual meeting platform
 cask "zoom"
-
 mas "1Password for Safari", id: 1569813296
 mas "24 Hour Wallpaper", id: 1226087575
 mas "AdGuard for Safari", id: 1440147259
