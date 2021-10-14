@@ -56,6 +56,8 @@ brew "libyaml"
 brew "mackup"
 # Mac App Store command-line interface
 brew "mas"
+# 'traceroute' and 'ping' in a single tool
+brew "mtr"
 # DNS benchmark utility
 brew "namebench"
 # Port scanning utility for large networks
