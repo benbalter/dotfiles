@@ -164,21 +164,17 @@ cask "visual-studio-code"
 cask "yubico-authenticator"
 # Video communication and virtual meeting platform
 cask "zoom"
-mas "1Password for Safari", id: 1569813296
-mas "24 Hour Wallpaper", id: 1226087575
-mas "AdGuard for Safari", id: 1440147259
-mas "Bear", id: 1091189122
-mas "Calca", id: 635758264
-mas "DuckDuckGo Privacy Essentials", id: 1482920575
-mas "GIF Brewery 3", id: 1081413713
-mas "GoLinks", id: 1478821913
-mas "iMovie", id: 408981434
-mas "Keynote", id: 409183694
-mas "Kindle", id: 405399194
-mas "Minimal Consent", id: 1514164630
-mas "Okta Extension App", id: 1439967473
-mas "Smart Countdown Timer", id: 1410709951
-mas "StopTheMadness", id: 1376402589
-mas "Things", id: 904280696
-mas "Tweetbot", id: 1384080005
-mas "TweetDeck", id: 485812721
+# mas "1Password for Safari", id: 1569813296
+# mas "24 Hour Wallpaper", id: 1226087575
+# mas "AdGuard for Safari", id: 1440147259
+# mas "Bear", id: 1091189122
+# mas "Calca", id: 635758264
+# mas "DuckDuckGo Privacy Essentials", id: 1482920575
+# mas "GIF Brewery 3", id: 1081413713
+# mas "Keynote", id: 409183694
+# mas "Kindle", id: 405399194
+# mas "Minimal Consent", id: 1514164630
+# mas "Okta Extension App", id: 1439967473
+# mas "StopTheMadness", id: 1376402589
+# mas "Things", id: 904280696
+# mas "TweetDeck", id: 485812721
