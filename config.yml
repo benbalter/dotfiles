@@ -7,7 +7,7 @@ dockitems_persist:
   - name: Pocket Casts
     path: "/Applications/Pocket Casts.app/"
     pos: 2
-  - name: Things
+  - name: Things3
     path: "/Applications/Things3.app/"
     pos: 3
   - name: Bear
