@@ -21,6 +21,10 @@
     - name: Setup Homebrew
       include_role:
         name: geerlingguy.mac.homebrew
+   - name: Set up oh-my-zsh
+     git:
+       repo: https://github.com/robbyrussell/oh-my-zsh
+       dest: ~/.oh-my-zsh
    # - name: Setup App Store
    #   include_role:
    #     name: geerlingguy.mac.mas
