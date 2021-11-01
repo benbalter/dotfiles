@@ -10,9 +10,6 @@ source "$DOTFILES_ROOT/lib/globals"
 local plugins
 plugins=(
   ansible
-  zsh-apple-touchbar
-  auto-color-ls
-  autoupdate
   battery
   brew
   bundler
@@ -31,7 +28,6 @@ plugins=(
   heroku
   history-substring-search
   iterm2 
-  zsh-lazyload 
   node
   npm
   osx
@@ -40,7 +36,6 @@ plugins=(
   ssh-agent
   sudo
   vscode
-  zsh_reload
   zsh-interactive-cd
 )
 
