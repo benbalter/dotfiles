@@ -18,6 +18,10 @@ brew "go"
 brew "dep"
 # Good-lookin' diffs with diff-highlight and more
 brew "diff-so-fancy"
+# Library for command-line editing
+brew "readline"
+# Interpreted, interactive, object-oriented programming language
+brew "python@3.9"
 # Tool for managing dock items
 brew "dockutil"
 # CLI tool for quick access to files and directories
@@ -36,18 +40,18 @@ brew "gmp"
 brew "libtool"
 # Manage compile and link flags for libraries
 brew "pkg-config"
-# Library for command-line editing
-brew "readline"
-# Implementation of malloc emphasizing fragmentation avoidance
-brew "jemalloc"
 # GNU Pretty Good Privacy (PGP) package
 brew "gnupg", link: false
 # Colorize logfiles and command output
 brew "grc"
 # GNU grep, egrep and fgrep
 brew "grep"
+# Smarter Dockerfile linter to validate best practices
+brew "hadolint"
 # User-friendly cURL replacement (command-line HTTP client)
 brew "httpie"
+# Implementation of malloc emphasizing fragmentation avoidance
+brew "jemalloc"
 # Lightweight and flexible command-line JSON processor
 brew "jq"
 # YAML Parser
@@ -62,8 +66,6 @@ brew "mtr"
 brew "namebench"
 # Port scanning utility for large networks
 brew "nmap"
-# Interpreted, interactive, object-oriented programming language
-brew "python@3.9"
 # Platform built on V8 to build network applications
 brew "node"
 # Cryptography and SSL/TLS Toolkit
@@ -95,7 +97,7 @@ brew "vale"
 # Internet file retriever
 brew "wget"
 # Linter for YAML files
-brew "yamllint", link: false
+brew "yamllint"
 # UNIX shell (command interpreter)
 brew "zsh"
 # Password manager that keeps all passwords secure behind one password
@@ -122,6 +124,10 @@ cask "karabiner-elements"
 cask "keybase"
 # Software for Logitech devices
 cask "logitech-options"
+# Provides updates to various Microsoft products
+cask "microsoft-auto-update"
+# Web browser
+cask "microsoft-edge"
 # Meet, chat, call, and collaborate in just one place
 cask "microsoft-teams"
 # Podcast platform
@@ -176,4 +182,3 @@ mas "StopTheMadness", id: 1376402589
 mas "Things", id: 904280696
 mas "Tweetbot", id: 1384080005
 mas "TweetDeck", id: 485812721
-mas "Twitter", id: 1482454543
