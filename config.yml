@@ -42,6 +42,7 @@ dotfiles_files:
   - .ssh/config
   - .bundle/config
   - .hushlogin
+  - .zshrc
 
 homebrew_upgrade_all_packages: true
 homebrew_brewfile_dir: ~/.files
