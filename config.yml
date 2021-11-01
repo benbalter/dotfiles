@@ -22,7 +22,25 @@ dockitems_persist:
   - name: Slack
     path: "/Applications/Slack.app/"
     pos: 7
-
+dockitems_remove:
+  - Launchpad
+  - Mail
+  - Contacts
+  - Calendar
+  - Notes
+  - Reminders
+  - Maps
+  - Photos
+  - Messages
+  - FaceTime
+  - Music
+  - Podcasts
+  - TV
+  - News
+  - Books
+  - 'App Store'
+  - 'System Preferences'
+  
 configure_sudoers: false
 
 dotfiles_repo: https://github.com/benbalter/dotfiles
