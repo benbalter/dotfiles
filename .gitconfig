@@ -87,7 +87,7 @@
   oldNormal = red bold
 
 [commit]
-	#gpgsign = true
+	gpgsign = true
 
 [gpg]
   program = gpg
