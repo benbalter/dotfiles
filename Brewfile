@@ -8,6 +8,14 @@ tap "homebrew/core"
 tap "homebrew/services"
 # Search tool like grep, but optimized for programmers
 brew "ack"
+# YAML Parser
+brew "libyaml"
+# Library for command-line editing
+brew "readline"
+# Automate deployment, configuration, and upgrading
+brew "ansible"
+# Checks ansible playbooks for practices and behaviour
+brew "ansible-lint"
 # Open source suite of directory software
 brew "openldap"
 # Get a file from an HTTP, HTTPS or FTP server
@@ -18,10 +26,8 @@ brew "go"
 brew "dep"
 # Good-lookin' diffs with diff-highlight and more
 brew "diff-so-fancy"
-# Library for command-line editing
-brew "readline"
-# Interpreted, interactive, object-oriented programming language
-brew "python@3.9"
+# Pack, ship and run any application as a lightweight container
+brew "docker", link: false
 # Tool for managing dock items
 brew "dockutil"
 # CLI tool for quick access to files and directories
@@ -46,6 +52,8 @@ brew "gnupg", link: false
 brew "grc"
 # GNU grep, egrep and fgrep
 brew "grep"
+# Numerical library for C and C++
+brew "gsl"
 # Smarter Dockerfile linter to validate best practices
 brew "hadolint"
 # User-friendly cURL replacement (command-line HTTP client)
@@ -54,8 +62,6 @@ brew "httpie"
 brew "jemalloc"
 # Lightweight and flexible command-line JSON processor
 brew "jq"
-# YAML Parser
-brew "libyaml"
 # Keep your Mac's application settings in sync
 brew "mackup"
 # Mac App Store command-line interface
@@ -66,6 +72,8 @@ brew "mtr"
 brew "namebench"
 # Port scanning utility for large networks
 brew "nmap"
+# Interpreted, interactive, object-oriented programming language
+brew "python@3.9"
 # Platform built on V8 to build network applications
 brew "node"
 # Cryptography and SSL/TLS Toolkit
@@ -128,6 +136,8 @@ cask "logitech-options"
 cask "microsoft-auto-update"
 # Web browser
 cask "microsoft-edge"
+# Office suite
+cask "microsoft-office"
 # Meet, chat, call, and collaborate in just one place
 cask "microsoft-teams"
 # Podcast platform
