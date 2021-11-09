@@ -110,6 +110,8 @@ brew "yamllint"
 brew "zsh"
 # Password manager that keeps all passwords secure behind one password
 cask "1password"
+# Command-line helper for the 1Password password manager
+cask "1password-cli"
 # Two-factor authentication software
 cask "authy"
 # App to build and share containerized applications and microservices
@@ -154,6 +156,8 @@ cask "quicklook-csv"
 cask "quicklook-json"
 # Access and edit GoPro photos and videos
 cask "quik"
+# Imaging utility to install operating systems to a microSD card
+cask "raspberry-pi-imager"
 # Emoji picker optimized for blind people
 cask "rocket"
 # Instant messaging application focusing on security
@@ -174,17 +178,17 @@ cask "visual-studio-code"
 cask "yubico-authenticator"
 # Video communication and virtual meeting platform
 cask "zoom"
-# mas "1Password for Safari", id: 1569813296
-# mas "24 Hour Wallpaper", id: 1226087575
-# mas "AdGuard for Safari", id: 1440147259
-# mas "Bear", id: 1091189122
-# mas "Calca", id: 635758264
-# mas "DuckDuckGo Privacy Essentials", id: 1482920575
-# mas "GIF Brewery 3", id: 1081413713
-# mas "Keynote", id: 409183694
-# mas "Kindle", id: 405399194
-# mas "Minimal Consent", id: 1514164630
-# mas "Okta Extension App", id: 1439967473
-# mas "StopTheMadness", id: 1376402589
-# mas "Things", id: 904280696
-# mas "TweetDeck", id: 485812721
+mas "1Password for Safari", id: 1569813296
+mas "24 Hour Wallpaper", id: 1226087575
+mas "AdGuard for Safari", id: 1440147259
+mas "Bear", id: 1091189122
+mas "Calca", id: 635758264
+mas "Dark Reader for Safari", id: 1438243180
+mas "DuckDuckGo Privacy Essentials", id: 1482920575
+mas "GIF Brewery 3", id: 1081413713
+mas "Keynote", id: 409183694
+mas "Kindle", id: 405399194
+mas "Okta Extension App", id: 1439967473
+mas "StopTheMadness", id: 1376402589
+mas "Things", id: 904280696
+mas "TweetDeck", id: 485812721
