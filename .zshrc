@@ -28,10 +28,10 @@ plugins=(
   heroku
   history-substring-search
   iterm2 
+  macos
   node
   npm
   osx
-  ruby
   safe-paste
   ssh-agent
   sudo
