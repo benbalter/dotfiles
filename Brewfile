@@ -16,6 +16,16 @@ brew "readline"
 brew "ansible"
 # Checks ansible playbooks for practices and behaviour
 brew "ansible-lint"
+# Interpreted, interactive, object-oriented programming language
+brew "python@3.9"
+# Manage compile and link flags for libraries
+brew "pkg-config"
+# Cross-platform make
+brew "cmake"
+# Platform built on V8 to build network applications
+brew "node"
+# Unfancy JavaScript
+brew "coffeescript"
 # Open source suite of directory software
 brew "openldap"
 # Get a file from an HTTP, HTTPS or FTP server
@@ -32,6 +42,10 @@ brew "docker", link: false
 brew "dockutil"
 # CLI tool for quick access to files and directories
 brew "fasd"
+# GNU multiple precision arithmetic library
+brew "gmp"
+# Generic library support script
+brew "libtool"
 # GitHub command-line tool
 brew "gh"
 # Distributed revision control system
@@ -40,14 +54,12 @@ brew "git"
 brew "git-lfs"
 # Declarative configuration for Gmail filters
 brew "gmailctl"
-# GNU multiple precision arithmetic library
-brew "gmp"
-# Generic library support script
-brew "libtool"
-# Manage compile and link flags for libraries
-brew "pkg-config"
+# Passphrase entry dialog utilizing the Assuan protocol
+brew "pinentry"
 # GNU Pretty Good Privacy (PGP) package
 brew "gnupg", link: false
+# Ping, but with a graph
+brew "gping"
 # Colorize logfiles and command output
 brew "grc"
 # GNU grep, egrep and fgrep
@@ -58,10 +70,16 @@ brew "gsl"
 brew "hadolint"
 # User-friendly cURL replacement (command-line HTTP client)
 brew "httpie"
+# Tools and libraries to manipulate images in many formats
+brew "imagemagick"
+# JSON diff and patch
+brew "jd"
 # Implementation of malloc emphasizing fragmentation avoidance
 brew "jemalloc"
 # Lightweight and flexible command-line JSON processor
 brew "jq"
+# Domain specific configuration language for defining JSON data
+brew "jsonnet"
 # Keep your Mac's application settings in sync
 brew "mackup"
 # Mac App Store command-line interface
@@ -72,10 +90,8 @@ brew "mtr"
 brew "namebench"
 # Port scanning utility for large networks
 brew "nmap"
-# Interpreted, interactive, object-oriented programming language
-brew "python@3.9"
-# Platform built on V8 to build network applications
-brew "node"
+# Adds an OCR text layer to scanned PDF files
+brew "ocrmypdf"
 # Cryptography and SSL/TLS Toolkit
 brew "openssl@3"
 # Pinentry for GPG on Mac
@@ -94,6 +110,8 @@ brew "siege"
 brew "speedtest-cli"
 # Version control system designed to be a better CVS
 brew "subversion"
+# Enables extra languages support for Tesseract
+brew "tesseract-lang"
 # Code-search similar to ack
 brew "the_silver_searcher"
 # Clean up files in directories based on their age
@@ -124,6 +142,8 @@ cask "elgato-control-center"
 cask "elgato-stream-deck"
 # VPN and encryption software
 cask "encryptme"
+# Free and open-source image editor
+cask "gimp"
 # Tools to protect your emails and files
 cask "gpg-suite"
 # Terminal emulator as alternative to Apple's Terminal app
@@ -132,6 +152,8 @@ cask "iterm2-beta"
 cask "karabiner-elements"
 # End-to-end encryption software
 cask "keybase"
+# Provides access to camera controls
+cask "logitech-camera-settings"
 # Software for Logitech devices
 cask "logitech-options"
 # Provides updates to various Microsoft products
@@ -142,6 +164,8 @@ cask "microsoft-edge"
 cask "microsoft-office"
 # Meet, chat, call, and collaborate in just one place
 cask "microsoft-teams"
+# Small, simple editor for beginner Python programmers
+cask "mu-editor"
 # Podcast platform
 cask "pocket-casts"
 # QuickLook plug-in that renders source code with syntax highlighting
@@ -160,6 +184,8 @@ cask "quik"
 cask "raspberry-pi-imager"
 # Emoji picker optimized for blind people
 cask "rocket"
+# Screenshot measurement and annotation tool
+cask "shottr"
 # Instant messaging application focusing on security
 cask "signal"
 # Screen capture tool with mark up and sharing features
