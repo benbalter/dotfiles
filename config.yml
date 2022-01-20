@@ -47,22 +47,24 @@ dotfiles_repo: https://github.com/benbalter/dotfiles
 dotfiles_repo_accept_hostkey: true
 dotfiles_repo_local_destination: ~/.files
 dotfiles_files:
+  - .Brewfile
+  - .bundle/config
+  - .digrc
+  - .gemrc
   - .gitconfig
   - .gitignore
-  - .irbrc
-  - .pryrc
-  - .Brewfile
-  - .gemrc
-  - .mackup.cfg
-  - .digrc
-  - .remarkrc
-  - .hushlogin
-  - .ssh/config
-  - .bundle/config
-  - .hushlogin
-  - .zshrc
   - .gnupg/gpg-agent.conf
   - .gnupg/gpg.conf
+  - .hushlogin
+  - .hushlogin
+  - .irbrc
+  - .mackup.cfg
+  - .pryrc
+  - .remarkrc
+  - .ssh/config
+  - .yamllint
+  - .zshrc
+  - heroku/config.json
 
 homebrew_upgrade_all_packages: true
 homebrew_brewfile_dir: ~/.files
