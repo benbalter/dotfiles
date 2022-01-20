@@ -76,6 +76,7 @@ directories_to_create:
   - ~/.bundle
   - ~/projects
   - ~/github
+  - ~/heroku
 
 macos_defaults:
   system:
