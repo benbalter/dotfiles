@@ -56,7 +56,6 @@ dotfiles_files:
   - .gnupg/gpg-agent.conf
   - .gnupg/gpg.conf
   - .hushlogin
-  - .hushlogin
   - .irbrc
   - .mackup.cfg
   - .pryrc
@@ -72,11 +71,12 @@ mas_upgrade_all_apps: true
 mas_installed_apps: []
 
 directories_to_create:
-  - ~/.ssh
   - ~/.bundle
-  - ~/projects
+  - ~/.gnupg
+  - ~/.ssh
   - ~/github
   - ~/heroku
+  - ~/projects
 
 macos_defaults:
   system:
