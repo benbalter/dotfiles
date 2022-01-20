@@ -38,9 +38,9 @@ dockitems_remove:
   - TV
   - News
   - Books
-  - 'App Store'
-  - 'System Preferences'
-  
+  - "App Store"
+  - "System Preferences"
+
 configure_sudoers: false
 
 dotfiles_repo: https://github.com/benbalter/dotfiles
@@ -61,6 +61,8 @@ dotfiles_files:
   - .bundle/config
   - .hushlogin
   - .zshrc
+  - .gnupg/gpg-agent.conf
+  - .gnupg/gpg.conf
 
 homebrew_upgrade_all_packages: true
 homebrew_brewfile_dir: ~/.files
