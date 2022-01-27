@@ -31,7 +31,6 @@ plugins=(
   macos
   node
   npm
-  osx
   safe-paste
   ssh-agent
   sudo
