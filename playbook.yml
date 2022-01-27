@@ -28,9 +28,6 @@
     - name: Setup App Store
       include_role:
         name: geerlingguy.mac.mas
-      vars:
-        mas_installed_apps: []
-        mas_signin_dialog: true
     - name: Setup Dock
       include_role:
         name: geerlingguy.mac.dock
