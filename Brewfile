@@ -36,14 +36,10 @@ brew "libtool"
 brew "gmp"
 # Dependency Manager for PHP
 brew "composer"
-# Open source programming language to build simple/reliable/efficient software
-brew "go"
-# Go dependency management tool
-brew "dep"
 # Good-lookin' diffs with diff-highlight and more
 brew "diff-so-fancy"
 # Pack, ship and run any application as a lightweight container
-brew "docker", link: false
+brew "docker"
 # Tool for managing dock items
 brew "dockutil"
 # CLI tool for quick access to files and directories
@@ -59,7 +55,9 @@ brew "gmailctl"
 # Passphrase entry dialog utilizing the Assuan protocol
 brew "pinentry"
 # GNU Pretty Good Privacy (PGP) package
-brew "gnupg", link: false
+brew "gnupg"
+# Open source programming language to build simple/reliable/efficient software
+brew "go"
 # Ping, but with a graph
 brew "gping"
 # Colorize logfiles and command output
@@ -88,8 +86,6 @@ brew "mackup"
 brew "mas"
 # 'traceroute' and 'ping' in a single tool
 brew "mtr"
-# DNS benchmark utility
-brew "namebench"
 # Port scanning utility for large networks
 brew "nmap"
 # Adds an OCR text layer to scanned PDF files
@@ -190,8 +186,6 @@ cask "rocket"
 cask "shottr"
 # Instant messaging application focusing on security
 cask "signal"
-# Screen capture tool with mark up and sharing features
-cask "skitch"
 # Team communication and collaboration software
 cask "slack-beta"
 # Music streaming service
