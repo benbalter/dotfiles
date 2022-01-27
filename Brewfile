@@ -30,6 +30,12 @@ brew "coffeescript"
 brew "openldap"
 # Get a file from an HTTP, HTTPS or FTP server
 brew "curl"
+# Generic library support script
+brew "libtool"
+# GNU multiple precision arithmetic library
+brew "gmp"
+# Dependency Manager for PHP
+brew "composer"
 # Open source programming language to build simple/reliable/efficient software
 brew "go"
 # Go dependency management tool
@@ -42,10 +48,6 @@ brew "docker", link: false
 brew "dockutil"
 # CLI tool for quick access to files and directories
 brew "fasd"
-# GNU multiple precision arithmetic library
-brew "gmp"
-# Generic library support script
-brew "libtool"
 # GitHub command-line tool
 brew "gh"
 # Distributed revision control system
@@ -212,6 +214,7 @@ mas "Calca", id: 635758264
 mas "Dark Reader for Safari", id: 1438243180
 mas "DuckDuckGo Privacy Essentials", id: 1482920575
 mas "GIF Brewery 3", id: 1081413713
+mas "iMovie", id: 408981434
 mas "Keynote", id: 409183694
 mas "Kindle", id: 405399194
 mas "Okta Extension App", id: 1439967473
