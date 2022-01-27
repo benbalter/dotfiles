@@ -64,6 +64,9 @@ dotfiles_files:
   - .yamllint
   - .zshrc
   - heroku/config.json
+  - Library/Spelling/LocalDictionary
+  - Library/LaunchAgents/com.balter.ben.tmpreaper.plist
+  - Library/LaunchAgents/com.balter.ben.update.plist
 
 homebrew_upgrade_all_packages: true
 homebrew_brewfile_dir: ~/.files
