@@ -82,6 +82,8 @@ directories_to_create:
   - ~/github
   - ~/heroku
   - ~/projects
+  - ~/Library/LaunchAgents
+  - ~/Library/Spelling
 
 macos_defaults:
   system:
