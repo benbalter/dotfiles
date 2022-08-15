@@ -6,7 +6,7 @@
 		<string>com.balter.ben.tmpreaper</string>
 		<key>ProgramArguments</key>
 		<array>
-			<string>/usr/local/sbin/tmpreaper</string>
+			<string>/opt/homebrew/sbin/tmpreaper</string>
 			<string>5d</string>
 			<string>/Users/benbalter/Downloads</string>
 		</array>
