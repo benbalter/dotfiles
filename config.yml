@@ -47,6 +47,7 @@ dotfiles_repo: https://github.com/benbalter/dotfiles
 dotfiles_repo_accept_hostkey: true
 dotfiles_repo_local_destination: ~/.files
 dotfiles_files:
+  - .asdfrc
   - .Brewfile
   - .bundle/config
   - .digrc

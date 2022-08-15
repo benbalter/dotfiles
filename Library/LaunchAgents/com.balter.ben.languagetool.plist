@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>KeepAlive</key>
+	<true/>
+	<key>Label</key>
+	<string>homebrew.mxcl.languagetool</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/opt/homebrew/opt/languagetool/bin/languagetool-server</string>
+		<string>--port</string>
+		<string>8081</string>
+		<string>--allow-origin</string>
+		<string>--premiumAlways</string>
+		<string>--allow-origin</string>
+		<string>--languageModel</string>
+		<string>/Users/benbalter/languagetool</string>
+	</array>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>StandardErrorPath</key>
+	<string>/opt/homebrew/var/log/languagetool/languagetool-server.log</string>
+	<key>StandardOutPath</key>
+	<string>/opt/homebrew/var/log/languagetool/languagetool-server.log</string>
+</dict>
+</plist>

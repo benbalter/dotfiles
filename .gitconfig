@@ -90,7 +90,7 @@
 	gpgsign = true
 
 [gpg]
-  program = gpg
+	program = gpg
 
 [url "https://github.com"]
   insteadOf = git://github.com

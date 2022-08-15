@@ -32,7 +32,7 @@ plugins=(
   node
   npm
   safe-paste
-  ssh-agent
+ # ssh-agent
   sudo
   vscode
   zsh-interactive-cd
@@ -47,3 +47,5 @@ source "$DOTFILES_ROOT/lib/auto-complete"
 source "$DOTFILES_ROOT/lib/aliases"
 
 test -e ${HOME}/.iterm2_shell_integration.zsh && source ${HOME}/.iterm2_shell_integration.zsh
+
+. /opt/homebrew/opt/asdf/libexec/asdf.sh

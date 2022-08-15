@@ -16,6 +16,8 @@ brew "readline"
 brew "ansible"
 # Checks ansible playbooks for practices and behaviour
 brew "ansible-lint"
+# Powerful, enterprise-ready, open source web server with automatic HTTPS
+brew "caddy", restart_service: true
 # Interpreted, interactive, object-oriented programming language
 brew "python@3.9"
 # Manage compile and link flags for libraries
@@ -80,6 +82,8 @@ brew "jemalloc"
 brew "jq"
 # Domain specific configuration language for defining JSON data
 brew "jsonnet"
+# Style and grammar checker
+brew "languagetool", restart_service: true
 # Keep your Mac's application settings in sync
 brew "mackup"
 # Mac App Store command-line interface
@@ -88,6 +92,8 @@ brew "mas"
 brew "mtr"
 # Port scanning utility for large networks
 brew "nmap"
+# Libraries for security-enabled client and server applications
+brew "nss"
 # Adds an OCR text layer to scanned PDF files
 brew "ocrmypdf"
 # Cryptography and SSL/TLS Toolkit
@@ -142,6 +148,8 @@ cask "elgato-stream-deck"
 cask "encryptme"
 # Free and open-source image editor
 cask "gimp"
+# Client for the Google Drive storage service
+cask "google-drive"
 # Tools to protect your emails and files
 cask "gpg-suite"
 # Terminal emulator as alternative to Apple's Terminal app
@@ -207,11 +215,14 @@ mas "Bear", id: 1091189122
 mas "Calca", id: 635758264
 mas "Dark Reader for Safari", id: 1438243180
 mas "DuckDuckGo Privacy Essentials", id: 1482920575
+mas "feedly", id: 865500966
 mas "GIF Brewery 3", id: 1081413713
 mas "iMovie", id: 408981434
 mas "Keynote", id: 409183694
 mas "Kindle", id: 405399194
+mas "LanguageTool", id: 1534275760
 mas "Okta Extension App", id: 1439967473
 mas "StopTheMadness", id: 1376402589
 mas "Things", id: 904280696
 mas "TweetDeck", id: 485812721
+mas "Twitter", id: 1482454543
