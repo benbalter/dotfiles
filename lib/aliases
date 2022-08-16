@@ -16,7 +16,7 @@ alias gr="gh repo view"
 alias reset="git reset HEAD --hard; git clean -f -d"
 alias clean="git branch --merged | grep -v '\*' | xargs -n 1 git branch -d"
 alias ggb="git commit -m ':gem: bump'"
-gccd(){ gh repo clone "$1"; cd $(basename "$1") || exit; }
+gccd(){ gh repo clone "$1"; cd "$(basename "$1")" || exit; }
 alias branches="git branch -v"
 
 # fasd
