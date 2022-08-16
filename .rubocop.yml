@@ -1,5 +1,13 @@
-Metrics/LineLength:
+Layout/LineLength:
   Enabled: false
 
-Style/AccessorMethodName:
+Naming/AccessorMethodName:
   Enabled: false
+
+Lint/SuppressedException:
+  Exclude:
+    - .pryrc
+
+Lint/UselessAssignment:
+  Exclude:
+    - .pryrc

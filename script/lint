@@ -2,7 +2,9 @@
 
 set -e
 
-source env/bin/activate
+# shellcheck disable=SC1091
+. env/bin/activate
+
 ansible-lint playbook.yml
-yamllint *.yml .github/workflows/*.yml
+yamllint ./*.yml .github/workflows/*.yml
 deactivate

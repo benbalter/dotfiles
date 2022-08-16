@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 begin
   require 'awesome_print'
   # The following line enables awesome_print for all pry output,
@@ -6,5 +8,5 @@ begin
 
   # If you want awesome_print without automatic pagination, use the line below
   # Pry.config.print = proc { |output, value| output.puts value.ai }
-rescue LoadError => err
+rescue LoadError => e
 end
