@@ -1,5 +1,5 @@
-Metrics/LineLength:
+Layout/LineLength:
   Enabled: false
 
-Style/AccessorMethodName:
+Naming/AccessorMethodName:
   Enabled: false
