@@ -3,3 +3,11 @@ Layout/LineLength:
 
 Naming/AccessorMethodName:
   Enabled: false
+
+Lint/SuppressedException:
+  Exclude:
+    - .pryrc
+
+Lint/UselessAssignment:
+  Exclude:
+    - .pryrc

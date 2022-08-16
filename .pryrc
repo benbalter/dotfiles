@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 begin
   require 'awesome_print'
   # The following line enables awesome_print for all pry output,
