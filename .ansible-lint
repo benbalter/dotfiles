@@ -1,3 +1,7 @@
 skip_list:
   - role-name
   - git-latest
+
+exclude_paths:
+  - ../../.ansible/
+  - ../../../.ansible
