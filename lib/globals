@@ -2,27 +2,43 @@
 # Set up some common global variables
 
 # Used internally
-export DOTFILES_ROOT=${DOTFILES_ROOT:-"$HOME/.files"}
+DOTFILES_ROOT=${DOTFILES_ROOT:-"$HOME/.files"}
+export DOTFILES_ROOT
 
 # Setup cli tools
-export HOMEBREW_CASK_OPTS="--appdir=/Applications"
-export GOPATH=$HOME/go
-export PATH="./bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/local/sbin:$GOPATH/bin:/usr/local/opt/gnupg@2.1/bin:$PATH"
+HOMEBREW_CASK_OPTS="--appdir=/Applications"
+export HOMEBREW_CASK_OPTS
+
+GOPATH=$HOME/go
+export GOPATH
+
+PATH="./bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/local/sbin:$GOPATH/bin:/usr/local/opt/gnupg@2.1/bin:$PATH"
+export PATH
 
 # GitHub token with no scope, used to get around API limits
 if [ "$(uname)" = "Darwin" ]; then
-  export HOMEBREW_GITHUB_API_TOKEN=$(cat ~/.token)
+  HOMEBREW_GITHUB_API_TOKEN=$(cat ~/.token)
+  export HOMEBREW_GITHUB_API_TOKEN
 fi
 
 # Fix for global node modules
 export NODE_PATH=./node_modules:/usr/local/lib/node_modules
 
 # ZSH settings and initializations
-export ZSH=$HOME/.oh-my-zsh
-export SHELL=$(which zsh)
-export ZSH_THEME="robbyrussell"
-export DISABLE_UPDATE_PROMPT=true
-export COMPLETION_WAITING_DOTS="true"
+ZSH=$HOME/.oh-my-zsh
+export ZSH
+
+SHELL=$(which zsh)
+export SHELL
+
+ZSH_THEME="robbyrussell"
+export ZSH_THEME
+
+DISABLE_UPDATE_PROMPT=true
+export DISABLE_UPDATE_PROMPT
+
+COMPLETION_WAITING_DOTS="true"
+export COMPLETION_WAITING_DOTS
 
 # You've got mail
 unset MAILCHECK
