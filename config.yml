@@ -45,6 +45,7 @@ configure_sudoers: false
 
 dotfiles_repo: https://github.com/benbalter/dotfiles
 dotfiles_repo_accept_hostkey: true
+dotfiles_repo_version: master
 dotfiles_repo_local_destination: ~/.files
 dotfiles_files:
   - .asdfrc
