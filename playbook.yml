@@ -25,6 +25,7 @@
       ansible.builtin.git:
         repo: https://github.com/robbyrussell/oh-my-zsh
         dest: ~/.oh-my-zsh
+        branch: main
     - name: Setup App Store
       ansible.builtin.include_role:
         name: geerlingguy.mac.mas
