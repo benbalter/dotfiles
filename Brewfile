@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+tap 'artginzburg/tap'
 tap 'github/bootstrap'
 tap 'homebrew/bundle'
 tap 'homebrew/cask'
