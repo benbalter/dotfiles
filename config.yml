@@ -74,8 +74,7 @@ homebrew_upgrade_all_packages: true
 homebrew_brewfile_dir: ~/.files
 mas_upgrade_all_apps: true
 mas_installed_apps: []
-mas_signin_dialog: true
-mas_email: ben@balter.com
+mas_signin_dialog: false
 
 directories_to_create:
   - ~/.bundle
