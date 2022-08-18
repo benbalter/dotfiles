@@ -1,6 +1,8 @@
 {
   "ignore": [
     ".github/workflows/ci.yml",
-    ".Brewfile"
-  ]
+    ".Brewfile",
+    "Brewfile"
+  ],
+  "noSymlinks": true
 }
