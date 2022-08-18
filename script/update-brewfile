@@ -1,3 +1,4 @@
 #!/bin/sh
 
 brew bundle dump --global --describe --force
+bundle exec rubocop -A
