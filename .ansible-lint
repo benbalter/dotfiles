@@ -3,5 +3,6 @@ skip_list:
   - git-latest
 
 exclude_paths:
+  - ../.ansible/
   - ../../.ansible/
   - ../../../.ansible
