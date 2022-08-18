@@ -11,3 +11,8 @@ Lint/SuppressedException:
 Lint/UselessAssignment:
   Exclude:
     - .pryrc
+
+AllCops:
+  NewCops: enable
+  Exclude:
+    - env/**/*
