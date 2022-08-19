@@ -1,91 +1,91 @@
 [hub]
-  protocol = https
+	protocol = https
 
 [credential]
 	helper = osxkeychain
 
 [core]
-  excludesfile = ~/.gitignore
-  whitespace = trailing-space,space-before-tab
-  pager = "diff-so-fancy | less --tabs=1,5 -R"
-  autocrlf = input
-  whitespace = fix,-indent-with-non-tab,trailing-space,cr-at-eol
+	excludesfile = ~/.gitignore
+	whitespace = trailing-space,space-before-tab
+	pager = "diff-so-fancy | less --tabs=1,5 -R"
+	autocrlf = input
+	whitespace = fix,-indent-with-non-tab,trailing-space,cr-at-eol
 	editor = code --wait
 
 [user]
-  name = Ben Balter
-  email = ben@balter.com
-  signingkey = 07C673FBF30E01C0C3427AB8DBB67C246AD356C4!
+	name = Ben Balter
+	email = ben@balter.com
+	signingkey = 07C673FBF30E01C0C3427AB8DBB67C246AD356C4!
 
 [color]
-  branch = always
-  diff = always
-  grep = always
-  interactive = always
-  pager = true
-  showbranch = auto
-  status = auto
-  ui = always
+	branch = always
+	diff = always
+	grep = always
+	interactive = always
+	pager = true
+	showbranch = auto
+	status = auto
+	ui = always
 
 [color "interactive"]
-    error = red bold
+	error = red bold
 
 [color "branch"]
-    current = yellow reverse
-    local = yellow
-    remote = green
+	current = yellow reverse
+	local = yellow
+	remote = green
 
 [color "diff"]
-    meta = yellow
-    frag = magenta
-    old = red
-    new = green
-    whitespace = white reverse
+	meta = yellow
+	frag = magenta
+	old = red
+	new = green
+	whitespace = white reverse
 
 [color "status"]
-    added = yellow
-    changed = green
-    untracked = cyan
-    branch = magenta
+	added = yellow
+	changed = green
+	untracked = cyan
+	branch = magenta
 
 [apply]
-  whitespace = fix
+	whitespace = fix
 
 [github]
-  user = benbalter
-  token = !security find-internet-password -a benbalter -s github.com -w
+	user = benbalter
+	token = !security find-internet-password -a benbalter -s github.com -w
 
 [push]
 	default = simple
 	autoSetupRemote = true
 
 [git-up "bundler"]
-  check = true
-  autoinstall = true
+	check = true
+	autoinstall = true
 
 [filter "media"]
-  required = true
-  clean = git media clean %f
-  smudge = git media smudge %f
+	required = true
+	clean = git media clean %f
+	smudge = git media smudge %f
 
 [filter "lfs"]
-  required = true
+	required = true
 	clean = git-lfs clean -- %f
 	smudge = git-lfs smudge -- %f
 	process = git-lfs filter-process
 
 [ghi]
-  token = !security find-internet-password -a benbalter -s github.com -l 'ghi token' -w
+	token = !security find-internet-password -a benbalter -s github.com -l 'ghi token' -w
 
 #[branch "master"]
 #  remote = origin
 #  merge = refs/heads/master
 
 [color "diff-highlight"]
-  oldHighlight = red bold 52
-  newNormal = green bold
-  newHighlight = green bold 22
-  oldNormal = red bold
+	oldHighlight = red bold 52
+	newNormal = green bold
+	newHighlight = green bold 22
+	oldNormal = red bold
 
 [commit]
 	gpgsign = true
@@ -94,12 +94,13 @@
 	program = gpg
 
 [url "https://github.com"]
-  insteadOf = git://github.com
+	insteadOf = git://github.com
 
 [diff]
-    tool = default-difftool
+	tool = default-difftool
 
 [difftool "default-difftool"]
-    cmd = code --wait --diff $LOCAL $REMOTE
+	cmd = code --wait --diff $LOCAL $REMOTE
+	
 [init]
 	defaultBranch = main
