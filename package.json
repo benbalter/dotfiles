@@ -36,7 +36,7 @@
     "remark-validate-links": "^12.1.0",
     "typographic-em-dashes": "^1.0.2",
     "typographic-en-dashes": "^1.0.1",
-    "typographic-markdown": "^1.0.2",
+    "typographic-markdown": "^3.1.1",
     "typographic-numbers": "^2.0.1",
     "typographic-single-spaces": "^1.0.2"
   }
