@@ -20,7 +20,7 @@ plugins=(
   cp
   dotenv
   extract
-  fasd
+  zoxide
   gem
   git
   git-extras

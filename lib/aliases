@@ -20,7 +20,7 @@ gccd(){ gh repo clone "$1"; cd "$(basename "$1")" || exit; }
 alias branches="git branch -v"
 
 # fasd
-alias j='fasd_cd -d'
+alias j='z'
 
 # Script/*
 alias sb="script/bootstrap"
