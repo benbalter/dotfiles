@@ -49,3 +49,5 @@ source "$DOTFILES_ROOT/lib/aliases"
 test -e ${HOME}/.iterm2_shell_integration.zsh && source ${HOME}/.iterm2_shell_integration.zsh
 
 . /opt/homebrew/opt/asdf/libexec/asdf.sh
+# Created by `pipx` on 2023-12-27 20:40:19
+export PATH="$PATH:/Users/benbalter/.local/bin"

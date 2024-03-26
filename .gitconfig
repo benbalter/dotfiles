@@ -15,7 +15,7 @@
 [user]
 	name = Ben Balter
 	email = ben@balter.com
-	signingkey = 07C673FBF30E01C0C3427AB8DBB67C246AD356C4!
+	signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJVznDI5iSIoLzOLMW54ZU6fnCe9JHd/tetOimr9G3c5
 
 [color]
 	branch = always
@@ -92,6 +92,7 @@
 
 [gpg]
 	program = gpg
+	format = ssh
 
 [url "https://github.com"]
 	insteadOf = git://github.com
@@ -104,3 +105,5 @@
 	
 [init]
 	defaultBranch = main
+[gpg "ssh"]
+	program = /Applications/1Password.app/Contents/MacOS/op-ssh-sign

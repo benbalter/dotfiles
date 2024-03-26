@@ -63,7 +63,6 @@
     "markdownShortcuts.icons.bullets": false,
     "markdownShortcuts.icons.italic": false,
     "markdownShortcuts.icons.strikethrough": false,
-    "workbench.activityBar.visible": true,
     "languageToolLinter.external.url": "http://localhost:7778",
     "languageToolLinter.languageTool.motherTongue": "en-US",
     "languageToolLinter.languageTool.language": "en-US",

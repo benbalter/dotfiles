@@ -8,12 +8,12 @@
 	<string>homebrew.mxcl.languagetool</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>/opt/homebrew/opt/languagetool/bin/languagetool-server</string>
+		<string>java -cp /Users/benbalter/Downloads/LanguageTool-6.3/languagetool-server.jar</string>
 		<string>--port</string>
 		<string>8081</string>
 		<string>--allow-origin</string>
 		<string>--premiumAlways</string>
-		<string>--allow-origin</string>
+		<string>--verbose</string>
 		<string>--languageModel</string>
 		<string>/Users/benbalter/languagetool</string>
 	</array>
