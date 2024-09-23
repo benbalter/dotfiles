@@ -19,9 +19,11 @@
 
 ## Setting up a new machine from scratch
 
-1. Vist [`strap.mikemcquaid.com`](https://strap.mikemcquaid.com)
-2. Download `strap.sh`
-3. `bash ~/Downloads/strap.sh`
+1. `cd ~/`
+2. `git clone https://github.com/benbalter/dotfiles`
+3. Vist [`strap.mikemcquaid.com`](https://strap.mikemcquaid.com)
+4. Download `strap.sh`
+5. `bash ~/Downloads/strap.sh`
 
 ## How to update dependencies
 
