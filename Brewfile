@@ -303,8 +303,6 @@ cask 'keybase'
 cask 'kindle'
 # Free cross-platform office suite, fresh version
 cask 'libreoffice'
-# Provides access to camera controls
-cask 'logitech-camera-settings'
 # Software for Logitech devices
 cask 'logitech-options'
 # Full TeX Live distribution with GUI applications
@@ -319,6 +317,7 @@ cask 'microsoft-office'
 cask 'microsoft-teams'
 # Minimal installer for conda
 cask 'miniconda'
+cask 'qflipper'
 # Cross-platform MQTT 5.0 Desktop Client
 cask 'mqttx'
 # Small, simple editor for beginner Python programmers
@@ -363,6 +362,7 @@ cask 'steam'
 cask 'unclack'
 # Open-source code editor
 cask 'visual-studio-code'
+cask 'visual-studio-code@insiders'
 # HTML to PDF renderer
 cask 'wkhtmltopdf'
 # Application for generating TOTP and HOTP codes
