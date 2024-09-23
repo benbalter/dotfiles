@@ -245,8 +245,6 @@ brew 'yq'
 brew 'zoxide'
 # UNIX shell (command interpreter)
 brew 'zsh'
-# Permanent TouchID support for sudo
-brew 'artginzburg/tap/sudo-touchid'
 # Soapy SDR plugin for Hack RF
 brew 'pothosware/pothos/soapyhackrf'
 # A CLI tool to build for the Shopify platform
