@@ -19,7 +19,7 @@
 
 ## Setting up a new machine from scratch
 
-1. Login to [osx-strap.herokuapp.com](https://osx-strap.herokuapp.com/) (or [strap.githubapp.com](https://strap.githubapp.com) for GitHubbers)
+1. Vist [`strap.mikemcquaid.com`](https://strap.mikemcquaid.com)
 2. Download `strap.sh`
 3. `bash ~/Downloads/strap.sh`
 
