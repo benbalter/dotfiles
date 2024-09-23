@@ -275,11 +275,14 @@ cask 'dropbox'
 cask 'elgato-control-center'
 # Assign keys, and then decorate and label them
 cask 'elgato-stream-deck'
+cask 'displaylink'
 cask 'font-hack-nerd-font'
 # Free and open-source image editor
 cask 'gimp'
 # Desktop client for GitHub repositories
 cask 'github@beta'
+cask 'elgato-camera-hub'
+cask 'logitech-g-hub'
 # Web browser
 cask 'google-chrome'
 # Client for the Google Drive storage service
