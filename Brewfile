@@ -359,7 +359,6 @@ mas 'Dark Reader for Safari', id: 1_438_243_180
 mas 'DuckDuckGo Privacy for Safari', id: 1_482_920_575
 mas 'feedly', id: 865_500_966
 mas 'GhostText', id: 1_552_641_506
-mas 'GIF Brewery 3', id: 1_081_413_713
 mas 'Hush', id: 1_544_743_900
 mas 'iMovie', id: 408_981_434
 mas 'JSONPeep', id: 1_458_969_831
