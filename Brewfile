@@ -253,7 +253,7 @@ cask 'authy'
 # Use your phone as a high-quality webcam with image tuning controls
 cask 'camo-studio'
 # Utility to export your existing Cloudflare resources as Terraform resources
-cask 'cf-terraforming'
+brew 'cf-terraforming'
 # App to build and share containerised applications and microservices
 cask 'docker'
 # Client for the Dropbox cloud storage service
