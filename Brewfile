@@ -196,8 +196,6 @@ brew "siege"
 brew "speedtest-cli"
 # Version control system designed to be a better CVS
 brew "subversion"
-# Tool to build, change, and version infrastructure
-brew "terraform"
 # Detect compliance and security violations across Infrastructure as Code
 brew "terrascan"
 # Enables extra languages support for Tesseract
@@ -279,14 +277,10 @@ cask "google-drive"
 cask "gpg-suite"
 # Software-defined radio receiver powered by GNU Radio and Qt
 cask "gqrx"
-# Light, Electron-based Wrapper around GraphiQL
-cask "graphiql"
 # Terminal emulator as alternative to Apple's Terminal app
 cask "iterm2@beta"
 # Keyboard customiser
 cask "karabiner-elements"
-# Interface for reading and syncing eBooks
-cask "kindle"
 # Free cross-platform office suite, fresh version
 cask "libreoffice"
 # Software for Logitech devices
@@ -309,6 +303,8 @@ cask "mitmproxy"
 cask "mqttx"
 # Small, simple editor for beginner Python programmers
 cask "mu-editor"
+# Toggle mute, video, record, share, and leave a meeting in a call app
+cask "mutedeck"
 # Open-source software for live streaming and screen recording
 cask "obs"
 # Knowledge base that works on top of a local folder of plain text Markdown files
@@ -357,8 +353,6 @@ cask "unclack"
 cask "visual-studio-code"
 # Code editor
 cask "visual-studio-code@insiders"
-# HTML to PDF renderer
-cask "wkhtmltopdf"
 # Application for generating TOTP and HOTP codes
 cask "yubico-authenticator"
 # Video communication and virtual meeting platform
@@ -374,6 +368,7 @@ mas "Hush", id: 1544743900
 mas "iMovie", id: 408981434
 mas "JSONPeep", id: 1458969831
 mas "Keynote", id: 409183694
+mas "Kindle", id: 302584613
 mas "MeetingBar", id: 1532419400
 mas "Okta Extension App", id: 1439967473
 mas "Open In Webmail", id: 1451552749
