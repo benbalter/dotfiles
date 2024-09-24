@@ -151,7 +151,7 @@ brew 'maven'
 # Protocol buffers (Google's data interchange format)
 brew 'protobuf'
 # Intercept, modify, replay, save HTTP/S traffic
-brew 'mitmproxy'
+cask 'mitmproxy'
 # 'traceroute' and 'ping' in a single tool
 brew 'mtr'
 # Port scanning utility for large networks
