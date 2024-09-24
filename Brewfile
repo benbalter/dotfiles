@@ -263,8 +263,6 @@ cask 'authy'
 cask 'camo-studio'
 # Utility to export your existing Cloudflare resources as Terraform resources
 cask 'cf-terraforming'
-# Clipboard manager
-cask 'copyclip'
 # App to build and share containerised applications and microservices
 cask 'docker'
 # Client for the Dropbox cloud storage service
