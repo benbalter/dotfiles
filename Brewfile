@@ -318,8 +318,6 @@ cask 'qflipper'
 cask 'mqttx'
 # Small, simple editor for beginner Python programmers
 cask 'mu-editor'
-# Unofficial desktop client for F1TV
-cask 'multiviewer-for-f1'
 # Open-source software for live streaming and screen recording
 cask 'obs'
 # Knowledge base that works on top of a local folder of plain text Markdown files
