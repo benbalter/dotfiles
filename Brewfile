@@ -58,8 +58,6 @@ brew 'openldap'
 brew 'diff-so-fancy'
 # Tool for managing dock items
 brew 'dockutil'
-# Command-line DNS client
-brew 'dog'
 # Read, write, modify, and display EXIF data on the command-line
 brew 'exif'
 # Perl lib for reading and writing EXIF metadata
@@ -380,7 +378,6 @@ mas 'URL Linker', id: 1_289_119_450
 mas 'Wayback Machine', id: 1_472_432_422
 mas 'WhatsApp', id: 1_147_396_723
 vscode '1password.op-vscode'
-vscode 'coenraads.bracket-pair-colorizer'
 vscode 'davidlday.languagetool-linter'
 vscode 'github.codespaces'
 vscode 'github.copilot'
