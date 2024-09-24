@@ -4,15 +4,6 @@ dockitems_persist:
   - name: Safari
     path: "/Applications/Safari.app/"
     pos: 1
-  - name: Pocket Casts
-    path: "/Applications/Pocket Casts.app/"
-    pos: 2
-  - name: Things
-    path: "/Applications/Things.app/"
-    pos: 3
-  - name: Bear
-    path: "/Applications/Bear.app/"
-    pos: 4
   - name: Spotify
     path: "/Applications/Spotify.app/"
     pos: 5
