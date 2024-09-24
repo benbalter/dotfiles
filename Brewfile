@@ -42,8 +42,6 @@ brew 'asdf'
 brew 'python@3.11'
 # Microsoft Azure CLI 2.0
 brew 'azure-cli'
-# Powerful, enterprise-ready, open source web server with automatic HTTPS
-brew 'caddy', restart_service: true
 # Statistics utility to count lines of code
 brew 'cloc'
 # Cross-platform make
