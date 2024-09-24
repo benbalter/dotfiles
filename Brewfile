@@ -295,8 +295,6 @@ cask 'graphiql'
 cask 'iterm2@beta'
 # Keyboard customiser
 cask 'karabiner-elements'
-# End-to-end encryption software
-cask 'keybase'
 # Interface for reading and syncing eBooks
 cask 'kindle'
 # Free cross-platform office suite, fresh version
