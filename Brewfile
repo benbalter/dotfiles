@@ -1,11 +1,9 @@
-tap "artginzburg/tap"
-tap "cloudflare/cloudflare"
+
 tap "github/bootstrap"
 tap "homebrew/bundle"
 tap "homebrew/command-not-found"
 tap "homebrew/services"
-tap "pothosware/pothos"
-tap "shopify/shopify"
+
 # Search tool like grep, but optimized for programmers
 brew "ack"
 # Run your GitHub Actions locally
@@ -36,8 +34,6 @@ brew "ansible-lint"
 brew "git"
 # Extendable version manager with support for Ruby, Node.js, Erlang & more
 brew "asdf"
-# Microsoft Azure CLI 2.0
-brew "azure-cli"
 # Powerful, enterprise-ready, open source web server with automatic HTTPS
 brew "caddy", restart_service: :changed
 # Statistics utility to count lines of code
@@ -254,21 +250,15 @@ brew "zsh"
 brew "cloudflare/cloudflare/cf-terraforming"
 # Soapy SDR plugin for Hack RF
 brew "pothosware/pothos/soapyhackrf"
-# A CLI tool to build for the Shopify platform
-brew "shopify/shopify/shopify-cli"
 # Password manager that keeps all passwords secure behind one password
 cask "1password"
 # Command-line interface for 1Password
 cask "1password-cli"
 # Android SDK component
-cask "android-platform-tools"
-# Inspect application bundles
 cask "apparency"
 # USB 3.0 to gigabit ethernet drivers for ASIX Electronics devices
 cask "asix-ax88179"
 # Two-factor authentication software
-cask "authy"
-# Open source IDE for exploring and testing APIs
 cask "bruno"
 # Use your phone as a high-quality webcam with image tuning controls
 cask "camo-studio"
@@ -288,8 +278,6 @@ cask "font-hack-nerd-font"
 # Terminal emulator that uses platform-native UI and GPU acceleration
 cask "ghostty"
 # Free and open-source image editor
-cask "gimp"
-# Desktop client for GitHub repositories
 cask "github@beta"
 # Web browser
 cask "google-chrome"
@@ -305,14 +293,8 @@ cask "iterm2@beta"
 cask "karabiner-elements"
 # Grammar, spelling and style suggestions in all the writing apps
 cask "languagetool-desktop"
-# Free cross-platform office suite, fresh version
-cask "libreoffice"
 # Software for Logitech devices
 cask "logi-options+"
-# Screen and video recording software
-cask "loom"
-# Full TeX Live distribution with GUI applications
-cask "mactex"
 # Provides updates to various Microsoft products
 cask "microsoft-auto-update"
 # Multi-platform web browser
@@ -333,8 +315,6 @@ cask "mu-editor"
 cask "mutedeck"
 # Open-source software for live streaming and screen recording
 cask "obs"
-# Knowledge base that works on top of a local folder of plain text Markdown files
-cask "obsidian"
 # Network utility for sending / receiving TCP, UDP, SSL
 cask "packetsender"
 # Extracts pages, splits, merges, mixes and rotates PDF files
