@@ -10,7 +10,6 @@ echo "Attempting to disable Comic Sans MS..."
 # This will work for user-installed fonts, but system fonts may be protected
 
 # Font paths to check
-FONT_NAME="Comic Sans MS"
 USER_FONTS="$HOME/Library/Fonts"
 SYSTEM_FONTS="/Library/Fonts"
 
@@ -19,15 +18,27 @@ disable_font() {
   local font_path="$1"
   
   if [ -d "$font_path" ]; then
-    # Look for Comic Sans files
-    if find "$font_path" -iname "*comic*sans*.ttf" -o -iname "*comic*sans*.otf" 2>/dev/null | grep -q .; then
+    # Look for Comic Sans files and store results
+    local comic_fonts
+    comic_fonts=$(find "$font_path" \( -iname "*comic*sans*.ttf" -o -iname "*comic*sans*.otf" \) 2>/dev/null || true)
+    
+    if [ -n "$comic_fonts" ]; then
       echo "Found Comic Sans in $font_path"
       
-      # Try to disable using Font Book
-      # Note: This only works for user fonts, not system fonts
-      osascript -e "tell application \"Font Book\" to disable font \"$FONT_NAME\"" 2>/dev/null || true
-      
-      echo "Attempted to disable Comic Sans MS"
+      # Try to disable each font file found
+      while IFS= read -r font_file; do
+        if [ -n "$font_file" ]; then
+          # Extract the font name from the file
+          local font_basename
+          font_basename=$(basename "$font_file" | sed 's/\.[^.]*$//')
+          
+          # Try to disable using Font Book
+          # Note: This only works for user fonts, not system fonts
+          osascript -e "tell application \"Font Book\" to disable font \"$font_basename\"" 2>/dev/null || true
+          
+          echo "Attempted to disable: $font_basename"
+        fi
+      done <<< "$comic_fonts"
     fi
   fi
 }
