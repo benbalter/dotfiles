@@ -38,7 +38,7 @@ plugins=(
   zsh-interactive-cd
 )
 
-source $ZSH/oh-my-zsh.sh
+source "$ZSH/oh-my-zsh.sh"
 
 # shellcheck source=lib/auto-complete
 source "$DOTFILES_ROOT/lib/auto-complete"
@@ -46,7 +46,7 @@ source "$DOTFILES_ROOT/lib/auto-complete"
 # shellcheck source=lib/aliases
 source "$DOTFILES_ROOT/lib/aliases"
 
-test -e ${HOME}/.iterm2_shell_integration.zsh && source ${HOME}/.iterm2_shell_integration.zsh
+test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
 . /opt/homebrew/opt/asdf/libexec/asdf.sh
 # Created by `pipx` on 2023-12-27 20:40:19
