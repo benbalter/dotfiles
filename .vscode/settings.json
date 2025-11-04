@@ -66,5 +66,7 @@
     "languageToolLinter.external.url": "http://localhost:7778",
     "languageToolLinter.languageTool.motherTongue": "en-US",
     "languageToolLinter.languageTool.language": "en-US",
-    "workbench.sideBar.location": "left"
+    "workbench.sideBar.location": "left",
+    "editor.fontFamily": "'Hack Nerd Font', Menlo, Monaco, 'Courier New', monospace",
+    "terminal.integrated.fontFamily": "'Hack Nerd Font', Menlo, Monaco, 'Courier New', monospace"
 }
