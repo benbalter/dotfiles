@@ -16,8 +16,8 @@ PATH="./bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/local/sbin:
 export PATH
 
 # GitHub token with no scope, used to get around API limits
-if [ "$(uname)" = "Darwin" ]; then
-  HOMEBREW_GITHUB_API_TOKEN=$(cat ~/.token)
+if [ "$(uname)" = "Darwin" ] && [ -f ~/.token ]; then
+  HOMEBREW_GITHUB_API_TOKEN=$(<~/.token)
   export HOMEBREW_GITHUB_API_TOKEN
 fi
 
@@ -28,7 +28,8 @@ export NODE_PATH=./node_modules:/usr/local/lib/node_modules
 ZSH=$HOME/.oh-my-zsh
 export ZSH
 
-SHELL=$(which zsh)
+# Use current shell or fallback to zsh in PATH
+SHELL=${SHELL:-$(command -v zsh)}
 export SHELL
 
 ZSH_THEME="robbyrussell"

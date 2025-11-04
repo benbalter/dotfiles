@@ -4,9 +4,8 @@
 
 set -e
 
-pushd ~/.files
+cd ~/.files
 brew update
 brew outdated
 brew upgrade
 mas upgrade
-popd
