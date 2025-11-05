@@ -23,7 +23,7 @@
         name: geerlingguy.mac.homebrew
     - name: Set up oh-my-zsh
       ansible.builtin.git:
-        repo: https://github.com/robbyrussell/oh-my-zsh
+        repo: https://github.com/ohmyzsh/ohmyzsh
         dest: ~/.oh-my-zsh
     - name: Setup App Store
       ansible.builtin.include_role:
