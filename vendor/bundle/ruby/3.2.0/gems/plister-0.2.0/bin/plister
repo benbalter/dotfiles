@@ -1,0 +1,33 @@
+#!/usr/bin/env ruby
+
+require 'slop'
+require_relative '../lib/plister'
+
+opts = Slop.parse do |o|
+  o.banner = 'usage: plister [file] [options]'
+  o.bool '-h', '--help',    'display usage information'
+  o.bool '-d', '--dump',    'dump preferences to YAML'
+  o.bool '-s', '--stdout',  'dump preferences to STDOUT'
+  o.on   '-v', '--version', 'print the version' do
+    puts Plister::VERSION
+    exit
+  end
+end
+
+if opts.help?
+  puts opts
+  exit 1
+elsif opts.dump?
+  exporter = Plister::Exporter.new(opts.arguments.first)
+  puts "Dumping preferences to #{exporter.path}"
+  exporter.export
+elsif opts.stdout?
+  exporter = Plister::Exporter.new(opts.arguments.first)
+  puts exporter.to_s
+else
+  preferences = Plister.preferences(opts.arguments.first)
+  puts "Using preference file #{preferences.path}"
+  puts "Found preferences for #{preferences.domains.count} applications"
+  preferences.set!(verbose: true)
+  puts 'Preferences set!'
+end

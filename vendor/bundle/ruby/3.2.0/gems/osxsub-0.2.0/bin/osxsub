@@ -1,0 +1,95 @@
+#!/usr/bin/env ruby
+# -*- encoding: utf-8 -*-
+require 'optparse'
+
+libdir = File.expand_path File.join(File.dirname(__FILE__), "/../lib")
+$:.unshift libdir unless $:.include? libdir
+require 'osxsub'
+
+options = ARGV.options do |opts|
+  opts.banner = <<-BANNER
+osxsub: OS X Text Substitution Preferences on the command line
+
+Usage: Run STDIN through Text Substitions set in System Preferences -> Language & Text
+
+  echo "Copyright (c) 2013 Mark Wunsch" | osxsub
+  #=> Copyright © 2013 Mark Wunsch
+
+  BANNER
+  opts.version = OsxSub::VERSION
+
+  opts.on('-p', '--print', "Print an XML Plist of the Text Substitution Preferences") do
+    puts OsxSub::NSUserReplacementItems.from_plist_buddy.to_plist
+    exit
+  end
+
+  opts.on('-m', '--merge [PATH]', "Merge an XML Plist (from either PATH or STDIN) into the Preferences") do |path|
+    xml = if path && !path.empty?
+      full_path = File.expand_path(path)
+      opts.abort("Plist file does not exist!") unless File.exists? full_path
+      IO.read(full_path)
+    elsif !STDIN.tty?
+      STDIN.read
+    else
+      opts.abort("Must give either a PATH or a Plist in STDIN")
+    end
+    subs = OsxSub::NSUserReplacementItems.from_xml(xml)
+    subs.merge!
+    puts subs.to_plist
+    exit
+  end
+
+  opts.on('-a', '--add REPLACE,WITH', Array, "Add a new pair of substitions to the list") do |list|
+    opts.abort "REPLACE,WITH must have a pair and they can't be the same" if list.first == list.last
+    sub = OsxSub::Substitution.new(list.first, list.last)
+    replacement_item = OsxSub::NSUserReplacementItems.new([sub])
+    replacement_item.merge!
+    puts replacement_item.to_plist
+    exit
+  end
+
+  opts.on('-r', '--repl', "Start a REPL (read-eval-print loop)") do
+    opts.abort("Can't start REPL unless STDIN is a tty") unless STDIN.tty?
+    opts.warn("Send an EOT signal (Ctrl-D) to end")
+    print ">> "
+    while STDIN.gets
+      puts " => " + OsxSub::NSUserReplacementItems.from_plist_buddy.sub($_)
+      print ">> "
+    end
+    puts ""
+    exit
+  end
+
+  opts.on('-c', '--clear', "Clear out the set of substitution preferences") do
+    plist_buddy = OsxSub::PlistBuddy.instance
+    begin
+      plist_buddy.delete
+      plist_buddy.add
+    rescue OsxSub::PlistBuddyError => e
+      plist_buddy.add unless e.exists?
+    end
+    puts plist_buddy.print
+    exit
+  end
+
+  opts.separator ""
+
+  opts.on_tail('-h', '--help') { puts opts ; exit }
+  opts.on_tail('--version', "Print version information and exit") { puts opts.version ; exit }
+  begin
+    opts.parse!
+  rescue OptionParser::ParseError
+    opts.warn $!
+  end
+  opts
+end
+
+if !STDIN.tty?
+  STDIN.each_line do |line|
+    STDOUT.write OsxSub::NSUserReplacementItems.from_plist_buddy.sub(line)
+  end
+  exit
+end
+
+abort options.help
+
