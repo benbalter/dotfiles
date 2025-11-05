@@ -1,2 +1,2 @@
-ansible
+ansible>=12.0.0
 ansible-lint[yamllint]
