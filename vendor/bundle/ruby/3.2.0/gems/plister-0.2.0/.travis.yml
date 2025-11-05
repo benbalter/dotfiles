@@ -1,6 +1,0 @@
-os: osx
-language: ruby
-before_install: gem install bundler -v 1.11.2
-cache: bundler
-sudo: false
-script: script/cibuild

@@ -1,8 +1,0 @@
-language: ruby
-cache: bundler
-rvm:
-  - "2.2"
-  - "2.1"
-  - "2.0"
-before_install: gem install bundler -v "~> 1.2.0"
-bundler_args: --without doc release

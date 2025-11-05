@@ -5,3 +5,5 @@ Gemfile.lock
 .vscode
 /env
 /Brewfile.lock.json
+vendor/bundle
+.bundle
