@@ -1,2 +1,2 @@
-ansible
+ansible-core>=2.20.0
 ansible-lint[yamllint]
