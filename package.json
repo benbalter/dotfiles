@@ -31,7 +31,7 @@
     "remark-lint-no-url-trailing-slash": "^1.0.0",
     "remark-normalize-headings": "^0.3.0",
     "remark-slug": "^4.0.0",
-    "remark-squeeze-paragraphs": "^3.0.0",
+    "remark-squeeze-paragraphs": "^5.0.1",
     "remark-textr": "^2.0.1",
     "remark-validate-links": "^12.1.0",
     "typographic-em-dashes": "^1.0.2",
