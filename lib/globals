@@ -28,7 +28,8 @@ export NODE_PATH=./node_modules:/usr/local/lib/node_modules
 ZSH=$HOME/.oh-my-zsh
 export ZSH
 
-SHELL=$(which zsh)
+# Use $0 or hardcoded path instead of slow $(which zsh)
+SHELL="${0:-/bin/zsh}"
 export SHELL
 
 ZSH_THEME="robbyrussell"

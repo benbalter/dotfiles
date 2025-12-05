@@ -2,12 +2,12 @@
 # Init ZSH and the shell environment
 # Usage source script/init
 
-# Init some stuff
-if which nodenv > /dev/null; then eval "$(nodenv init -)"; fi
-if which rbenv > /dev/null;  then eval "$(rbenv init -)"; fi
-if which fasd > /dev/null; then eval "$(fasd --init auto)"; fi
-if which gh > /dev/null; then eval "$(gh completion --shell zsh)"; fi
+# Init some stuff - use (( $+commands[cmd] )) which is faster than `which`
+(( $+commands[nodenv] )) && eval "$(nodenv init -)"
+(( $+commands[rbenv] )) && eval "$(rbenv init -)"
+(( $+commands[fasd] )) && eval "$(fasd --init auto)"
+(( $+commands[gh] )) && eval "$(gh completion --shell zsh)"
 
-if [ "$(uname)" = "Darwin" ]; then
-  if brew command command-not-found-init > /dev/null; then eval "$(brew command-not-found-init)"; fi
+if [[ "$(uname)" = "Darwin" ]]; then
+  if brew command command-not-found-init > /dev/null 2>&1; then eval "$(brew command-not-found-init)"; fi
 fi
