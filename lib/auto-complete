@@ -8,6 +8,7 @@
 (( $+commands[fasd] )) && eval "$(fasd --init auto)"
 (( $+commands[gh] )) && eval "$(gh completion --shell zsh)"
 
-if [[ "$(uname)" = "Darwin" ]]; then
-  if brew command command-not-found-init > /dev/null 2>&1; then eval "$(brew command-not-found-init)"; fi
+# Use OSTYPE variable instead of subprocess $(uname)
+if [[ "$OSTYPE" == darwin* ]]; then
+  (( $+commands[brew] )) && brew command command-not-found-init > /dev/null 2>&1 && eval "$(brew command-not-found-init)"
 fi
