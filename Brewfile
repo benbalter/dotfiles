@@ -153,8 +153,6 @@ brew "mtr"
 brew "nmap"
 # Install NodeJS versions
 brew "node-build"
-# Node.js version manager
-brew "nodenv"
 # Find newer versions of dependencies than what your package.json allows
 brew "npm-check-updates"
 # Libraries for security-enabled client and server applications
@@ -185,8 +183,6 @@ brew "python@3.10"
 brew "python@3.11"
 # Install various Ruby versions and implementations
 brew "ruby-build"
-# Ruby version manager
-brew "rbenv"
 # Program to decode radio transmissions from devices
 brew "rtl_433"
 # Powerful, clean, object-oriented scripting language

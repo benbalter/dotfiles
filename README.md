@@ -10,6 +10,7 @@
 
 * `script/setup` - Set up all the things!
 * `script/update` - Update all the things!
+* `install.sh` - Codespaces / Linux installer
 
 ### Everything else
 
@@ -20,9 +21,14 @@
 ## Setting up a new machine from scratch
 
 1. `git clone https://github.com/benbalter/dotfiles ~/.dotfiles`
-2. Vist [`strap.mikemcquaid.com`](https://strap.mikemcquaid.com)
-3. Download `strap.sh`
-4. `bash ~/Downloads/strap.sh`
+2. `cd ~/.dotfiles && script/setup`
+
+## GitHub Codespaces
+
+These dotfiles are automatically applied to new Codespaces when configured in
+your [GitHub settings](https://github.com/settings/codespaces). The `install.sh`
+script symlinks dotfiles, installs oh-my-zsh, and sets zsh as the default shell.
+macOS-specific configuration is skipped in Codespaces.
 
 ## How to update dependencies
 
