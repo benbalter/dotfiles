@@ -1,10 +1,10 @@
 {
   "name": "dotfiles",
   "version": "1.0.0",
-  "description": "[![Build Status](https://travis-ci.org/benbalter/dotfiles.svg?branch=master)](https://travis-ci.org/benbalter/dotfiles)",
+  "description": "Dotfiles for macOS development environment setup and configuration management",
   "main": "script/setup",
   "scripts": {
-    "test": "script/cibuild"
+    "test": "script/lint"
   },
   "repository": {
     "type": "git",

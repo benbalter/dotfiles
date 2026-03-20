@@ -1,15 +1,11 @@
-[hub]
-	protocol = https
-
 [credential]
 	helper = osxkeychain
 
 [core]
 	excludesfile = ~/.gitignore
-	whitespace = trailing-space,space-before-tab
+	whitespace = fix,-indent-with-non-tab,trailing-space,cr-at-eol,space-before-tab
 	pager = "diff-so-fancy | less --tabs=1,5 -R"
 	autocrlf = input
-	whitespace = fix,-indent-with-non-tab,trailing-space,cr-at-eol
 	editor = code --wait
 
 [user]
@@ -63,19 +59,11 @@
 	check = true
 	autoinstall = true
 
-[filter "media"]
-	required = true
-	clean = git media clean %f
-	smudge = git media smudge %f
-
 [filter "lfs"]
 	required = true
 	clean = git-lfs clean -- %f
 	smudge = git-lfs smudge -- %f
 	process = git-lfs filter-process
-
-[ghi]
-	token = !security find-internet-password -a benbalter -s github.com -l 'ghi token' -w
 
 #[branch "master"]
 #  remote = origin
@@ -91,7 +79,6 @@
 	gpgsign = true
 
 [gpg]
-	program = gpg
 	format = ssh
 
 [url "https://github.com"]

@@ -30,7 +30,7 @@ dockitems_remove:
   - News
   - Books
   - "App Store"
-  - "System Preferences"
+  - "System Settings"
 
 configure_sudoers: false
 
@@ -55,6 +55,7 @@ dotfiles_files:
   - .remarkrc
   - .ssh/config
   - .yamllint
+  - .zprofile
   - .zshrc
   - heroku/config.json
   - Library/Spelling/LocalDictionary
@@ -107,7 +108,7 @@ macos_defaults:
   user:
     - name: Hot corner
       domain: com.apple.dock
-      key: wvous-br-corne
+      key: wvous-br-corner
       type: integer
       value: 5
     - name: Auto hide dock

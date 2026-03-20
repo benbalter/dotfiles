@@ -19,16 +19,16 @@ alias ggb="git commit -m ':gem: bump'"
 gccd(){ gh repo clone "$1"; cd "$(basename "$1")" || exit; }
 alias branches="git branch -v"
 
-# fasd
+# zoxide
 alias j='z'
 
 # Script/*
 alias sb="script/bootstrap"
-alias sc="script/cibuild"
+alias sc="script/lint"
 alias console="script/console"
 
-#simple server
-alias server="python -m SimpleHTTPServer"
+# Simple server
+alias server="python3 -m http.server"
 
 #ip
 alias ip="curl icanhazip.com"
@@ -42,4 +42,4 @@ alias setup="~/.files/script/setup"
 alias p="cd ~/projects"
 alias gg="cd ~/github/github"
 alias afk="/System/Library/CoreServices/Menu\ Extras/User.menu/Contents/Resources/CGSession -suspend"
-alias lc='colorls -lA --sd'
+alias lc='ls -lA'

@@ -12,7 +12,7 @@ export HOMEBREW_CASK_OPTS
 GOPATH=$HOME/go
 export GOPATH
 
-PATH="./bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/local/sbin:$GOPATH/bin:/usr/local/opt/gnupg@2.1/bin:$PATH"
+PATH="./bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/local/sbin:$GOPATH/bin:$PATH"
 export PATH
 
 # GitHub token with no scope, used to get around API limits
@@ -20,9 +20,6 @@ if [ "$(uname)" = "Darwin" ]; then
   HOMEBREW_GITHUB_API_TOKEN=$(cat ~/.token)
   export HOMEBREW_GITHUB_API_TOKEN
 fi
-
-# Fix for global node modules
-export NODE_PATH=./node_modules:/usr/local/lib/node_modules
 
 # ZSH settings and initializations
 ZSH=$HOME/.oh-my-zsh
