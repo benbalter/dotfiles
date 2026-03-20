@@ -6,8 +6,10 @@ DOTFILES_ROOT=${DOTFILES_ROOT:-"$HOME/.files"}
 export DOTFILES_ROOT
 
 # Setup cli tools
-HOMEBREW_CASK_OPTS="--appdir=/Applications"
-export HOMEBREW_CASK_OPTS
+if [ "$(uname)" = "Darwin" ]; then
+  HOMEBREW_CASK_OPTS="--appdir=/Applications"
+  export HOMEBREW_CASK_OPTS
+fi
 
 GOPATH=$HOME/go
 export GOPATH
@@ -17,7 +19,7 @@ export PATH
 
 # GitHub token with no scope, used to get around API limits
 if [ "$(uname)" = "Darwin" ]; then
-  HOMEBREW_GITHUB_API_TOKEN=$(cat ~/.token)
+  HOMEBREW_GITHUB_API_TOKEN=$(cat ~/.token 2>/dev/null)
   export HOMEBREW_GITHUB_API_TOKEN
 fi
 

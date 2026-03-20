@@ -45,6 +45,7 @@ dotfiles_files:
   - .digrc
   - .gemrc
   - .gitconfig
+  - .gitconfig.macos
   - .gitignore
   - .gnupg/gpg-agent.conf
   - .gnupg/gpg.conf

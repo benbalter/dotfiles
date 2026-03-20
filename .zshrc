@@ -10,9 +10,6 @@ source "$DOTFILES_ROOT/lib/globals"
 local plugins
 plugins=(
   ansible
-  battery
-  brew
-  bundler
   colored-man-pages
   colorize
   command-not-found
@@ -27,8 +24,6 @@ plugins=(
   golang
   heroku
   history-substring-search
-  iterm2 
-  macos
   node
   npm
   safe-paste
@@ -38,6 +33,16 @@ plugins=(
   zsh-interactive-cd
 )
 
+if [[ "$(uname)" == "Darwin" ]]; then
+  plugins+=(
+    battery
+    brew
+    bundler
+    iterm2
+    macos
+  )
+fi
+
 source $ZSH/oh-my-zsh.sh
 
 # shellcheck source=lib/auto-complete
@@ -46,8 +51,12 @@ source "$DOTFILES_ROOT/lib/auto-complete"
 # shellcheck source=lib/aliases
 source "$DOTFILES_ROOT/lib/aliases"
 
-test -e ${HOME}/.iterm2_shell_integration.zsh && source ${HOME}/.iterm2_shell_integration.zsh
+test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
-. /opt/homebrew/opt/asdf/libexec/asdf.sh
+if [[ -f /opt/homebrew/opt/asdf/libexec/asdf.sh ]]; then
+  . /opt/homebrew/opt/asdf/libexec/asdf.sh
+elif [[ -f "$HOME/.asdf/asdf.sh" ]]; then
+  . "$HOME/.asdf/asdf.sh"
+fi
 
 export PATH="$PATH:$HOME/.local/bin"
