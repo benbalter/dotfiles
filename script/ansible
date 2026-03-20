@@ -5,5 +5,10 @@ set -e
 # shellcheck disable=SC1091
 . env/bin/activate
 
-ansible-playbook playbook.yml --ask-become-pass
+if [ "$CI" = "true" ]; then
+  ansible-playbook playbook.yml
+else
+  ansible-playbook playbook.yml --ask-become-pass
+fi
+
 deactivate

@@ -1,4 +1,5 @@
-- hosts: localhost
+- name: Configure development environment
+  hosts: localhost
   connection: local
 
   pre_tasks:
@@ -6,14 +7,14 @@
       ansible.builtin.include_vars: "{{ playbook_dir }}/config.yml"
     - name: Include dev config
       ansible.builtin.include_vars: "{{ playbook_dir }}/config_ci.yml"
-      when: lookup('env','CI') == "true"
+      when: lookup('env', 'CI') == "true"
 
   tasks:
     - name: Create directories
       ansible.builtin.file:
         path: "{{ item }}"
         state: directory
-        mode: 0755
+        mode: "0755"
       loop: "{{ directories_to_create }}"
     - name: Setup Dotfiles
       ansible.builtin.include_role:
