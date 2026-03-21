@@ -5,6 +5,28 @@ set -e
 # shellcheck disable=SC1091
 . env/bin/activate
 
+echo "==> Linting Ansible playbook..."
 ansible-lint playbook.yml
+
+echo "==> Linting YAML files..."
 yamllint ./*.yml .github/workflows/*.yml
+
 deactivate
+
+echo "==> Linting shell scripts..."
+shellcheck script/* install.sh
+
+echo "==> Checking shell formatting..."
+shfmt -d -i 0 -ci script/* install.sh
+
+echo "==> Linting GitHub Actions workflows..."
+actionlint
+
+echo "==> Linting Ruby files..."
+rubocop --force-exclusion .irbrc .pryrc Gemfile
+
+echo "==> Linting Markdown files..."
+npx remark --no-stdout --silently-ignore --ignore-pattern node_modules/ \
+	--ignore-pattern .ansible/ --ignore-pattern env/ .
+
+echo "==> All linters passed!"
