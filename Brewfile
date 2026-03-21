@@ -3,8 +3,6 @@ tap "github/bootstrap"
 tap "homebrew/bundle"
 tap "homebrew/command-not-found"
 
-# Search tool like grep, but optimized for programmers
-brew "ack"
 # Run your GitHub Actions locally
 brew "act"
 # GNU multiple precision arithmetic library
@@ -69,8 +67,6 @@ brew "gh"
 brew "git-filter-repo"
 # Git extension for versioning large files
 brew "git-lfs"
-# Declarative configuration for Gmail filters
-brew "gmailctl"
 # GNU implementation of the famous stream editor
 brew "gnu-sed"
 # Passphrase entry dialog utilizing the Assuan protocol
@@ -79,16 +75,6 @@ brew "pinentry"
 brew "gnupg"
 # Package compiler and linker metadata toolkit
 brew "pkgconf"
-# Numerical library for C and C++
-brew "gsl"
-# Optimized BLAS library
-brew "openblas"
-# Package for scientific computing with Python
-brew "numpy"
-# SoapySDR RTL-SDR Support Module
-brew "soapyrtlsdr"
-# SDK for signal processing blocks to implement software radios
-brew "gnuradio"
 # Open source programming language to build simple/reliable/efficient software
 brew "go"
 # Ping, but with a graph
@@ -97,8 +83,6 @@ brew "gping"
 brew "grc"
 # GNU grep, egrep and fgrep
 brew "grep"
-# Low cost software radio platform
-brew "hackrf"
 # Smarter Dockerfile linter to validate best practices
 brew "hadolint"
 # Process manager for Procfile-based applications
@@ -115,8 +99,6 @@ brew "libtool"
 brew "imagemagick"
 # Convert images to PDF via direct JPEG inclusion
 brew "img2pdf"
-# Offline radio signal analyser
-brew "inspectrum"
 # Tool to measure maximum TCP and UDP bandwidth
 brew "iperf"
 # JSON diff and patch
@@ -133,8 +115,6 @@ brew "jsonnet"
 brew "openjdk@17"
 # Style and grammar checker
 brew "languagetool", restart_service: :changed
-# Linear Algebra PACKage
-brew "lapack"
 # Platform built on V8 to build network applications
 brew "node"
 # Keep your Mac's application settings in sync
@@ -145,8 +125,6 @@ brew "mas"
 brew "openjdk"
 # Java-based project management
 brew "maven"
-# Python implementation for microcontrollers and constrained systems
-brew "micropython"
 # 'traceroute' and 'ping' in a single tool
 brew "mtr"
 # Port scanning utility for large networks
@@ -173,20 +151,10 @@ brew "pipx"
 brew "prettier"
 # Protocol buffers (Google's data interchange format)
 brew "protobuf"
-# Interpreted, interactive, object-oriented programming language
-brew "python@3.9"
-# Python interface to Tcl/Tk
-brew "python-tk@3.9"
-# Interpreted, interactive, object-oriented programming language
-brew "python@3.10"
-# Interpreted, interactive, object-oriented programming language
-brew "python@3.11"
 # Install various Ruby versions and implementations
 brew "ruby-build"
 # Search tool like grep and The Silver Searcher
 brew "ripgrep"
-# Program to decode radio transmissions from devices
-brew "rtl_433"
 # Powerful, clean, object-oriented scripting language
 brew "ruby"
 # Safe, concurrent, practical language
@@ -203,12 +171,6 @@ brew "sdl2_net"
 brew "sdl2_ttf"
 # Autoformat shell script source code
 brew "shfmt"
-# HTTP regression testing and benchmarking utility
-brew "siege"
-# Command-line interface for https://speedtest.net bandwidth tests
-brew "speedtest-cli"
-# Version control system designed to be a better CVS
-brew "subversion"
 # Detect compliance and security violations across Infrastructure as Code
 brew "terrascan"
 # Enables extra languages support for Tesseract
@@ -217,14 +179,10 @@ brew "tesseract-lang"
 brew "tflint"
 # Static analysis security scanner for your terraform code
 brew "tfsec"
-# Code-search similar to ack
-brew "the_silver_searcher"
 # Clean up files in directories based on their age
 brew "tmpreaper"
 # Language for application scale JavaScript development
 brew "typescript"
-# Universal Radio Hacker
-brew "urh"
 # Syntax-aware linter for prose
 brew "vale"
 # Image processing library
@@ -245,8 +203,6 @@ brew "zoxide"
 brew "zsh"
 # Utility to export your existing Cloudflare resources as Terraform resources
 brew "cloudflare/cloudflare/cf-terraforming"
-# Soapy SDR plugin for Hack RF
-brew "pothosware/pothos/soapyhackrf"
 # Password manager that keeps all passwords secure behind one password
 cask "1password"
 # Command-line interface for 1Password
@@ -282,8 +238,6 @@ cask "google-chrome"
 cask "google-drive"
 # Tools to protect your emails and files
 cask "gpg-suite"
-# Software-defined radio receiver powered by GNU Radio and Qt
-cask "gqrx"
 # Terminal emulator as alternative to Apple's Terminal app
 cask "iterm2@beta"
 # Keyboard customiser
@@ -300,14 +254,10 @@ cask "microsoft-edge"
 cask "microsoft-office"
 # Meet, chat, call, and collaborate in just one place
 cask "microsoft-teams"
-# Minimal installer for conda
-cask "miniconda"
 # Intercept, modify, replay, save HTTP/S traffic
 cask "mitmproxy"
 # Cross-platform MQTT 5.0 Desktop Client
 cask "mqttx"
-# Small, simple editor for beginner Python programmers
-cask "mu-editor"
 # Toggle mute, video, record, share, and leave a meeting in a call app
 cask "mutedeck"
 # Open-source software for live streaming and screen recording
@@ -338,8 +288,6 @@ cask "quicklookase"
 cask "raspberry-pi-imager"
 # Screenshot measurement and annotation tool
 cask "shottr"
-# Qt-based digital signal analyzer
-cask "sigdigger"
 # Instant messaging application focusing on security
 cask "signal"
 # Team communication and collaboration software
@@ -350,8 +298,6 @@ cask "spotify"
 cask "steam"
 # Application for inspecting installer packages
 cask "suspicious-package"
-# Python IDE for beginners
-cask "thonny"
 # Mutes your keyboard while you type
 cask "unclack"
 # Management tool for Unity
