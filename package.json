@@ -17,7 +17,6 @@
   },
   "homepage": "https://github.com/benbalter/dotfiles#readme",
   "dependencies": {
-    "diff-so-fancy": "^0.1.2",
     "remark-cli": "^12.0.0",
     "remark-heading-gap": "^6.0.0",
     "remark-inline-links": "^7.0.0",

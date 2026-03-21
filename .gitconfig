@@ -1,7 +1,7 @@
 [core]
 	excludesfile = ~/.gitignore
 	whitespace = fix,-indent-with-non-tab,trailing-space,cr-at-eol,space-before-tab
-	pager = "diff-so-fancy | less --tabs=1,5 -R"
+	pager = delta
 	autocrlf = input
 	editor = code --wait
 
@@ -69,6 +69,17 @@
 	newNormal = green bold
 	newHighlight = green bold 22
 	oldNormal = red bold
+
+[delta]
+	navigate = true
+	side-by-side = true
+	line-numbers = true
+
+[interactive]
+	diffFilter = delta --color-only
+
+[merge]
+	conflictstyle = zdiff3
 
 [url "https://github.com"]
 	insteadOf = git://github.com

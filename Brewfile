@@ -48,7 +48,7 @@ brew "libssh2"
 # Get a file from an HTTP, HTTPS or FTP server
 brew "curl"
 # Good-lookin' diffs with diff-highlight and more
-brew "diff-so-fancy"
+brew "delta"
 # Tool for managing dock items
 brew "dockutil"
 # Read, write, modify, and display EXIF data on the command-line
@@ -137,8 +137,6 @@ brew "languagetool", restart_service: :changed
 brew "lapack"
 # Platform built on V8 to build network applications
 brew "node"
-# Tool for managing JavaScript projects with multiple packages
-brew "lerna"
 # Keep your Mac's application settings in sync
 brew "mackup"
 # Mac App Store command-line interface
@@ -167,8 +165,8 @@ brew "openldap"
 brew "pandoc"
 # Pinentry for GPG on Mac
 brew "pinentry-mac"
-# Python dependency management tool
-brew "pipenv"
+# An extremely fast Python package and project manager
+brew "uv"
 # Execute binaries from Python packages in isolated environments
 brew "pipx"
 # Code formatter for JavaScript, CSS, JSON, GraphQL, Markdown, YAML
@@ -185,6 +183,8 @@ brew "python@3.10"
 brew "python@3.11"
 # Install various Ruby versions and implementations
 brew "ruby-build"
+# Search tool like grep and The Silver Searcher
+brew "ripgrep"
 # Program to decode radio transmissions from devices
 brew "rtl_433"
 # Powerful, clean, object-oriented scripting language
