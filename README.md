@@ -8,15 +8,15 @@
 
 ### Scripts
 
-* `script/setup` - Set up all the things!
-* `script/update` - Update all the things!
-* `install.sh` - Codespaces / Linux installer
+- `script/setup` - Set up all the things!
+- `script/update` - Update all the things!
+- `install.sh` - Codespaces / Linux installer
 
 ### Everything else
 
-* Configuration files that will be symlinked into the proper place
-* Common development aliases
-* Launch agents to keep the Downloads folder tidy and dependencies up to date
+- Configuration files that will be symlinked into the proper place
+- Common development aliases
+- Launch agents to keep the Downloads folder tidy and dependencies up to date
 
 ## Setting up a new machine from scratch
 
