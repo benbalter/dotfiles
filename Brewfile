@@ -2,7 +2,6 @@
 tap "github/bootstrap"
 tap "homebrew/bundle"
 tap "homebrew/command-not-found"
-tap "homebrew/services"
 
 # Search tool like grep, but optimized for programmers
 brew "ack"
@@ -154,8 +153,6 @@ brew "mtr"
 brew "nmap"
 # Install NodeJS versions
 brew "node-build"
-# Node.js version manager
-brew "nodenv"
 # Find newer versions of dependencies than what your package.json allows
 brew "npm-check-updates"
 # Libraries for security-enabled client and server applications
@@ -186,8 +183,6 @@ brew "python@3.10"
 brew "python@3.11"
 # Install various Ruby versions and implementations
 brew "ruby-build"
-# Ruby version manager
-brew "rbenv"
 # Program to decode radio transmissions from devices
 brew "rtl_433"
 # Powerful, clean, object-oriented scripting language
@@ -375,7 +370,7 @@ mas "DuckDuckGo Privacy for Safari", id: 1482920575
 mas "feedly", id: 865500966
 mas "GhostText", id: 1552641506
 mas "Hush", id: 1544743900
-mas "HyperList", id: 0
+mas "HyperList", id: 1531547712
 mas "iMovie", id: 408981434
 mas "JSONPeep", id: 1458969831
 mas "Keynote", id: 409183694
@@ -395,7 +390,6 @@ mas "TestFlight", id: 899247664
 mas "URL Linker", id: 1289119450
 mas "Wayback Machine", id: 1472432422
 mas "WhatsApp", id: 310633997
-mas "WhatsApp (old)", id: 1147396723
 vscode "1password.op-vscode"
 vscode "christian-kohler.npm-intellisense"
 vscode "davidanson.vscode-markdownlint"

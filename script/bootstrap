@@ -2,8 +2,7 @@
 
 set -e
 
-python3 -m pip install virtualenv
-python3 -m virtualenv env
+python3 -m venv env
 
 # shellcheck disable=SC1091
 . env/bin/activate

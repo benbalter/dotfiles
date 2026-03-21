@@ -30,7 +30,7 @@ dockitems_remove:
   - News
   - Books
   - "App Store"
-  - "System Preferences"
+  - "System Settings"
 
 configure_sudoers: false
 
@@ -45,6 +45,7 @@ dotfiles_files:
   - .digrc
   - .gemrc
   - .gitconfig
+  - .gitconfig.macos
   - .gitignore
   - .gnupg/gpg-agent.conf
   - .gnupg/gpg.conf
@@ -55,6 +56,7 @@ dotfiles_files:
   - .remarkrc
   - .ssh/config
   - .yamllint
+  - .zprofile
   - .zshrc
   - heroku/config.json
   - Library/Spelling/LocalDictionary
@@ -107,7 +109,7 @@ macos_defaults:
   user:
     - name: Hot corner
       domain: com.apple.dock
-      key: wvous-br-corne
+      key: wvous-br-corner
       type: integer
       value: 5
     - name: Auto hide dock
@@ -135,36 +137,36 @@ macos_defaults:
       key: type
       type: string
       value: png
- #   - name: Safari disable Java
- #     domain: com.apple.Safari
- #     key: com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabled
- #     type: bool
- #     value: false
- #   - name: Safari disable Java for local
- #     domain: com.apple.Safari
- #     key: com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabledForLocalFiles
- #     type: bool
- #     value: false
+    #   - name: Safari disable Java
+    #     domain: com.apple.Safari
+    #     key: com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabled
+    #     type: bool
+    #     value: false
+    #   - name: Safari disable Java for local
+    #     domain: com.apple.Safari
+    #     key: com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabledForLocalFiles
+    #     type: bool
+    #     value: false
     - name: Schedule auto update
       domain: com.apple.SoftwareUpdate
       key: ScheduleFrequency
       type: integer
       value: 1
- #   - name: Safari Do not track
- #     domain: com.apple.Safari
- #     key: ScheduleFreSendDoNotTrackHTTPHeaderquency
- #     type: bool
- #     value: true
- #   - name: Safari update extensions
- #     domain: com.apple.Safari
- #     key: InstallExtensionUpdatesAutomatically
- #     type: bool
- #     value: true
- #   - name: Safari enable developer tools
- #     domain: com.apple.Safari
- #     key: WebKitDeveloperExtrasEnabledPreferenceKey
- #     type: bool
- #     value: true
+  #   - name: Safari Do not track
+  #     domain: com.apple.Safari
+  #     key: ScheduleFreSendDoNotTrackHTTPHeaderquency
+  #     type: bool
+  #     value: true
+  #   - name: Safari update extensions
+  #     domain: com.apple.Safari
+  #     key: InstallExtensionUpdatesAutomatically
+  #     type: bool
+  #     value: true
+  #   - name: Safari enable developer tools
+  #     domain: com.apple.Safari
+  #     key: WebKitDeveloperExtrasEnabledPreferenceKey
+  #     type: bool
+  #     value: true
   #  - name: Safari enable developer menu
   #   domain: com.apple.Safari
   #    key: IncludeDevelopMenu
