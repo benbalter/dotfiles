@@ -27,7 +27,7 @@ fi
 ZSH=$HOME/.oh-my-zsh
 export ZSH
 
-SHELL=$(which zsh)
+SHELL=$(command -v zsh)
 export SHELL
 
 ZSH_THEME="robbyrussell"

@@ -43,7 +43,7 @@ if [[ "$(uname)" == "Darwin" ]]; then
   )
 fi
 
-source $ZSH/oh-my-zsh.sh
+source "$ZSH/oh-my-zsh.sh"
 
 # shellcheck source=lib/auto-complete
 source "$DOTFILES_ROOT/lib/auto-complete"
