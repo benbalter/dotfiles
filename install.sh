@@ -8,17 +8,16 @@ set -e
 DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 if [ "$(uname)" = "Darwin" ]; then
-  exec "$DOTFILES_DIR/script/setup"
+	exec "$DOTFILES_DIR/script/setup"
 fi
 
 # --- Linux / Codespaces setup ---
 
 # Symlink dotfiles
 for file in \
-  .asdfrc .digrc .gemrc .gitconfig .gitignore .hushlogin \
-  .irbrc .pryrc .remarkrc .yamllint .zprofile .zshrc
-do
-  ln -sf "$DOTFILES_DIR/$file" "$HOME/$file"
+	.asdfrc .digrc .gemrc .gitconfig .gitignore .hushlogin \
+	.irbrc .pryrc .remarkrc .yamllint .zprofile .zshrc; do
+	ln -sf "$DOTFILES_DIR/$file" "$HOME/$file"
 done
 
 # Symlink directories that need parent dirs
@@ -30,10 +29,10 @@ mkdir -p "$HOME/.bundle" "$HOME/.gnupg" "$HOME/.ssh"
 
 # Install oh-my-zsh if not present
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
-  git clone --depth 1 https://github.com/ohmyzsh/ohmyzsh.git "$HOME/.oh-my-zsh"
+	git clone --depth 1 https://github.com/ohmyzsh/ohmyzsh.git "$HOME/.oh-my-zsh"
 fi
 
 # Set zsh as default shell if available
-if command -v zsh > /dev/null && [ "$SHELL" != "$(command -v zsh)" ]; then
-  sudo chsh -s "$(command -v zsh)" "$(whoami)" 2>/dev/null || true
+if command -v zsh >/dev/null && [ "$SHELL" != "$(command -v zsh)" ]; then
+	sudo chsh -s "$(command -v zsh)" "$(whoami)" 2>/dev/null || true
 fi

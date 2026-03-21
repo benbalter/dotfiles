@@ -15,8 +15,8 @@ echo "==> Updating Mac App Store apps..."
 mas upgrade
 
 echo "==> Updating asdf plugins..."
-if command -v asdf > /dev/null; then
-  asdf plugin update --all 2>/dev/null || true
+if command -v asdf >/dev/null; then
+	asdf plugin update --all 2>/dev/null || true
 fi
 
 popd

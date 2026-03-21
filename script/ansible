@@ -6,9 +6,9 @@ set -e
 . env/bin/activate
 
 if [ "$CI" = "true" ]; then
-  ansible-playbook playbook.yml
+	ansible-playbook playbook.yml
 else
-  ansible-playbook playbook.yml --ask-become-pass
+	ansible-playbook playbook.yml --ask-become-pass
 fi
 
 deactivate
