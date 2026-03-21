@@ -11,7 +11,7 @@
     "gfm": true,
     "yaml": true,
     "footnotes": true,
-    "listItemIndent": "1",
+    "listItemIndent": "one",
     "commonmark": false,
     "pedantic": false,
     "entities": false,
@@ -20,13 +20,11 @@
   },
   "plugins": {
     "remark-squeeze-paragraphs": {},
-    "remark-slug": {},
     "remark-heading-gap": {
       "2": {
         "before": "",
         "after": ""
-      },
-    "validate-links": {}
+      }
     },
     "remark-inline-links": {},
     "remark-textr": {
@@ -63,6 +61,7 @@
       "table-cell-padding": "padded",
       "no-literal-urls": false,
       "no-missing-blank-lines": false
-    }
+    },
+    "remark-validate-links": {}
   }
 }
