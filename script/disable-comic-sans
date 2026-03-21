@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # Disable Comic Sans font globally on macOS
 # This script attempts to disable Comic Sans MS using Font Book
 
@@ -20,7 +20,7 @@ disable_font() {
   if [ -d "$font_path" ]; then
     # Look for Comic Sans files and store results
     local comic_fonts
-    comic_fonts=$(find "$font_path" \( -iname "*comic*sans*.ttf" -o -iname "*comic*sans*.otf" \) 2>/dev/null || true)
+    comic_fonts=$(find "$font_path" \( -iname "*Comic*Sans*MS*.ttf" -o -iname "*Comic*Sans*MS*.otf" \) 2>/dev/null || true)
     
     if [ -n "$comic_fonts" ]; then
       echo "Found Comic Sans in $font_path"

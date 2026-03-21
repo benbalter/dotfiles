@@ -48,6 +48,5 @@
       loop: "{{ macos_defaults.user }}"
     - name: Disable Comic Sans globally
       ansible.builtin.command: "{{ playbook_dir }}/script/disable-comic-sans"
-      register: disable_comic_sans_result
       changed_when: false
       failed_when: false
