@@ -1,7 +1,6 @@
 
 tap "github/bootstrap"
-tap "homebrew/bundle"
-tap "homebrew/command-not-found"
+
 
 # Run your GitHub Actions locally
 brew "act"
@@ -278,8 +277,6 @@ cask "qlstephen"
 cask "quickgeojson"
 # Quick Look plugin for CSV files
 cask "quicklook-csv"
-# Quick Look plugin for JSON files
-cask "quicklook-json"
 # Quick Look generator for Adobe Swatch Exchange files
 cask "quicklookase"
 # Imaging utility to install operating systems to a microSD card
@@ -313,10 +310,8 @@ mas "24 Hour Wallpaper", id: 1226087575
 mas "AdGuard for Safari", id: 1440147259
 mas "Dark Reader for Safari", id: 1438243180
 mas "DuckDuckGo Privacy for Safari", id: 1482920575
-mas "feedly", id: 865500966
 mas "GhostText", id: 1552641506
 mas "Hush", id: 1544743900
-mas "HyperList", id: 1531547712
 mas "iMovie", id: 408981434
 mas "JSONPeep", id: 1458969831
 mas "Keynote", id: 409183694
