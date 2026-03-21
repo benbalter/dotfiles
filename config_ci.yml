@@ -7,3 +7,4 @@ homebrew_use_brewfile: false
 # Use the checked-out repo directly instead of cloning main from GitHub,
 # so CI tests new/changed dotfiles from the PR branch.
 dotfiles_repo_local_destination: "{{ lookup('env', 'GITHUB_WORKSPACE') }}"
+dotfiles_repo_version: "{{ lookup('env', 'GITHUB_SHA') }}"

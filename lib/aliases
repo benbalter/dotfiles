@@ -16,7 +16,10 @@ alias gr="gh repo view"
 alias reset="git reset HEAD --hard; git clean -f -d"
 alias clean="git branch --merged | grep -v '\*' | xargs -n 1 git branch -d"
 alias ggb="git commit -m ':gem: bump'"
-gccd(){ gh repo clone "$1"; cd "$(basename "$1")" || exit; }
+gccd() {
+	gh repo clone "$1"
+	cd "$(basename "$1")" || exit
+}
 alias branches="git branch -v"
 
 # zoxide
@@ -42,7 +45,7 @@ alias p="cd ~/projects"
 alias gg="cd ~/github/github"
 
 if [ "$(uname)" = "Darwin" ]; then
-  alias flushdns="sudo dscacheutil -flushcache;sudo killall -HUP mDNSResponder; echo 'Flushed DNS, btw here is your hosts file just in case:'; cat /etc/hosts"
-  alias afk="/System/Library/CoreServices/Menu\ Extras/User.menu/Contents/Resources/CGSession -suspend"
+	alias flushdns="sudo dscacheutil -flushcache;sudo killall -HUP mDNSResponder; echo 'Flushed DNS, btw here is your hosts file just in case:'; cat /etc/hosts"
+	alias afk="/System/Library/CoreServices/Menu\ Extras/User.menu/Contents/Resources/CGSession -suspend"
 fi
 alias lc='ls -lA'

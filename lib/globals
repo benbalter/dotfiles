@@ -7,8 +7,8 @@ export DOTFILES_ROOT
 
 # Setup cli tools
 if [ "$(uname)" = "Darwin" ]; then
-  HOMEBREW_CASK_OPTS="--appdir=/Applications"
-  export HOMEBREW_CASK_OPTS
+	HOMEBREW_CASK_OPTS="--appdir=/Applications"
+	export HOMEBREW_CASK_OPTS
 fi
 
 GOPATH=$HOME/go
@@ -19,8 +19,8 @@ export PATH
 
 # GitHub token with no scope, used to get around API limits
 if [ "$(uname)" = "Darwin" ]; then
-  HOMEBREW_GITHUB_API_TOKEN=$(cat ~/.token 2>/dev/null)
-  export HOMEBREW_GITHUB_API_TOKEN
+	HOMEBREW_GITHUB_API_TOKEN=$(cat ~/.token 2>/dev/null)
+	export HOMEBREW_GITHUB_API_TOKEN
 fi
 
 # ZSH settings and initializations

@@ -2,4 +2,4 @@
 # Init ZSH and the shell environment
 # Usage source script/init
 
-if which gh > /dev/null; then eval "$(gh completion --shell zsh)"; fi
+if command -v gh >/dev/null; then eval "$(gh completion --shell zsh)"; fi
