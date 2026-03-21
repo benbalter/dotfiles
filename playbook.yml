@@ -16,22 +16,28 @@
         state: directory
         mode: "0755"
       loop: "{{ directories_to_create }}"
+      tags: [directories]
     - name: Setup Dotfiles
       ansible.builtin.include_role:
         name: geerlingguy.dotfiles
+      tags: [dotfiles]
     - name: Setup Homebrew
       ansible.builtin.include_role:
         name: geerlingguy.mac.homebrew
+      tags: [homebrew, packages]
     - name: Set up oh-my-zsh
       ansible.builtin.git:
-        repo: https://github.com/robbyrussell/oh-my-zsh
-        dest: ~/.oh-my-zsh
+        repo: https://github.com/ohmyzsh/ohmyzsh
+        dest: "{{ ansible_user_dir }}/.oh-my-zsh"
+      tags: [ohmyzsh]
     - name: Setup App Store
       ansible.builtin.include_role:
         name: geerlingguy.mac.mas
+      tags: [mas, packages]
     - name: Setup Dock
       ansible.builtin.include_role:
         name: geerlingguy.mac.dock
+      tags: [macos, dock]
     - name: Set MacOS system defaults
       community.general.osx_defaults:
         domain: "{{ item.domain }}"
@@ -40,6 +46,7 @@
         value: "{{ item.value }}"
       become: true
       loop: "{{ macos_defaults.system }}"
+      tags: [macos, defaults]
     - name: Set MacOS user defaults
       community.general.osx_defaults:
         domain: "{{ item.domain }}"
@@ -47,3 +54,4 @@
         type: "{{ item.type }}"
         value: "{{ item.value }}"
       loop: "{{ macos_defaults.user }}"
+      tags: [macos, defaults]

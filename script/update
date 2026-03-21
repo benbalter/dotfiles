@@ -1,10 +1,10 @@
-#!/bin/bash
+#!/bin/sh
 # Update all installed dependencies
 # Usage: up
 
 set -e
 
-pushd ~/.files
+cd "${DOTFILES_ROOT:-$HOME/.files}"
 
 echo "==> Updating Homebrew packages..."
 brew update
@@ -39,5 +39,3 @@ fi
 
 echo "==> Updating Ansible roles and collections..."
 ansible-galaxy install -r requirements.yml --force
-
-popd

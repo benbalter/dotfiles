@@ -121,8 +121,6 @@ brew "node"
 brew "mackup"
 # Mac App Store command-line interface
 brew "mas"
-# Development kit for the Java programming language
-brew "openjdk"
 # Java-based project management
 brew "maven"
 # 'traceroute' and 'ping' in a single tool

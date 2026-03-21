@@ -5,10 +5,13 @@
 	<key>KeepAlive</key>
 	<true/>
 	<key>Label</key>
-	<string>homebrew.mxcl.languagetool</string>
+	<string>com.balter.ben.languagetool</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>java -cp /Users/benbalter/Downloads/LanguageTool-6.3/languagetool-server.jar</string>
+		<string>java</string>
+		<string>-cp</string>
+		<string>/Users/benbalter/Downloads/LanguageTool-6.3/languagetool-server.jar</string>
+		<string>org.languagetool.server.HTTPServer</string>
 		<string>--port</string>
 		<string>8081</string>
 		<string>--allow-origin</string>

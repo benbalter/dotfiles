@@ -28,7 +28,6 @@ alias j='z'
 # Script/*
 alias sb="script/bootstrap"
 alias sc="script/lint"
-alias console="script/console"
 
 # Simple server
 alias server="python3 -m http.server"
@@ -37,8 +36,8 @@ alias server="python3 -m http.server"
 alias ip="curl icanhazip.com"
 
 # .files
-alias up="~/.files/script/update"
-alias setup="~/.files/script/setup"
+alias up="$DOTFILES_ROOT/script/update"
+alias setup="$DOTFILES_ROOT/script/setup"
 
 # Misc
 alias p="cd ~/projects"

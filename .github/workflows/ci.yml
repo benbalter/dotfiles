@@ -2,10 +2,13 @@ name: CI
 on: [push]
 permissions:
   contents: read
-jobs:
-  test:
-    runs-on: macos-latest
 
+env:
+  HOMEBREW_NO_AUTO_UPDATE: 1
+
+jobs:
+  bootstrap:
+    runs-on: macos-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,28 +33,43 @@ jobs:
 
       - name: Bootstrap
         run: script/bootstrap
+
+      - name: Upload venv
+        uses: actions/upload-artifact@v4
+        with:
+          name: venv
+          path: env/
+
+  test:
+    needs: bootstrap
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ansible cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.ansible
+          key: ${{ runner.os }}-ansible-${{ hashFiles('requirements.yml') }}
+
+      - name: Download venv
+        uses: actions/download-artifact@v4
+        with:
+          name: venv
+          path: env/
 
       - name: Run playbook
         run: script/ansible
 
   lint:
+    needs: bootstrap
     runs-on: macos-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Pip Cache
-        uses: actions/cache@v4
-        with:
-          path: ~/Library/Caches/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-
-      - name: Venv cache
-        uses: actions/cache@v4
-        with:
-          path: ./env
-          key: ${{ runner.os }}-env-${{ hashFiles('requirements.txt') }}
 
       - name: Ansible cache
         uses: actions/cache@v4
@@ -59,10 +77,13 @@ jobs:
           path: ~/.ansible
           key: ${{ runner.os }}-ansible-${{ hashFiles('requirements.yml') }}
 
-      - name: Bootstrap
-        run: script/bootstrap
+      - name: Download venv
+        uses: actions/download-artifact@v4
+        with:
+          name: venv
+          path: env/
 
-      - name: lint
+      - name: Lint
         run: script/lint
 
   unit-test:

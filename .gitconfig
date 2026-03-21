@@ -60,10 +60,6 @@
 	smudge = git-lfs smudge -- %f
 	process = git-lfs filter-process
 
-#[branch "master"]
-#  remote = origin
-#  merge = refs/heads/master
-
 [color "diff-highlight"]
 	oldHighlight = red bold 52
 	newNormal = green bold
