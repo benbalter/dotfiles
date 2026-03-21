@@ -316,7 +316,6 @@ mas "iMovie", id: 408981434
 mas "JSONPeep", id: 1458969831
 mas "Keynote", id: 409183694
 mas "Kindle", id: 302584613
-mas "LanguageTool", id: 1534275760
 mas "MeetingBar", id: 1532419400
 mas "Meshtastic", id: 1586432531
 mas "Okta Extension App", id: 1439967473
