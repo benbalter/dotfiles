@@ -64,3 +64,16 @@ jobs:
 
       - name: lint
         run: script/lint
+
+  unit-test:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: brew install bats-core yq
+
+      - name: Run tests
+        run: script/test

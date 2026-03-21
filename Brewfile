@@ -33,6 +33,8 @@ brew "ansible-lint"
 brew "git"
 # Extendable version manager with support for Ruby, Node.js, Erlang & more
 brew "asdf"
+# TAP-compliant test framework for Bash
+brew "bats-core"
 # Powerful, enterprise-ready, open source web server with automatic HTTPS
 brew "caddy", restart_service: :changed
 # Statistics utility to count lines of code

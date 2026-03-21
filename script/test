@@ -1,0 +1,8 @@
+#!/bin/sh
+# Run the test suite
+# Usage: script/test
+
+set -e
+
+echo "==> Running tests..."
+bats test/
