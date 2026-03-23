@@ -55,7 +55,7 @@ jobs:
           key: ${{ runner.os }}-ansible-${{ hashFiles('requirements.yml') }}
 
       - name: Download venv
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: venv
           path: env/
@@ -78,7 +78,7 @@ jobs:
           key: ${{ runner.os }}-ansible-${{ hashFiles('requirements.yml') }}
 
       - name: Download venv
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: venv
           path: env/
