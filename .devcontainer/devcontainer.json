@@ -22,7 +22,8 @@
         "yzhang.markdown-all-in-one",
         "Shopify.ruby-lsp",
         "streetsidesoftware.code-spell-checker",
-        "github.copilot"
+        "github.copilot",
+        "github.copilot-chat"
       ]
     }
   }
