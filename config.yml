@@ -58,7 +58,6 @@ dotfiles_files:
   - .yamllint
   - .zprofile
   - .zshrc
-  - heroku/config.json
   - Library/Spelling/LocalDictionary
   - Library/LaunchAgents/com.balter.ben.tmpreaper.plist
   - Library/LaunchAgents/com.balter.ben.update.plist
@@ -74,7 +73,6 @@ directories_to_create:
   - ~/.gnupg
   - ~/.ssh
   - ~/github
-  - ~/heroku
   - ~/projects
   - ~/Library/LaunchAgents
   - ~/Library/Spelling

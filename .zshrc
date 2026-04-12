@@ -22,7 +22,6 @@ plugins=(
   git
   git-extras
   golang
-  heroku
   history-substring-search
   node
   npm
