@@ -34,6 +34,13 @@
       ansible.builtin.include_role:
         name: geerlingguy.mac.mas
       tags: [mas, packages]
+    - name: Install GitHub Copilot CLI
+      ansible.builtin.command:
+        cmd: gh extension install github/gh-copilot
+      register: copilot_cli
+      changed_when: "'already installed' not in copilot_cli.stderr"
+      failed_when: copilot_cli.rc != 0 and 'already installed' not in copilot_cli.stderr
+      tags: [packages]
     - name: Setup Dock
       ansible.builtin.include_role:
         name: geerlingguy.mac.dock
