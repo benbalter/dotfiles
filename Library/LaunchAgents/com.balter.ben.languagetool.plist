@@ -10,7 +10,7 @@
 	<array>
 		<string>java</string>
 		<string>-cp</string>
-		<string>/Users/benbalter/Downloads/LanguageTool-6.3/languagetool-server.jar</string>
+		<string>/opt/homebrew/opt/languagetool/libexec/languagetool-server.jar</string>
 		<string>org.languagetool.server.HTTPServer</string>
 		<string>--port</string>
 		<string>8081</string>
