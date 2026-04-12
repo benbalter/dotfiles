@@ -36,7 +36,9 @@ alias server="python3 -m http.server"
 alias ip="curl icanhazip.com"
 
 # .files
+# shellcheck disable=SC2139
 alias up="$DOTFILES_ROOT/script/update"
+# shellcheck disable=SC2139
 alias setup="$DOTFILES_ROOT/script/setup"
 
 # Misc

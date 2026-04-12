@@ -96,6 +96,9 @@
 [fetch]
 	fsckObjects = true
 
+[fetch "fsck"]
+	zeroPaddedFilemode = ignore
+
 [receive]
 	fsckObjects = true
 
