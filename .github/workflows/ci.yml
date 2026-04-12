@@ -80,6 +80,12 @@ jobs:
           path: ./env
           key: ${{ runner.os }}-env-${{ hashFiles('requirements.txt') }}
 
+      - name: Install lint tools
+        run: |
+          brew install shellcheck shfmt actionlint
+          gem install rubocop
+          npm install
+
       - name: Lint
         run: script/lint
 
