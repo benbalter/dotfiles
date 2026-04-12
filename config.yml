@@ -1,8 +1,8 @@
 ---
 configure_dock: true
 dockitems_persist:
-  - name: Safari
-    path: "/Applications/Safari.app/"
+  - name: Google Chrome
+    path: "/Applications/Google Chrome.app/"
     pos: 1
   - name: Spotify
     path: "/Applications/Spotify.app/"
