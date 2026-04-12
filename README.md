@@ -27,13 +27,13 @@
 
 The `Brewfile` manages all packages. Highlights:
 
-| Category | Examples |
-| --- | --- |
-| Languages | Ruby, Go, Rust, Node, Python (via [uv](https://github.com/astral-sh/uv)) |
-| Dev tools | git, gh, delta, fzf, ripgrep, jq, asdf |
-| Linters | shellcheck, shfmt, actionlint, ansible-lint, yamllint, vale, rubocop |
-| Infrastructure | terraform, tflint, tfsec, docker, act |
-| Applications | iTerm2, VS Code, 1Password, Chrome, and more |
+| Category       | Examples                                                                 |
+| -------------- | ------------------------------------------------------------------------ |
+| Languages      | Ruby, Go, Rust, Node, Python (via [uv](https://github.com/astral-sh/uv)) |
+| Dev tools      | git, gh, delta, fzf, ripgrep, jq, asdf                                   |
+| Linters        | shellcheck, shfmt, actionlint, ansible-lint, yamllint, vale, rubocop     |
+| Infrastructure | terraform, tflint, tfsec, docker, act                                    |
+| Applications   | iTerm2, VS Code, 1Password, Chrome, and more                             |
 
 ## Setting up a new machine from scratch
 
@@ -72,15 +72,15 @@ script/lint
 
 Runs seven linters in sequence:
 
-| Linter | What it checks |
-| --- | --- |
-| ansible-lint | Playbook best practices |
-| yamllint | YAML syntax |
-| shellcheck | Shell script correctness |
-| shfmt | Shell formatting |
-| actionlint | GitHub Actions workflows |
-| rubocop | Ruby files |
-| remark | Markdown files |
+| Linter       | What it checks           |
+| ------------ | ------------------------ |
+| ansible-lint | Playbook best practices  |
+| yamllint     | YAML syntax              |
+| shellcheck   | Shell script correctness |
+| shfmt        | Shell formatting         |
+| actionlint   | GitHub Actions workflows |
+| rubocop      | Ruby files               |
+| remark       | Markdown files           |
 
 ### CI
 
