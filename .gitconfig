@@ -106,7 +106,7 @@
 	autoStash = true
 
 [pull]
-	rebase = true
+	rebase = false
 
 [include]
 	path = ~/.gitconfig.macos
