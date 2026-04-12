@@ -40,6 +40,7 @@
       register: copilot_cli
       changed_when: "'already installed' not in copilot_cli.stderr"
       failed_when: copilot_cli.rc != 0 and 'already installed' not in copilot_cli.stderr
+      when: lookup('env', 'CI') != "true"
       tags: [packages]
     - name: Setup Dock
       ansible.builtin.include_role:
