@@ -44,8 +44,9 @@ The `Brewfile` manages all packages. Highlights:
 
 These dotfiles are automatically applied to new Codespaces when configured in
 your [GitHub settings](https://github.com/settings/codespaces). The `install.sh`
-script symlinks dotfiles, installs oh-my-zsh, and sets zsh as the default shell.
-macOS-specific configuration is skipped in Codespaces.
+script symlinks dotfiles, installs essential CLI tools (`delta`, `zoxide`, `fzf`),
+sets up oh-my-zsh, and sets zsh as the default shell. macOS-specific configuration
+(SSH, Homebrew, etc.) is skipped in Codespaces.
 
 ## Development
 
@@ -83,8 +84,9 @@ Runs seven linters in sequence:
 
 ### CI
 
-GitHub Actions runs three parallel jobs on every push:
+GitHub Actions runs four parallel jobs on every push:
 
 1. **Test** — Full Ansible playbook execution on macOS
 2. **Lint** — All linters above
-3. **Unit test** — BATS test suite
+3. **Unit test** — BATS test suite on macOS
+4. **Install Linux** — Verify `install.sh`, symlinks, and tool installation on Ubuntu

@@ -98,3 +98,35 @@ jobs:
 
       - name: Run tests
         run: script/test
+
+  install-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run install.sh
+        run: |
+          chmod +x install.sh script/install-tools
+          ./install.sh
+
+      - name: Verify dotfile symlinks
+        run: |
+          for file in .asdfrc .digrc .gemrc .gitconfig .gitignore \
+            .hushlogin .irbrc .pryrc .remarkrc .yamllint .zprofile .zshrc; do
+            test -L "$HOME/$file" || { echo "FAIL: $file not symlinked"; exit 1; }
+          done
+          echo "All dotfile symlinks verified"
+
+      - name: Verify tools installed
+        run: |
+          command -v delta
+          command -v zoxide
+          command -v fzf
+
+      - name: Install bats and run unit tests
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q bats
+          script/test

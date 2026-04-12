@@ -1,0 +1,43 @@
+#!/bin/sh
+# Install essential CLI tools on Linux for dotfiles compatibility.
+# Called by install.sh (dotfiles integration) and post-create.sh (devcontainer).
+# On macOS these tools are installed via Homebrew/Brewfile instead.
+
+set -e
+
+if [ "$(uname)" = "Darwin" ]; then
+	echo "Skipping install-tools on macOS (use Homebrew instead)"
+	exit 0
+fi
+
+install_delta() {
+	if command -v delta >/dev/null; then return; fi
+	echo "==> Installing delta..."
+	ARCH=$(dpkg --print-architecture 2>/dev/null || echo "amd64")
+	DELTA_VERSION=$(curl -sL https://api.github.com/repos/dandavison/delta/releases/latest |
+		grep '"tag_name"' | sed 's/.*"tag_name": *"//;s/".*//')
+	DELTA_DEB="git-delta_${DELTA_VERSION}_${ARCH}.deb"
+	curl -sLO "https://github.com/dandavison/delta/releases/download/${DELTA_VERSION}/${DELTA_DEB}"
+	sudo dpkg -i "$DELTA_DEB"
+	rm -f "$DELTA_DEB"
+}
+
+install_zoxide() {
+	if command -v zoxide >/dev/null; then return; fi
+	echo "==> Installing zoxide..."
+	curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash
+}
+
+install_fzf() {
+	if command -v fzf >/dev/null; then return; fi
+	echo "==> Installing fzf..."
+	git clone --depth 1 https://github.com/junegunn/fzf.git "$HOME/.fzf"
+	"$HOME/.fzf/install" --bin --no-update-rc --no-completion --no-key-bindings
+	sudo ln -sf "$HOME/.fzf/bin/fzf" /usr/local/bin/fzf
+}
+
+install_delta
+install_zoxide
+install_fzf
+
+echo "==> Tool installation complete"

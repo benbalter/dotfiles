@@ -9,7 +9,5 @@ sudo apt-get install -y -q shellcheck bats
 go install mvdan.cc/sh/v3/cmd/shfmt@latest
 go install github.com/rhysd/actionlint/cmd/actionlint@latest
 
-# Install project dependencies
-npm install
-bundle install
-script/bootstrap
+# Install CLI tools used by dotfiles (delta, zoxide, fzf)
+script/install-tools

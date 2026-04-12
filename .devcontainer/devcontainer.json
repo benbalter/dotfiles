@@ -7,6 +7,10 @@
     "ghcr.io/devcontainers/features/ruby:1": {},
     "ghcr.io/devcontainers/features/go:1": {}
   },
+  "containerEnv": {
+    "DOTFILES_ROOT": "${containerWorkspaceFolder}"
+  },
+  "updateContentCommand": "npm install && bundle install && script/bootstrap",
   "postCreateCommand": "sh .devcontainer/post-create.sh",
   "customizations": {
     "vscode": {
@@ -17,7 +21,8 @@
         "esbenp.prettier-vscode",
         "yzhang.markdown-all-in-one",
         "Shopify.ruby-lsp",
-        "streetsidesoftware.code-spell-checker"
+        "streetsidesoftware.code-spell-checker",
+        "github.copilot"
       ]
     }
   }
