@@ -80,6 +80,12 @@ jobs:
           path: ./env
           key: ${{ runner.os }}-env-${{ hashFiles('requirements.txt') }}
 
+      - name: Homebrew cache
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Caches/Homebrew/downloads
+          key: ${{ runner.os }}-brew-lint-shellcheck-shfmt-actionlint
+
       - name: Install lint tools
         run: |
           brew install shellcheck shfmt actionlint
@@ -95,6 +101,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Homebrew cache
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Caches/Homebrew/downloads
+          key: ${{ runner.os }}-brew-test-bats-core-yq
 
       - name: Install dependencies
         run: brew install bats-core yq
