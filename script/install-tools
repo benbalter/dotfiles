@@ -14,10 +14,10 @@ install_delta() {
 	if command -v delta >/dev/null; then return; fi
 	echo "==> Installing delta..."
 	ARCH=$(dpkg --print-architecture 2>/dev/null || echo "amd64")
-	DELTA_VERSION=$(curl -sL https://api.github.com/repos/dandavison/delta/releases/latest |
-		grep '"tag_name"' | sed 's/.*"tag_name": *"//;s/".*//')
-	DELTA_DEB="git-delta_${DELTA_VERSION}_${ARCH}.deb"
-	curl -sLO "https://github.com/dandavison/delta/releases/download/${DELTA_VERSION}/${DELTA_DEB}"
+	DELTA_DEB_URL=$(curl -sL https://api.github.com/repos/dandavison/delta/releases/latest |
+		grep '"browser_download_url"' | grep "_${ARCH}\\.deb" | grep -v musl | sed 's/.*"browser_download_url": *"//;s/".*//')
+	DELTA_DEB=$(basename "$DELTA_DEB_URL")
+	curl -sLO "$DELTA_DEB_URL"
 	sudo dpkg -i "$DELTA_DEB"
 	rm -f "$DELTA_DEB"
 }
@@ -26,10 +26,10 @@ install_zoxide() {
 	if command -v zoxide >/dev/null; then return; fi
 	echo "==> Installing zoxide..."
 	ARCH=$(dpkg --print-architecture 2>/dev/null || echo "amd64")
-	ZOXIDE_VERSION=$(curl -sL https://api.github.com/repos/ajeetdsouza/zoxide/releases/latest |
-		grep '"tag_name"' | sed 's/.*"v//;s/".*//')
-	ZOXIDE_DEB="zoxide_${ZOXIDE_VERSION}_${ARCH}.deb"
-	curl -sLO "https://github.com/ajeetdsouza/zoxide/releases/download/v${ZOXIDE_VERSION}/${ZOXIDE_DEB}"
+	ZOXIDE_DEB_URL=$(curl -sL https://api.github.com/repos/ajeetdsouza/zoxide/releases/latest |
+		grep '"browser_download_url"' | grep "_${ARCH}\\.deb" | sed 's/.*"browser_download_url": *"//;s/".*//')
+	ZOXIDE_DEB=$(basename "$ZOXIDE_DEB_URL")
+	curl -sLO "$ZOXIDE_DEB_URL"
 	sudo dpkg -i "$ZOXIDE_DEB"
 	rm -f "$ZOXIDE_DEB"
 }
