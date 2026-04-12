@@ -18,18 +18,18 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 	mkdir -p "$HOME/.files/script"
 	touch "$HOME/.token"
 	run bash -c "
-    DOTFILES_ROOT='$REPO_ROOT'
-    . '$REPO_ROOT/lib/aliases'
-  "
+		DOTFILES_ROOT='$REPO_ROOT'
+		. '$REPO_ROOT/lib/aliases'
+	"
 	rm -rf "$HOME"
 	[ "$status" -eq 0 ]
 }
 
 @test "lib/auto-complete sources without error when gh is missing" {
 	run bash -c "
-    # Hide gh so the conditional is exercised
-    gh() { return 1; }
-    . '$REPO_ROOT/lib/auto-complete'
-  "
+		# Hide gh so the conditional is exercised
+		gh() { return 1; }
+		. '$REPO_ROOT/lib/auto-complete'
+	"
 	[ "$status" -eq 0 ]
 }

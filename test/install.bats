@@ -16,11 +16,11 @@ teardown() {
 	# Stub out uname so we hit the Linux path and git/chsh so they no-op
 	# shellcheck disable=SC2016
 	run env HOME="$TEST_HOME" DOTFILES_SKIP_TOOLS=1 bash -c '
-    uname() { echo Linux; }; export -f uname
-    git() { mkdir -p "$3"; }; export -f git
-    sudo() { :; }; export -f sudo
-    . "'"$REPO_ROOT"'/install.sh"
-  '
+		uname() { echo Linux; }; export -f uname
+		git() { mkdir -p "$3"; }; export -f git
+		sudo() { :; }; export -f sudo
+		. "'"$REPO_ROOT"'/install.sh"
+	'
 	[ "$status" -eq 0 ]
 
 	# Verify key dotfile symlinks exist
@@ -33,11 +33,11 @@ teardown() {
 @test "install.sh creates required directories" {
 	# shellcheck disable=SC2016
 	run env HOME="$TEST_HOME" DOTFILES_SKIP_TOOLS=1 bash -c '
-    uname() { echo Linux; }; export -f uname
-    git() { mkdir -p "$3"; }; export -f git
-    sudo() { :; }; export -f sudo
-    . "'"$REPO_ROOT"'/install.sh"
-  '
+		uname() { echo Linux; }; export -f uname
+		git() { mkdir -p "$3"; }; export -f git
+		sudo() { :; }; export -f sudo
+		. "'"$REPO_ROOT"'/install.sh"
+	'
 	[ "$status" -eq 0 ]
 
 	for dir in .bundle .gnupg; do
