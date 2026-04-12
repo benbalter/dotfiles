@@ -17,6 +17,10 @@ fi
 for file in \
 	.asdfrc .digrc .gemrc .gitconfig .gitignore .hushlogin \
 	.irbrc .pryrc .remarkrc .yamllint .zprofile .zshrc; do
+	if [ -e "$HOME/$file" ] && [ ! -L "$HOME/$file" ]; then
+		echo "Backing up $HOME/$file to $HOME/$file.bak"
+		mv "$HOME/$file" "$HOME/$file.bak"
+	fi
 	ln -sf "$DOTFILES_DIR/$file" "$HOME/$file"
 done
 
@@ -42,5 +46,7 @@ fi
 
 # Set zsh as default shell if available
 if command -v zsh >/dev/null && [ "$SHELL" != "$(command -v zsh)" ]; then
-	sudo chsh -s "$(command -v zsh)" "$(whoami)" 2>/dev/null || true
+	if ! sudo chsh -s "$(command -v zsh)" "$(whoami)" 2>/dev/null; then
+		echo "Warning: could not set zsh as default shell"
+	fi
 fi

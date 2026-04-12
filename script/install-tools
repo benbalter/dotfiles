@@ -25,7 +25,13 @@ install_delta() {
 install_zoxide() {
 	if command -v zoxide >/dev/null; then return; fi
 	echo "==> Installing zoxide..."
-	curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash
+	ARCH=$(dpkg --print-architecture 2>/dev/null || echo "amd64")
+	ZOXIDE_VERSION=$(curl -sL https://api.github.com/repos/ajeetdsouza/zoxide/releases/latest |
+		grep '"tag_name"' | sed 's/.*"v//;s/".*//')
+	ZOXIDE_DEB="zoxide_${ZOXIDE_VERSION}_${ARCH}.deb"
+	curl -sLO "https://github.com/ajeetdsouza/zoxide/releases/download/v${ZOXIDE_VERSION}/${ZOXIDE_DEB}"
+	sudo dpkg -i "$ZOXIDE_DEB"
+	rm -f "$ZOXIDE_DEB"
 }
 
 install_fzf() {

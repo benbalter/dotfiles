@@ -14,10 +14,10 @@ yamllint ./*.yml .github/workflows/*.yml
 deactivate
 
 echo "==> Linting shell scripts..."
-shellcheck script/* install.sh
+shellcheck script/* install.sh lib/*
 
 echo "==> Checking shell formatting..."
-shfmt -d -i 0 -ci script/* install.sh
+shfmt -d -i 0 -ci script/* install.sh lib/*
 
 echo "==> Linting GitHub Actions workflows..."
 actionlint

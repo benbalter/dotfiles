@@ -82,12 +82,28 @@
 
 [diff]
 	tool = default-difftool
+	colorMoved = default
 
 [difftool "default-difftool"]
 	cmd = code --wait --diff $LOCAL $REMOTE
 	
 [init]
 	defaultBranch = main
+
+[transfer]
+	fsckObjects = true
+
+[fetch]
+	fsckObjects = true
+
+[receive]
+	fsckObjects = true
+
+[rebase]
+	autoStash = true
+
+[pull]
+	rebase = true
 
 [include]
 	path = ~/.gitconfig.macos

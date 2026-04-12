@@ -4,23 +4,9 @@
 REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 
 @test "config.yml dotfiles_files all exist in the repo" {
-  # Extract dotfiles list from config.yml (lines between dotfiles_files: and next key)
-  in_list=false
-  while IFS= read -r line; do
-    if echo "$line" | grep -q '^dotfiles_files:'; then
-      in_list=true
-      continue
-    fi
-    # Stop at next top-level key
-    if $in_list && echo "$line" | grep -qE '^[a-z]'; then
-      break
-    fi
-    if $in_list; then
-      file=$(echo "$line" | sed 's/^[[:space:]]*- *//')
-      [ -z "$file" ] && continue
-      [ -e "$REPO_ROOT/$file" ] || fail "dotfiles_files entry '$file' does not exist in repo"
-    fi
-  done < "$REPO_ROOT/config.yml"
+  while IFS= read -r file; do
+    [ -e "$REPO_ROOT/$file" ] || fail "dotfiles_files entry '$file' does not exist in repo"
+  done < <(yq -r '.dotfiles_files[]' "$REPO_ROOT/config.yml")
 }
 
 @test "install.sh dotfiles all exist in the repo" {
