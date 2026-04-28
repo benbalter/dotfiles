@@ -30,7 +30,7 @@ export ZSH
 SHELL=$(command -v zsh)
 export SHELL
 
-ZSH_THEME="robbyrussell"
+ZSH_THEME=""
 export ZSH_THEME
 
 DISABLE_UPDATE_PROMPT=true

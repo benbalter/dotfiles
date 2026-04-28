@@ -168,6 +168,8 @@ brew "sdl2_net"
 brew "sdl2_ttf"
 # Autoformat shell script source code
 brew "shfmt"
+# Cross-shell prompt
+brew "starship"
 # Detect compliance and security violations across Infrastructure as Code
 brew "terrascan"
 # Enables extra languages support for Tesseract

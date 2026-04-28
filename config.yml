@@ -58,6 +58,7 @@ dotfiles_files:
   - .yamllint
   - .zprofile
   - .zshrc
+  - .config/starship.toml
   - Library/Application Support/com.mitchellh.ghostty/config
   - Library/Spelling/LocalDictionary
   - Library/LaunchAgents/com.balter.ben.tmpreaper.plist
@@ -71,6 +72,7 @@ mas_signin_dialog: false
 
 directories_to_create:
   - ~/.bundle
+  - ~/.config
   - ~/.gnupg
   - ~/.ssh
   - ~/github

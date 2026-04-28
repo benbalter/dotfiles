@@ -59,3 +59,5 @@ elif [[ -f "$HOME/.asdf/asdf.sh" ]]; then
 fi
 
 export PATH="$PATH:$HOME/.local/bin"
+
+eval "$(starship init zsh)"
