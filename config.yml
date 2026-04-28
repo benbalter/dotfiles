@@ -58,6 +58,7 @@ dotfiles_files:
   - .yamllint
   - .zprofile
   - .zshrc
+  - Library/Application Support/com.mitchellh.ghostty/config
   - Library/Spelling/LocalDictionary
   - Library/LaunchAgents/com.balter.ben.tmpreaper.plist
   - Library/LaunchAgents/com.balter.ben.update.plist
@@ -74,6 +75,7 @@ directories_to_create:
   - ~/.ssh
   - ~/github
   - ~/projects
+  - ~/Library/Application Support/com.mitchellh.ghostty
   - ~/Library/LaunchAgents
   - ~/Library/Spelling
 

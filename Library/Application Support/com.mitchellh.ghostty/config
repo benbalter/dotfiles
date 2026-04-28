@@ -1,0 +1,46 @@
+# Ghostty Configuration
+# https://ghostty.org/docs/config/reference
+
+# ── Theme ──────────────────────────────────────────────────────────
+theme = light:Catppuccin Latte,dark:Catppuccin Mocha
+minimum-contrast = 1.1
+
+# ── Font ───────────────────────────────────────────────────────────
+font-family = Hack Nerd Font Mono
+font-size = 14
+font-thicken = true
+adjust-cell-height = 2
+
+# ── Window ─────────────────────────────────────────────────────────
+window-padding-x = 12
+window-padding-y = 8
+window-padding-balance = true
+window-save-state = always
+window-colorspace = display-p3
+macos-titlebar-style = tabs
+macos-option-as-alt = true
+
+# ── Cursor & Mouse ────────────────────────────────────────────────
+cursor-style = bar
+cursor-style-blink = true
+mouse-hide-while-typing = true
+
+# ── Shell Integration ─────────────────────────────────────────────
+shell-integration-features = cursor,sudo,title
+
+# ── Background ────────────────────────────────────────────────────
+background-opacity = 0.92
+background-blur-radius = 20
+
+# ── Quick Terminal ────────────────────────────────────────────────
+quick-terminal-animation-duration = 0.12
+
+# ── Keybindings ───────────────────────────────────────────────────
+keybind = global:cmd+grave_accent=toggle_quick_terminal
+keybind = cmd+d=new_split:down
+keybind = cmd+shift+d=new_split:right
+keybind = cmd+shift+enter=toggle_split_zoom
+keybind = cmd+opt+left=goto_split:left
+keybind = cmd+opt+right=goto_split:right
+keybind = cmd+opt+up=goto_split:top
+keybind = cmd+opt+down=goto_split:bottom
