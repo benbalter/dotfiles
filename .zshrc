@@ -11,7 +11,6 @@ local plugins
 plugins=(
   ansible
   colored-man-pages
-  colorize
   command-not-found
   common-aliases
   cp
