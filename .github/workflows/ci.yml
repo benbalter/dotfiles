@@ -136,7 +136,7 @@ jobs:
 
       - name: Verify dotfile symlinks
         run: |
-          for file in .asdfrc .digrc .gemrc .gitconfig .gitignore \
+          for file in .digrc .gemrc .gitconfig .gitignore \
             .hushlogin .irbrc .pryrc .remarkrc .yamllint .zprofile .zshrc; do
             test -L "$HOME/$file" || { echo "FAIL: $file not symlinked"; exit 1; }
           done

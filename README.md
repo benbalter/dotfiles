@@ -30,7 +30,7 @@ The `Brewfile` manages all packages. Highlights:
 | Category       | Examples                                                                 |
 | -------------- | ------------------------------------------------------------------------ |
 | Languages      | Ruby, Go, Rust, Node, Python (via [uv](https://github.com/astral-sh/uv)) |
-| Dev tools      | git, gh, delta, fzf, ripgrep, jq, asdf                                   |
+| Dev tools      | git, gh, delta, fzf, ripgrep, jq, mise                                   |
 | Linters        | shellcheck, shfmt, actionlint, ansible-lint, yamllint, vale, rubocop     |
 | Infrastructure | tflint, tfsec, terrascan, docker, act                                    |
 | Applications   | iTerm2, VS Code, 1Password, Chrome, and more                             |

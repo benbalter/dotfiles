@@ -35,7 +35,6 @@ dockitems_remove:
 configure_sudoers: false
 
 dotfiles_files:
-  - .asdfrc
   - .Brewfile
   - .bundle/config
   - .digrc
@@ -54,6 +53,7 @@ dotfiles_files:
   - .yamllint
   - .zprofile
   - .zshrc
+  - .config/mise/config.toml
   - .config/starship.toml
   - Library/Application Support/com.mitchellh.ghostty/config
   - Library/Spelling/LocalDictionary

@@ -17,7 +17,7 @@ fi
 
 # Symlink dotfiles
 for file in \
-	.asdfrc .digrc .gemrc .gitconfig .gitignore .hushlogin \
+	.digrc .gemrc .gitconfig .gitignore .hushlogin \
 	.irbrc .pryrc .remarkrc .yamllint .zprofile .zshrc; do
 	if [ -e "$HOME/$file" ] && [ ! -L "$HOME/$file" ]; then
 		echo "Backing up $HOME/$file to $HOME/$file.bak"
