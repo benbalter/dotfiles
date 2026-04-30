@@ -1,11 +1,13 @@
 #!/bin/sh
 
-set -e
+set -eu
+# shellcheck disable=SC3040
+(set -o pipefail) 2>/dev/null && set -o pipefail || true
 
 # shellcheck disable=SC1091
 . env/bin/activate
 
-if [ "$CI" = "true" ]; then
+if [ "${CI:-}" = "true" ]; then
 	ansible-playbook playbook.yml
 else
 	ansible-playbook playbook.yml --ask-become-pass

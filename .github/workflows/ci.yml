@@ -6,6 +6,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   HOMEBREW_NO_AUTO_UPDATE: 1
 
@@ -38,7 +42,6 @@ jobs:
         run: script/bootstrap
 
   test:
-    needs: bootstrap
     runs-on: macos-latest
 
     steps:
@@ -57,11 +60,13 @@ jobs:
           path: ./env
           key: ${{ runner.os }}-env-${{ hashFiles('requirements.txt') }}
 
+      - name: Bootstrap (if cache miss)
+        run: script/bootstrap
+
       - name: Run playbook
         run: script/ansible
 
   lint:
-    needs: bootstrap
     runs-on: macos-latest
 
     steps:
@@ -85,6 +90,9 @@ jobs:
         with:
           path: ~/Library/Caches/Homebrew/downloads
           key: ${{ runner.os }}-brew-lint-shellcheck-shfmt-actionlint
+
+      - name: Bootstrap (if cache miss)
+        run: script/bootstrap
 
       - name: Install lint tools
         run: |

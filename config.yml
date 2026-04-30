@@ -34,10 +34,6 @@ dockitems_remove:
 
 configure_sudoers: false
 
-dotfiles_repo: https://github.com/benbalter/dotfiles
-dotfiles_repo_accept_hostkey: true
-dotfiles_repo_version: main
-dotfiles_repo_local_destination: ~/.files
 dotfiles_files:
   - .asdfrc
   - .Brewfile
@@ -64,8 +60,8 @@ dotfiles_files:
   - Library/LaunchAgents/com.balter.ben.tmpreaper.plist
   - Library/LaunchAgents/com.balter.ben.update.plist
 
-homebrew_upgrade_all_packages: true
-homebrew_brewfile_dir: ~/.files
+homebrew_upgrade_all_packages: false
+homebrew_brewfile_dir: "{{ ansible_user_dir }}/.files"
 mas_upgrade_all_apps: false
 mas_installed_apps: []
 mas_signin_dialog: false

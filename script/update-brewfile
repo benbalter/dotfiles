@@ -1,4 +1,8 @@
 #!/bin/sh
 
+set -eu
+# shellcheck disable=SC3040
+(set -o pipefail) 2>/dev/null && set -o pipefail || true
+
 brew bundle dump --global --describe --force
 bundle exec rubocop -A

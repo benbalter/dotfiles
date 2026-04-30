@@ -32,13 +32,13 @@ The `Brewfile` manages all packages. Highlights:
 | Languages      | Ruby, Go, Rust, Node, Python (via [uv](https://github.com/astral-sh/uv)) |
 | Dev tools      | git, gh, delta, fzf, ripgrep, jq, asdf                                   |
 | Linters        | shellcheck, shfmt, actionlint, ansible-lint, yamllint, vale, rubocop     |
-| Infrastructure | terraform, tflint, tfsec, docker, act                                    |
+| Infrastructure | tflint, tfsec, terrascan, docker, act                                    |
 | Applications   | iTerm2, VS Code, 1Password, Chrome, and more                             |
 
 ## Setting up a new machine from scratch
 
-1. `git clone https://github.com/benbalter/dotfiles ~/.dotfiles`
-2. `cd ~/.dotfiles && script/setup`
+1. `git clone https://github.com/benbalter/dotfiles ~/.files`
+2. `cd ~/.files && script/setup`
 
 ## GitHub Codespaces
 

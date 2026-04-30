@@ -31,7 +31,7 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 }
 
 @test "config.yml has required top-level keys" {
-	for key in dotfiles_files dotfiles_repo homebrew_brewfile_dir \
+	for key in dotfiles_files homebrew_brewfile_dir \
 		directories_to_create macos_defaults; do
 		grep -q "^${key}:" "$REPO_ROOT/config.yml" || fail "config.yml missing required key '$key'"
 	done
