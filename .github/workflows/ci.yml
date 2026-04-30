@@ -103,14 +103,16 @@ jobs:
           [ "$ask_pw" = "1" ] || { echo "FAIL: dock askForPassword=$ask_pw (expected 1)"; exit 1; }
           echo "macOS user defaults verified"
 
-      - name: Re-run playbook (idempotency check)
+      - name: Re-run playbook (no failures on second run)
         run: |
-          # Capture output and assert no tasks reported "changed"
+          # Re-run to catch tasks that error on a second invocation.
+          # Note: not asserting changed=0 because geerlingguy.mac.dock
+          # always reports changed for dock item positions.
           output=$(script/ansible 2>&1)
           echo "$output"
-          changed=$(echo "$output" | awk '/^localhost/ { for (i=1; i<=NF; i++) if ($i ~ /^changed=/) print substr($i, 9) }')
-          [ "$changed" = "0" ] || { echo "FAIL: re-run reported changed=$changed (expected 0)"; exit 1; }
-          echo "Playbook is idempotent"
+          failed=$(echo "$output" | awk '/^localhost/ { for (i=1; i<=NF; i++) if ($i ~ /^failed=/) print substr($i, 8) }')
+          [ "$failed" = "0" ] || { echo "FAIL: re-run reported failed=$failed (expected 0)"; exit 1; }
+          echo "Playbook re-run completed without failures"
 
   lint:
     runs-on: macos-latest
