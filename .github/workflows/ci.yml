@@ -66,6 +66,52 @@ jobs:
       - name: Run playbook
         run: script/ansible
 
+      - name: Verify dotfile symlinks
+        run: |
+          for file in .zshrc .zprofile .gitconfig .gitignore .yamllint .Brewfile \
+            .config/mise/config.toml .config/starship.toml; do
+            test -L "$HOME/$file" || { echo "FAIL: $file not symlinked"; exit 1; }
+            target=$(readlink "$HOME/$file")
+            expected="$GITHUB_WORKSPACE/$file"
+            [ "$target" = "$expected" ] || { echo "FAIL: $file -> $target (expected $expected)"; exit 1; }
+          done
+          echo "All dotfile symlinks verified"
+
+      - name: Verify expected directories exist
+        run: |
+          for dir in .bundle .config .gnupg .ssh github projects \
+            "Library/Application Support/com.mitchellh.ghostty"; do
+            test -d "$HOME/$dir" || { echo "FAIL: ~/$dir missing"; exit 1; }
+          done
+          echo "All required directories present"
+
+      - name: Verify oh-my-zsh installed
+        run: test -d "$HOME/.oh-my-zsh/.git"
+
+      - name: Verify Homebrew installed
+        run: |
+          command -v brew
+          brew --version
+
+      - name: Verify macOS user defaults applied
+        run: |
+          autohide=$(defaults read com.apple.dock autohide)
+          [ "$autohide" = "1" ] || { echo "FAIL: dock autohide=$autohide (expected 1)"; exit 1; }
+          ss_type=$(defaults read com.apple.screencapture type)
+          [ "$ss_type" = "png" ] || { echo "FAIL: screencapture type=$ss_type (expected png)"; exit 1; }
+          ask_pw=$(defaults read com.apple.dock askForPassword)
+          [ "$ask_pw" = "1" ] || { echo "FAIL: dock askForPassword=$ask_pw (expected 1)"; exit 1; }
+          echo "macOS user defaults verified"
+
+      - name: Re-run playbook (idempotency check)
+        run: |
+          # Capture output and assert no tasks reported "changed"
+          output=$(script/ansible 2>&1)
+          echo "$output"
+          changed=$(echo "$output" | awk '/^localhost/ { for (i=1; i<=NF; i++) if ($i ~ /^changed=/) print substr($i, 9) }')
+          [ "$changed" = "0" ] || { echo "FAIL: re-run reported changed=$changed (expected 0)"; exit 1; }
+          echo "Playbook is idempotent"
+
   lint:
     runs-on: macos-latest
 
