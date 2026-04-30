@@ -2,9 +2,9 @@
   "name": "dotfiles",
   "version": "1.0.0",
   "description": "Dotfiles for macOS development environment setup and configuration management",
-  "main": "script/setup",
   "scripts": {
-    "test": "script/lint"
+    "test": "script/test",
+    "lint": "script/lint"
   },
   "repository": {
     "type": "git",

@@ -51,10 +51,8 @@ source "$DOTFILES_ROOT/lib/aliases"
 
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
-if [[ -f /opt/homebrew/opt/asdf/libexec/asdf.sh ]]; then
-  . /opt/homebrew/opt/asdf/libexec/asdf.sh
-elif [[ -f "$HOME/.asdf/asdf.sh" ]]; then
-  . "$HOME/.asdf/asdf.sh"
+if command -v mise >/dev/null; then
+  eval "$(mise activate zsh)"
 fi
 
 export PATH="$PATH:$HOME/.local/bin"
@@ -63,3 +61,4 @@ export PATH="$PATH:$HOME/.local/bin"
 export SSH_AUTH_SOCK="$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
 
 eval "$(starship init zsh)"
+

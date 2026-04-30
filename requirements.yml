@@ -2,11 +2,9 @@
 roles:
   - name: elliotweiser.osx-command-line-tools
     version: "2.3.0"
-  - name: geerlingguy.dotfiles
-    version: "1.3.2"
 
 collections:
   - name: geerlingguy.mac
-    version: ">=5.0.0"
+    version: ">=5.0.0,<6.0.0"
   - name: community.general
-    version: ">=12.0.0"
+    version: ">=12.0.0,<13.0.0"

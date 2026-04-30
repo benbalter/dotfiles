@@ -1,15 +1,18 @@
 #!/bin/sh
 
-set -e
-
-python3 -m venv env
-
-# shellcheck disable=SC1091
-. env/bin/activate
+set -eu
+# shellcheck disable=SC3040
+(set -o pipefail) 2>/dev/null && set -o pipefail || true
 
 if command -v uv >/dev/null; then
+	uv venv env
+	# shellcheck disable=SC1091
+	. env/bin/activate
 	uv pip install --upgrade -r requirements.txt
 else
+	python3 -m venv env
+	# shellcheck disable=SC1091
+	. env/bin/activate
 	pip install --upgrade -r requirements.txt
 fi
 

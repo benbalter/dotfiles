@@ -3,7 +3,9 @@
 # Symlinks dotfiles to $HOME and sets up the shell environment.
 # On macOS, delegates to the full Ansible-based setup via script/setup.
 
-set -e
+set -eu
+# shellcheck disable=SC3040
+(set -o pipefail) 2>/dev/null && set -o pipefail || true
 
 DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 
@@ -15,7 +17,7 @@ fi
 
 # Symlink dotfiles
 for file in \
-	.asdfrc .digrc .gemrc .gitconfig .gitignore .hushlogin \
+	.digrc .gemrc .gitconfig .gitignore .hushlogin \
 	.irbrc .pryrc .remarkrc .yamllint .zprofile .zshrc; do
 	if [ -e "$HOME/$file" ] && [ ! -L "$HOME/$file" ]; then
 		echo "Backing up $HOME/$file to $HOME/$file.bak"
@@ -45,7 +47,7 @@ if [ "${DOTFILES_SKIP_TOOLS:-}" != "1" ]; then
 fi
 
 # Set zsh as default shell if available
-if command -v zsh >/dev/null && [ "$SHELL" != "$(command -v zsh)" ]; then
+if command -v zsh >/dev/null && [ "${SHELL:-}" != "$(command -v zsh)" ]; then
 	if ! sudo chsh -s "$(command -v zsh)" "$(whoami)" 2>/dev/null; then
 		echo "Warning: could not set zsh as default shell"
 	fi

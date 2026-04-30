@@ -29,7 +29,7 @@ brew "ansible-lint"
 # Distributed revision control system
 brew "git"
 # Extendable version manager with support for Ruby, Node.js, Erlang & more
-brew "asdf"
+brew "mise"
 # TAP-compliant test framework for Bash
 brew "bats-core"
 # Powerful, enterprise-ready, open source web server with automatic HTTPS
