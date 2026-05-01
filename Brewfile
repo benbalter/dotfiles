@@ -20,8 +20,6 @@ brew 'libyaml'
 brew 'ansible'
 # Checks ansible playbooks for practices and behaviour
 brew 'ansible-lint'
-# Extendable version manager with support for Ruby, Node.js, Erlang & more
-brew 'asdf'
 # Microsoft Azure CLI 2.0
 brew 'azure-cli'
 # Bash Automated Testing System
@@ -132,6 +130,8 @@ brew 'mas'
 brew 'openjdk'
 # Java-based project management
 brew 'maven'
+# Polyglot runtime manager (asdf rust clone)
+brew 'mise'
 # 'traceroute' and 'ping' in a single tool
 brew 'mtr'
 # Port scanning utility for large networks
