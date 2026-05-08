@@ -60,6 +60,10 @@ dotfiles_files:
   - Library/LaunchAgents/com.balter.ben.tmpreaper.plist
   - Library/LaunchAgents/com.balter.ben.update.plist
 
+dotfile_root_dirs:
+  - ""
+  - "."
+
 homebrew_upgrade_all_packages: false
 homebrew_brewfile_dir: "{{ ansible_user_dir }}/.files"
 mas_upgrade_all_apps: false
