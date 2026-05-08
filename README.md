@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/benbalter/dotfiles/actions/workflows/ci.yml/badge.svg)](https://github.com/benbalter/dotfiles/actions/workflows/ci.yml)
 
-@BenBalter's development environment and the scripts to initialize it and keep it up to date. Uses [Ansible](https://www.ansible.com/) for configuration management and [Homebrew](https://brew.sh/) for package management on macOS.
+@BenBalter's development environment and the scripts to initialize it and keep it up to date. Uses [Ansible](https://www.ansible.com/) for configuration management and [Homebrew](https://brew.sh/) for package management.
 
 ## What's here
 
@@ -39,6 +39,13 @@ The `Brewfile` manages all packages. Highlights:
 
 1. `git clone https://github.com/benbalter/dotfiles ~/.files`
 2. `cd ~/.files && script/setup`
+
+If macOS prompts for administrator access during Homebrew or App Store installs, keep an authenticated sudo session open while setup runs:
+
+```sh
+sudo -v
+cd ~/.files && script/setup
+```
 
 ## GitHub Codespaces
 
