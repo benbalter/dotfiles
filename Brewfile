@@ -311,12 +311,10 @@ mas "1Password for Safari", id: 1569813296
 mas "24 Hour Wallpaper", id: 1226087575
 mas "AdGuard for Safari", id: 1440147259
 mas "Dark Reader for Safari", id: 1438243180
-mas "DuckDuckGo Privacy for Safari", id: 1482920575
 mas "GhostText", id: 1552641506
 mas "Hush", id: 1544743900
 mas "iMovie", id: 408981434
 mas "JSONPeep", id: 1458969831
-mas "Keynote", id: 409183694
 mas "Kindle", id: 302584613
 mas "MeetingBar", id: 1532419400
 mas "Meshtastic", id: 1586432531
@@ -325,8 +323,6 @@ mas "Open In Webmail", id: 1451552749
 mas "PayPal Honey", id: 1472777122
 mas "reMarkable", id: 1276493162
 mas "RetailMeNot Codes & Cash Back", id: 1588381926
-mas "Ring", id: 1142753258
-mas "StopTheMadness", id: 1376402589
 mas "Super Agent", id: 1568262835
 mas "TestFlight", id: 899247664
 mas "URL Linker", id: 1289119450
@@ -339,7 +335,6 @@ vscode "docker.docker"
 vscode "ginfuru.ginfuru-vscode-jekyll-syntax"
 vscode "github.codespaces"
 vscode "github.copilot"
-vscode "github.copilot-chat"
 vscode "github.copilot-workspace"
 vscode "github.github-vscode-theme"
 vscode "github.vscode-github-actions"
