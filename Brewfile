@@ -130,7 +130,7 @@ brew 'mas'
 brew 'openjdk'
 # Java-based project management
 brew 'maven'
-# Polyglot runtime manager (asdf rust clone)
+# Polyglot runtime manager
 brew 'mise'
 # 'traceroute' and 'ping' in a single tool
 brew 'mtr'
