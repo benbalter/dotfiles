@@ -1,0 +1,44 @@
+---
+# Fix for geerlingguy.mac.homebrew role to handle immutable Cask files
+# Disables become for Homebrew operations and makes chown more resilient
+
+- name: Ensure Homebrew is installed
+  ansible.builtin.stat:
+    path: "{{ homebrew_path | default('/opt/homebrew/bin/brew') }}"
+  register: homebrew_installed
+
+- name: Install Homebrew
+  ansible.builtin.shell:
+    cmd: |
+      /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  become: false
+  when: not homebrew_installed.stat.exists
+
+- name: Ensure proper ownership on homebrew_install_path subdirs (ignore immutable files)
+  ansible.builtin.file:
+    path: "{{ homebrew_install_path }}"
+    owner: "{{ homebrew_user }}"
+    group: "{{ homebrew_group }}"
+    state: directory
+    recurse: yes
+  become: true
+  failed_when: false
+  register: homebrew_chown
+
+- name: Install Homebrew packages from Brewfile
+  community.general.homebrew:
+    path: "{{ homebrew_brewfile_dir }}/Brewfile"
+    state: present
+    update_homebrew: "{{ homebrew_upgrade_all_packages }}"
+  become: false
+  environment:
+    PATH: "/opt/homebrew/bin:{{ ansible_env.PATH }}"
+
+- name: Upgrade all Homebrew packages
+  ansible.builtin.shell:
+    cmd: brew upgrade
+  become: false
+  environment:
+    PATH: "/opt/homebrew/bin:{{ ansible_env.PATH }}"
+  when: homebrew_upgrade_all_packages
+  changed_when: false

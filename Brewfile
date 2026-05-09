@@ -324,71 +324,59 @@ cask 'visual-studio-code@insiders'
 # Full-featured companion app to the YubiKey
 cask 'yubico-authenticator'
 # Video communication and virtual meeting platform
-cask 'zoom'
-mas '1Password for Safari', id: 1_569_813_296
-mas '24 Hour Wallpaper', id: 1_226_087_575
-mas '2FAS - Two Factor Authentication', id: 6_443_941_139
-mas 'AdGuard for Safari', id: 1_440_147_259
-mas 'Dark Reader for Safari', id: 1_438_243_180
-mas 'DuckDuckGo Privacy for Safari', id: 1_482_920_575
-mas 'GhostText', id: 1_552_641_506
-mas 'Hush', id: 1_544_743_900
-mas 'HyperList', id: 0
-mas 'iMovie', id: 408_981_434
-mas 'JSON Peep', id: 1_458_969_831
-mas 'Keynote', id: 409_183_694
-mas 'Kindle', id: 302_584_613
-mas 'LanguageTool', id: 1_534_275_760
-mas 'MeetingBar', id: 1_532_419_400
-mas 'Meshtastic', id: 1_586_432_531
-mas 'Okta Extension App', id: 1_439_967_473
-mas 'Open In Webmail', id: 1_451_552_749
-mas 'PayPal Honey', id: 1_472_777_122
-mas 'Push Security', id: 1_596_916_655
-mas 'reMarkable', id: 1_276_493_162
-mas 'RetailMeNot Codes & Cash Back', id: 1_588_381_926
-mas 'Ring', id: 1_142_753_258
-mas 'StopTheMadness', id: 1_376_402_589
-mas 'Super Agent', id: 1_568_262_835
-mas 'TestFlight', id: 899_247_664
-mas 'URL Linker', id: 1_289_119_450
-mas 'Wayback Machine', id: 1_472_432_422
-mas 'WhatsApp', id: 310_633_997
-vscode '1password.op-vscode'
-vscode 'astro-build.astro-vscode'
-vscode 'christian-kohler.npm-intellisense'
-vscode 'datadog.datadog-vscode'
-vscode 'davidanson.vscode-markdownlint'
-vscode 'docker.docker'
-vscode 'ginfuru.ginfuru-vscode-jekyll-syntax'
-vscode 'github.codespaces'
-vscode 'github.copilot-chat'
-vscode 'github.copilot-workspace'
-vscode 'github.github-vscode-theme'
-vscode 'github.vscode-github-actions'
-vscode 'github.vscode-pull-request-github'
-vscode 'kargware.vscode-extension-jekyll-kw'
-vscode 'mechatroner.rainbow-csv'
-vscode 'ms-azuretools.vscode-containers'
-vscode 'ms-dotnettools.csdevkit'
-vscode 'ms-dotnettools.csharp'
-vscode 'ms-dotnettools.vscode-dotnet-runtime'
-vscode 'ms-vscode-remote.remote-containers'
-vscode 'ms-vscode-remote.remote-ssh'
-vscode 'ms-vscode-remote.remote-ssh-edit'
-vscode 'ms-vscode-remote.remote-wsl'
-vscode 'ms-vscode-remote.vscode-remote-extensionpack'
-vscode 'ms-vscode.makefile-tools'
-vscode 'ms-vscode.remote-explorer'
-vscode 'ms-vscode.remote-server'
-vscode 'ms-vscode.vscode-typescript-next'
-vscode 'neilding.language-liquid'
-vscode 'nicoespeon.abracadabra'
-vscode 'orta.vscode-jest'
-vscode 'petercort.copilot-enabler'
-vscode 'redhat.vscode-yaml'
-vscode 'shopify.ruby-lsp'
-vscode 'shopify.theme-check-vscode'
-vscode 'sissel.shopify-liquid'
-vscode 'visualstudiotoolsforunity.vstuc'
-vscode 'yzhang.markdown-all-in-one'
+cask "zoom"
+mas "1Password for Safari", id: 1569813296
+mas "24 Hour Wallpaper", id: 1226087575
+mas "AdGuard for Safari", id: 1440147259
+mas "Dark Reader for Safari", id: 1438243180
+mas "GhostText", id: 1552641506
+mas "Hush", id: 1544743900
+mas "iMovie", id: 408981434
+mas "JSONPeep", id: 1458969831
+mas "Kindle", id: 302584613
+mas "MeetingBar", id: 1532419400
+mas "Meshtastic", id: 1586432531
+mas "Okta Extension App", id: 1439967473
+mas "Open In Webmail", id: 1451552749
+mas "PayPal Honey", id: 1472777122
+mas "reMarkable", id: 1276493162
+mas "RetailMeNot Codes & Cash Back", id: 1588381926
+mas "Super Agent", id: 1568262835
+mas "TestFlight", id: 899247664
+mas "URL Linker", id: 1289119450
+mas "Wayback Machine", id: 1472432422
+mas "WhatsApp", id: 310633997
+vscode "1password.op-vscode"
+vscode "christian-kohler.npm-intellisense"
+vscode "davidanson.vscode-markdownlint"
+vscode "docker.docker"
+vscode "ginfuru.ginfuru-vscode-jekyll-syntax"
+vscode "github.codespaces"
+vscode "github.copilot-workspace"
+vscode "github.github-vscode-theme"
+vscode "github.vscode-github-actions"
+vscode "github.vscode-pull-request-github"
+vscode "kargware.vscode-extension-jekyll-kw"
+vscode "mechatroner.rainbow-csv"
+vscode "ms-azuretools.vscode-containers"
+vscode "ms-dotnettools.csdevkit"
+vscode "ms-dotnettools.csharp"
+vscode "ms-dotnettools.vscode-dotnet-runtime"
+vscode "ms-vscode-remote.remote-containers"
+vscode "ms-vscode-remote.remote-ssh"
+vscode "ms-vscode-remote.remote-ssh-edit"
+vscode "ms-vscode-remote.remote-wsl"
+vscode "ms-vscode-remote.vscode-remote-extensionpack"
+vscode "ms-vscode.makefile-tools"
+vscode "ms-vscode.remote-explorer"
+vscode "ms-vscode.remote-server"
+vscode "ms-vscode.vscode-typescript-next"
+vscode "neilding.language-liquid"
+vscode "nicoespeon.abracadabra"
+vscode "orta.vscode-jest"
+vscode "redhat.vscode-yaml"
+vscode "shopify.ruby-lsp"
+vscode "shopify.theme-check-vscode"
+vscode "sissel.shopify-liquid"
+vscode "visualstudiotoolsforunity.vstuc"
+vscode "yzhang.markdown-all-in-one"

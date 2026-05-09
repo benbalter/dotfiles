@@ -3,12 +3,18 @@
   connection: local
 
   pre_tasks:
+    - name: Detect CI environment
+      ansible.builtin.set_fact:
+        is_ci: "{{ ansible_env.CI | default(false) | bool }}"
+      tags: always
+
     - name: Include config
       ansible.builtin.include_vars: "{{ playbook_dir }}/config.yml"
       tags: always
-    - name: Include dev config
+
+    - name: Include CI config
       ansible.builtin.include_vars: "{{ playbook_dir }}/config_ci.yml"
-      when: lookup('env', 'CI') == "true"
+      when: is_ci
       tags: always
 
   tasks:
@@ -19,6 +25,7 @@
         mode: "0755"
       loop: "{{ directories_to_create }}"
       tags: [directories]
+
     - name: Setup Dotfiles
       tags: [dotfiles]
       block:
@@ -28,7 +35,7 @@
             state: directory
             mode: "0755"
           loop: "{{ dotfiles_files }}"
-          when: (item | dirname) not in ['', '.']
+          when: item | dirname not in dotfile_root_dirs
 
         - name: Stat existing dotfile targets
           ansible.builtin.stat:
@@ -43,7 +50,9 @@
           loop: "{{ dotfile_targets.results }}"
           loop_control:
             label: "{{ item.item }}"
-          when: item.stat.exists and not item.stat.islnk
+          when:
+            - item.stat.exists
+            - not item.stat.islnk
 
         - name: Symlink dotfiles into HOME
           ansible.builtin.file:
@@ -52,10 +61,12 @@
             state: link
             force: true
           loop: "{{ dotfiles_files }}"
+
     - name: Setup Homebrew
       ansible.builtin.include_role:
         name: geerlingguy.mac.homebrew
       tags: [homebrew, packages]
+
     - name: Set up oh-my-zsh
       ansible.builtin.git:
         repo: https://github.com/ohmyzsh/ohmyzsh
@@ -64,20 +75,24 @@
         depth: 1
         single_branch: true
       tags: [ohmyzsh]
+
     - name: Setup App Store
       ansible.builtin.include_role:
         name: geerlingguy.mac.mas
       tags: [mas, packages]
+
     - name: Install GitHub Copilot CLI
       community.general.npm:
         name: "@github/copilot"
         global: true
-      when: lookup('env', 'CI') != "true"
+      when: not is_ci
       tags: [packages]
+
     - name: Setup Dock
       ansible.builtin.include_role:
         name: geerlingguy.mac.dock
       tags: [macos, dock]
+
     - name: Set MacOS system defaults
       community.general.osx_defaults:
         domain: "{{ item.domain }}"
@@ -87,6 +102,7 @@
       become: true
       loop: "{{ macos_defaults.system }}"
       tags: [macos, defaults]
+
     - name: Set MacOS user defaults
       community.general.osx_defaults:
         domain: "{{ item.domain }}"
