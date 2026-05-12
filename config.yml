@@ -65,7 +65,7 @@ dotfile_root_dirs:
   - "."
 
 homebrew_upgrade_all_packages: false
-homebrew_brewfile_dir: "{{ ansible_user_dir }}/.files"
+homebrew_brewfile_dir: "{{ ansible_facts['user_dir'] }}/.files"
 mas_upgrade_all_apps: false
 mas_installed_apps: []
 mas_signin_dialog: false

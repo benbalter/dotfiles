@@ -5,7 +5,7 @@
   pre_tasks:
     - name: Detect CI environment
       ansible.builtin.set_fact:
-        is_ci: "{{ ansible_env.CI | default(false) | bool }}"
+        is_ci: "{{ ansible_facts['env']['CI'] | default(false) | bool }}"
       tags: always
 
     - name: Include config
@@ -31,7 +31,7 @@
       block:
         - name: Ensure parent directories of dotfiles exist
           ansible.builtin.file:
-            path: "{{ ansible_user_dir }}/{{ item | dirname }}"
+            path: "{{ ansible_facts['user_dir'] }}/{{ item | dirname }}"
             state: directory
             mode: "0755"
           loop: "{{ dotfiles_files }}"
@@ -39,14 +39,14 @@
 
         - name: Stat existing dotfile targets
           ansible.builtin.stat:
-            path: "{{ ansible_user_dir }}/{{ item }}"
+            path: "{{ ansible_facts['user_dir'] }}/{{ item }}"
           loop: "{{ dotfiles_files }}"
           register: dotfile_targets
 
         - name: Back up existing non-symlink dotfile targets
           ansible.builtin.command:
-            cmd: mv "{{ ansible_user_dir }}/{{ item.item }}" "{{ ansible_user_dir }}/{{ item.item }}.bak"
-            creates: "{{ ansible_user_dir }}/{{ item.item }}.bak"
+            cmd: mv "{{ ansible_facts['user_dir'] }}/{{ item.item }}" "{{ ansible_facts['user_dir'] }}/{{ item.item }}.bak"
+            creates: "{{ ansible_facts['user_dir'] }}/{{ item.item }}.bak"
           loop: "{{ dotfile_targets.results }}"
           loop_control:
             label: "{{ item.item }}"
@@ -57,7 +57,7 @@
         - name: Symlink dotfiles into HOME
           ansible.builtin.file:
             src: "{{ playbook_dir }}/{{ item }}"
-            dest: "{{ ansible_user_dir }}/{{ item }}"
+            dest: "{{ ansible_facts['user_dir'] }}/{{ item }}"
             state: link
             force: true
           loop: "{{ dotfiles_files }}"
@@ -70,7 +70,7 @@
     - name: Set up oh-my-zsh
       ansible.builtin.git:
         repo: https://github.com/ohmyzsh/ohmyzsh
-        dest: "{{ ansible_user_dir }}/.oh-my-zsh"
+        dest: "{{ ansible_facts['user_dir'] }}/.oh-my-zsh"
         version: master
         depth: 1
         single_branch: true
