@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-
+tap "hashicorp/tap"
 tap 'cloudflare/cloudflare'
 tap 'github/bootstrap'
 # Run your GitHub Actions locally
@@ -183,7 +183,9 @@ brew 'shfmt'
 # Cross-shell prompt for astronauts
 brew 'starship'
 # Tool to build, change, and version infrastructure
-brew 'terraform'
+#brew 'terraform'
+brew "hashicorp/tap/terraform"
+
 # Detect compliance and security violations across Infrastructure as Code
 brew 'terrascan'
 # Enables extra languages support for Tesseract
@@ -288,7 +290,7 @@ cask 'qflipper'
 # Quick Look plug-in that renders source code with syntax highlighting
 cask 'qlcolorcode'
 # Display image info and preview unsupported formats in QuickLook
-cask 'qlimagesize'
+# cask 'qlimagesize'
 # Quick Look generator for Markdown files
 cask 'qlmarkdown'
 # Quick Look plugin for plaintext files without an extension
@@ -345,7 +347,7 @@ mas "Super Agent", id: 1568262835
 mas "TestFlight", id: 899247664
 mas "URL Linker", id: 1289119450
 mas "Wayback Machine", id: 1472432422
-mas "WhatsApp", id: 310633997
+#mas "WhatsApp", id: 310633997
 vscode "1password.op-vscode"
 vscode "christian-kohler.npm-intellisense"
 vscode "davidanson.vscode-markdownlint"
