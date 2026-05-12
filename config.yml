@@ -108,6 +108,66 @@ macos_defaults:
       key: globalstate
       value: 1
       type: integer
+    - name: Firewall stealth mode
+      domain: com.apple.alf
+      key: stealthenabled
+      type: integer
+      value: 1
+    - name: Firewall logging
+      domain: com.apple.alf
+      key: loggingenabled
+      type: integer
+      value: 1
+    - name: Auto-download updates
+      domain: com.apple.SoftwareUpdate
+      key: AutomaticDownload
+      type: integer
+      value: 1
+    - name: Auto-install macOS updates
+      domain: com.apple.SoftwareUpdate
+      key: AutomaticallyInstallMacOSUpdates
+      type: bool
+      value: true
+    - name: Install config data updates
+      domain: com.apple.SoftwareUpdate
+      key: ConfigDataInstall
+      type: bool
+      value: true
+    - name: Install critical security updates
+      domain: com.apple.SoftwareUpdate
+      key: CriticalUpdateInstall
+      type: integer
+      value: 1
+    - name: Library validation
+      domain: com.apple.security.libraryvalidation
+      key: DisableLibraryValidation
+      type: bool
+      value: false
+    - name: Disable guest account
+      domain: com.apple.MCX
+      key: DisableGuestAccount
+      type: bool
+      value: true
+    - name: Disable guest login
+      domain: com.apple.loginwindow
+      key: GuestEnabled
+      type: bool
+      value: false
+    - name: Login window show name and password
+      domain: com.apple.loginwindow
+      key: SHOWFULLNAME
+      type: bool
+      value: true
+    - name: Disable password hints
+      domain: com.apple.loginwindow
+      key: RetriesUntilHint
+      type: integer
+      value: 0
+    - name: Limit ad tracking
+      domain: com.apple.AdLib
+      key: forceLimitAdTracking
+      type: bool
+      value: true
   user:
     - name: Hot corner
       domain: com.apple.dock
@@ -144,3 +204,13 @@ macos_defaults:
       key: ScheduleFrequency
       type: integer
       value: 1
+    - name: Screensaver idle time
+      domain: com.apple.screensaver
+      key: idleTime
+      type: integer
+      value: 300
+    - name: Secure keyboard entry in Terminal
+      domain: com.apple.Terminal
+      key: SecureKeyboardEntry
+      type: bool
+      value: true

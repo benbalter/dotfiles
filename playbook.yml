@@ -111,3 +111,31 @@
         value: "{{ item.value }}"
       loop: "{{ macos_defaults.user }}"
       tags: [macos, defaults]
+
+    - name: Configure security settings
+      tags: [macos, security]
+      block:
+        - name: Enable Gatekeeper
+          ansible.builtin.command:
+            cmd: spctl --master-enable
+          become: true
+          changed_when: false
+
+        - name: Disable automatic login
+          community.general.osx_defaults:
+            domain: com.apple.loginwindow
+            key: autoLoginUser
+            state: absent
+          become: true
+
+        - name: Check FileVault status
+          ansible.builtin.command:
+            cmd: fdesetup status
+          register: filevault_status
+          changed_when: false
+
+        - name: Enable FileVault
+          ansible.builtin.command:
+            cmd: fdesetup enable -defer /tmp/filevault-setup.plist
+          become: true
+          when: "'FileVault is On' not in filevault_status.stdout"
