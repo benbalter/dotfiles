@@ -139,3 +139,20 @@
             cmd: fdesetup enable -defer /tmp/filevault-setup.plist
           become: true
           when: "'FileVault is On' not in filevault_status.stdout"
+
+        - name: Check TouchID PAM module availability
+          ansible.builtin.stat:
+            path: /usr/lib/pam/pam_tid.so
+          register: pam_tid
+
+        - name: Enable TouchID for sudo
+          ansible.builtin.lineinfile:
+            path: /etc/pam.d/sudo_local
+            line: "auth       sufficient     pam_tid.so"
+            insertafter: "^# sudo_local"
+            create: true
+            owner: root
+            group: wheel
+            mode: "0444"
+          become: true
+          when: pam_tid.stat.exists
