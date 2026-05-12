@@ -138,7 +138,13 @@
           ansible.builtin.command:
             cmd: fdesetup enable -defer /tmp/filevault-setup.plist
           become: true
+          register: filevault_enable
           when: "'FileVault is On' not in filevault_status.stdout"
+
+        - name: FileVault restart reminder
+          ansible.builtin.debug:
+            msg: "FileVault will activate on next logout. Log out and back in to complete setup and save your recovery key."
+          when: filevault_enable is changed
 
         - name: Check TouchID PAM module availability
           ansible.builtin.stat:
