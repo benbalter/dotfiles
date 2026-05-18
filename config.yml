@@ -55,6 +55,7 @@ dotfiles_files:
   - .zshrc
   - .config/mise/config.toml
   - .config/starship.toml
+  - Library/Application Support/Code/User/settings.json
   - Library/Application Support/com.mitchellh.ghostty/config
   - Library/Spelling/LocalDictionary
   - Library/LaunchAgents/com.balter.ben.tmpreaper.plist
@@ -77,6 +78,7 @@ directories_to_create:
   - ~/.ssh
   - ~/github
   - ~/projects
+  - ~/Library/Application Support/Code/User
   - ~/Library/Application Support/com.mitchellh.ghostty
   - ~/Library/LaunchAgents
   - ~/Library/Spelling

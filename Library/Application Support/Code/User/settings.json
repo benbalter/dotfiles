@@ -1,0 +1,154 @@
+{
+  "editor.suggestSelection": "first",
+  "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
+  "editor.tabSize": 2,
+  "telemetry.enableTelemetry": false,
+  "telemetry.enableCrashReporter": false,
+  "[markdown]": {
+    "editor.defaultFormatter": "yzhang.markdown-all-in-one"
+  },
+  "redhat.telemetry.enabled": false,
+  "editor.inlineSuggest.enabled": true,
+  "github.copilot.enable": {
+    "*": true,
+    "plaintext": true,
+    "markdown": true,
+    "scminput": false,
+    "yaml": true
+  },
+  "yaml.customTags": ["!encrypted/pkcs1-oaep scalar", "!vault scalar"],
+  "workbench.editorAssociations": {
+    "git-rebase-todo": "default"
+  },
+  "go.toolsManagement.autoUpdate": true,
+  "ruby.rubocop.useBundler": true,
+  "ruby.rubocop.suppressRubocopWarnings": true,
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "files.defaultLanguage": "markdown",
+  "grammarly.domain": "technical",
+  "bracketPairColorizer.depreciation-notice": false,
+  "frontMatter.framework.id": "jekyll",
+  "liquid.format": true,
+  "vale.core.useCLI": true,
+  "cSpell.userWords": ["Hubber", "Hubbers", "thurghouput"],
+  "git.autofetch": true,
+  "languageToolLinter.languageTool.ignoredWordsGlobal": ["hubber"],
+  "vale.doNotShowWarningForFileToBeSavedBeforeLinting": true,
+  "[javascript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "vscode.html-language-features"
+  },
+  "githubPullRequests.pullBranch": "never",
+  "github.copilot.advanced": {
+    "authProvider": "github"
+  },
+  "grammarly.files.include": [
+    "**/readme.md",
+    "**/README.md",
+    "**/*.txt",
+    "**/*.md"
+  ],
+  "todohighlight.include": [
+    "**/*.md",
+    "**/*.js",
+    "**/*.jsx",
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.html",
+    "**/*.php",
+    "**/*.css",
+    "**/*.scss"
+  ],
+  "gitlens.advanced.messages": {
+    "suppressIntegrationRequestTimedOutWarning": true
+  },
+  "github.copilot.editor.enableAutoCompletions": true,
+  "workbench.colorTheme": "Dark Modern",
+  "languageToolLinter.diagnosticSeverityAuto": true,
+  "languageToolLinter.serviceType": "custom",
+  "languageToolLinter.languageTool.url": "http://localhost:8081",
+  "remote.autoForwardPortsSource": "hybrid",
+  "chat.editing.alwaysSaveWithGeneratedChanges": true,
+  "github.copilot.nextEditSuggestions.enabled": true,
+  "github.copilot.chat.languageContext.typescript.enabled": true,
+  "github.copilot.chat.search.semanticTextResults": true,
+  "liveshare.featureSet": "insiders",
+  "github.copilot.chat.edits.codesearch.enabled": true,
+  "editor.minimap.enabled": false,
+  "docker.extension.enableComposeLanguageServer": false,
+  "telemetry.telemetryLevel": "off",
+  "chat.tools.terminal.autoApprove": {
+    "npm run build:css": true,
+    "make": true,
+    "node mcp/server.js": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "sed": true,
+    "python3 - <<'PY'\n# Validate last offset + length fits within AMF section length; we know total AMF length\namf_length=832024\nHEADER=0x288\nlengths={'PAL':768,'SPR':5460,'CEL':242688,'XLS':40690}\nstart=HEADER+sum(lengths.values())\nend=start+amf_length\nwith open('toccata.dlc','rb') as f:\n    f.seek(start)\n    data=f.read(amf_length)\ntrack_count=struct.unpack('<I',data[:4])[0]\noffsets=[struct.unpack('<I',data[4+4*i:8+4*i])[0] for i in range(track_count)]\n# For first 10 offsets extract length field\nimport struct\nlengths_tracks=[]\nfor off in offsets[:10]:\n    length=struct.unpack('<I',data[off:off+4])[0]\n    lengths_tracks.append(length)\nprint('First 10 track lengths:',lengths_tracks)\n# Check largest referenced region\nlargest=max(off+struct.unpack('<I',data[off:off+4])[0]+4 for off in offsets)\nprint('Largest referenced end relative to section:',largest,'<=',len(data))\nprint('Largest fits?', largest<=len(data))\nPY": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "bash script/super-linter": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "docker build": true,
+    "script/super-linter": true,
+    "npm test": true,
+    "npm install": true,
+    "npm run next:build": true,
+    "npm run lint": true,
+    "npx": true,
+    "npm run test:e2e": true,
+    "npm run dev": true,
+    "npm run build": true,
+    "/^node -e \"console\\.log\\('NODE_ENV:', process\\.env\\.NODE_ENV\\)\"$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "npm rebuild": true,
+    "/^bundle exec jekyll build --config _config\\.yml,_config_test\\.yml$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "git fetch": true,
+    "npm run test:jest": true,
+    "/^node /Users/benbalter/projects/benbalter\\.github\\.com/tmp/debug-braces\\.js$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^node tmp/test-mdx\\.mjs 2>&1$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "npm run astro:dev": true
+  },
+  "gitlens.ai.model": "vscode",
+  "gitlens.ai.vscode.model": "copilot:gpt-4.1",
+  "[dockercompose]": {
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2,
+    "editor.autoIndent": "advanced",
+    "editor.quickSuggestions": {
+      "other": true,
+      "comments": false,
+      "strings": true
+    },
+    "editor.defaultFormatter": "redhat.vscode-yaml"
+  },
+  "[github-actions-workflow]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml"
+  },
+  "rubyLsp.rubyExecutablePath": "/workspaces/benbalter.github.com/.devcontainer/Dockerfile",
+  "chat.agent.maxRequests": 100,
+  "terminal.integrated.suggest.enabled": true,
+  "claudeCode.preferredLocation": "panel",
+  "dotfiles.repository": "https://github.com/benbalter/dotfiles",
+  "dotfiles.installCommand": "install.sh",
+  "dotfiles.targetPath": "~/.files"
+}

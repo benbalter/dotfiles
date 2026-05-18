@@ -62,6 +62,13 @@
             force: true
           loop: "{{ dotfiles_files }}"
 
+    - name: Configure LanguageTool server
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/homebrew/etc/languagetool/server.properties"
+        dest: /opt/homebrew/etc/languagetool/server.properties
+        mode: "0644"
+      tags: [languagetool]
+
     - name: Setup Homebrew
       ansible.builtin.include_role:
         name: geerlingguy.mac.homebrew
