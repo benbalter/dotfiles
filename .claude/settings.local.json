@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/benbalter/.ansible/collections/ansible_collections/geerlingguy/mac/roles/**)",
+      "Read(//Users/benbalter/.ansible/**)",
+      "Bash(python3 -c \"import yaml; yaml.safe_load\\(open\\('config.yml'\\)\\)\")",
+      "Bash(python3 -c \"import yaml; yaml.safe_load\\(open\\('playbook.yml'\\)\\)\")",
+      "Bash(ruby -e \"require 'yaml'; YAML.load_file\\('config.yml'\\); puts 'config.yml OK'\")",
+      "Bash(ruby -e \"require 'yaml'; YAML.load_file\\('playbook.yml'\\); puts 'playbook.yml OK'\")",
+      "Bash(languagetool --version)",
+      "Bash(brew list *)",
+      "Bash(brew info *)",
+      "Bash(languagetool --language en-US --languagemodel ~/ngrams --list)",
+      "Bash(languagetool --language en-US --languagemodel ~/ngrams -)",
+      "Bash(languagetool --language en-US --languagemodel ~/ngrams --enable-all -)"
+    ]
+  }
+}

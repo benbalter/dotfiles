@@ -69,7 +69,6 @@
   "github.copilot.editor.enableAutoCompletions": true,
   "workbench.colorTheme": "Dark Modern",
   "languageToolLinter.diagnosticSeverityAuto": true,
-  "languageToolLinter.serviceType": "custom",
   "languageToolLinter.languageTool.url": "http://localhost:8081",
   "remote.autoForwardPortsSource": "hybrid",
   "chat.editing.alwaysSaveWithGeneratedChanges": true,
@@ -147,8 +146,9 @@
   "rubyLsp.rubyExecutablePath": "/workspaces/benbalter.github.com/.devcontainer/Dockerfile",
   "chat.agent.maxRequests": 100,
   "terminal.integrated.suggest.enabled": true,
-  "claudeCode.preferredLocation": "panel",
+  "claudeCode.preferredLocation": "sidebar",
   "dotfiles.repository": "https://github.com/benbalter/dotfiles",
   "dotfiles.installCommand": "install.sh",
-  "dotfiles.targetPath": "~/.files"
+  "dotfiles.targetPath": "~/.files",
+  "claudeCode.initialPermissionMode": "acceptEdits"
 }
