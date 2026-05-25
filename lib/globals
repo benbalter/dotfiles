@@ -16,7 +16,7 @@ fi
 GOPATH=$HOME/go
 export GOPATH
 
-PATH="./bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/local/sbin:$GOPATH/bin:$PATH"
+PATH="/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/local/sbin:$GOPATH/bin:$PATH"
 export PATH
 
 # ZSH settings and initializations
@@ -25,6 +25,12 @@ export ZSH
 
 if command -v zsh >/dev/null 2>&1; then
 	SHELL=$(command -v zsh)
+	case "$SHELL" in
+		/*) ;;
+		*) SHELL=""; for d in /opt/homebrew/bin /usr/local/bin /bin /usr/bin; do
+			[ -x "$d/zsh" ] && SHELL="$d/zsh" && break
+		done ;;
+	esac
 	export SHELL
 fi
 

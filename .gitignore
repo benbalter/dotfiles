@@ -6,3 +6,5 @@ Gemfile.lock
 /env
 /Brewfile.lock.json
 /.ansible
+
+**/.claude/settings.local.json

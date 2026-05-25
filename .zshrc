@@ -62,3 +62,8 @@ export SSH_AUTH_SOCK="$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/
 
 eval "$(starship init zsh)"
 
+
+# Added by LM Studio CLI (lms)
+export PATH="$PATH:/Users/benbalter/.lmstudio/bin"
+# End of LM Studio CLI section
+
