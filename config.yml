@@ -206,11 +206,6 @@ macos_defaults:
       key: ScheduleFrequency
       type: integer
       value: 1
-    - name: Screensaver idle time
-      domain: com.apple.screensaver
-      key: idleTime
-      type: integer
-      value: 300
     - name: Secure keyboard entry in Terminal
       domain: com.apple.Terminal
       key: SecureKeyboardEntry

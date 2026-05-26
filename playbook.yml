@@ -120,6 +120,15 @@
       loop: "{{ macos_defaults.user }}"
       tags: [macos, defaults]
 
+    - name: Set screensaver idle time
+      community.general.osx_defaults:
+        domain: com.apple.screensaver
+        key: idleTime
+        type: integer
+        value: 300
+      when: not is_ci
+      tags: [macos, defaults]
+
     - name: Configure security settings
       tags: [macos, security]
       block:
@@ -148,11 +157,8 @@
           become: true
           register: filevault_enable
           when: "'FileVault is On' not in filevault_status.stdout"
-
-        - name: FileVault restart reminder
-          ansible.builtin.debug:
-            msg: "FileVault will activate on next logout. Log out and back in to complete setup and save your recovery key."
-          when: filevault_enable is changed
+          changed_when: filevault_enable.rc == 0
+          notify: FileVault restart reminder
 
         - name: Check TouchID PAM module availability
           ansible.builtin.stat:
@@ -170,3 +176,8 @@
             mode: "0444"
           become: true
           when: pam_tid.stat.exists
+
+  handlers:
+    - name: FileVault restart reminder
+      ansible.builtin.debug:
+        msg: "FileVault will activate on next logout. Log out and back in to complete setup and save your recovery key."
