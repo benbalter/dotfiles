@@ -1,2 +1,2 @@
-ansible
-ansible-lint[yamllint]
+ansible~=13.6
+ansible-lint~=25.0

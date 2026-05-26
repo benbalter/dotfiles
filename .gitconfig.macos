@@ -1,0 +1,17 @@
+[credential]
+	helper = osxkeychain
+
+[user]
+	signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJVznDI5iSIoLzOLMW54ZU6fnCe9JHd/tetOimr9G3c5
+
+[commit]
+	gpgsign = true
+
+[gpg]
+	format = ssh
+
+[github]
+	token = !security find-internet-password -a benbalter -s github.com -w
+
+[gpg "ssh"]
+	program = /Applications/1Password.app/Contents/MacOS/op-ssh-sign

@@ -1,0 +1,129 @@
+#!/bin/sh
+# Install essential CLI tools on Linux for dotfiles compatibility.
+# Called by install.sh (dotfiles integration) and post-create.sh (devcontainer).
+# On macOS these tools are installed via Homebrew/Brewfile instead.
+#
+# Downloads are verified against the SHA256 checksum reported by the GitHub
+# Releases API (assets[].digest, e.g. "sha256:abcd..."). The digest is computed
+# and stored by GitHub at upload time, so it provides an integrity check
+# independent of the binary download URL. Set DOTFILES_SKIP_VERIFY=1 to bypass
+# (not recommended).
+
+set -e
+
+if [ "$(uname)" = "Darwin" ]; then
+	echo "Skipping install-tools on macOS (use Homebrew instead)"
+	exit 0
+fi
+
+# verify_sha256 <file> <expected_hex>
+# Aborts (and removes the file) if the file's sha256 does not match.
+verify_sha256() {
+	_file=$1
+	_expected=$2
+	_actual=$(sha256sum "$_file" | awk '{print $1}')
+	if [ "$_actual" != "$_expected" ]; then
+		echo "ERROR: SHA256 mismatch for $_file" >&2
+		echo "  expected: $_expected" >&2
+		echo "  actual:   $_actual" >&2
+		rm -f "$_file"
+		exit 1
+	fi
+	echo "  verified sha256: $_expected"
+}
+
+# parse_asset <json_file> <name_regex> <field>
+# field is "url" or "digest". Walks GitHub release assets and prints the
+# requested field for the first asset whose name matches the regex. Avoids a
+# jq dependency by relying on the well-known field order in the API response
+# (name, ..., digest, ..., browser_download_url within each asset object).
+parse_asset() {
+	awk -v pat="$2" -v field="$3" '
+		/"name":/ {
+			line=$0
+			sub(/.*"name": *"/, "", line); sub(/".*/, "", line)
+			name=line
+		}
+		/"digest":/ {
+			line=$0
+			sub(/.*"digest": *"/, "", line); sub(/".*/, "", line)
+			digest=line
+		}
+		/"browser_download_url":/ {
+			line=$0
+			sub(/.*"browser_download_url": *"/, "", line); sub(/".*/, "", line)
+			url=line
+			if (name ~ pat) {
+				if (field == "digest") print digest
+				else if (field == "url") print url
+				exit
+			}
+		}
+	' "$1"
+}
+
+# install_deb_from_release <repo> <asset_name_regex>
+# Downloads the matching .deb from the latest release of <repo>, verifies its
+# SHA256 against the API-reported digest, and installs with dpkg.
+install_deb_from_release() {
+	_repo=$1
+	_pat=$2
+	_json=$(mktemp)
+	curl -sL "https://api.github.com/repos/${_repo}/releases/latest" -o "$_json"
+
+	_url=$(parse_asset "$_json" "$_pat" url)
+	_digest=$(parse_asset "$_json" "$_pat" digest)
+	rm -f "$_json"
+
+	if [ -z "$_url" ]; then
+		echo "ERROR: no asset matching '$_pat' in ${_repo} latest release" >&2
+		exit 1
+	fi
+
+	_deb=$(basename "$_url")
+	echo "  downloading $_deb..."
+	curl -sLO "$_url"
+
+	if [ -n "$_digest" ]; then
+		_expected=${_digest#sha256:}
+		verify_sha256 "$_deb" "$_expected"
+	elif [ "${DOTFILES_SKIP_VERIFY:-}" = "1" ]; then
+		echo "  WARNING: GitHub API returned no digest; skipping verification (DOTFILES_SKIP_VERIFY=1)" >&2
+	else
+		echo "ERROR: GitHub API returned no digest for $_deb; refusing to install unverified binary" >&2
+		echo "  set DOTFILES_SKIP_VERIFY=1 to bypass (not recommended)" >&2
+		rm -f "$_deb"
+		exit 1
+	fi
+
+	sudo dpkg -i "$_deb"
+	rm -f "$_deb"
+}
+
+install_delta() {
+	if command -v delta >/dev/null; then return; fi
+	echo "==> Installing delta..."
+	ARCH=$(dpkg --print-architecture 2>/dev/null || echo "amd64")
+	install_deb_from_release "dandavison/delta" "^git-delta_.*_${ARCH}\\.deb$"
+}
+
+install_zoxide() {
+	if command -v zoxide >/dev/null; then return; fi
+	echo "==> Installing zoxide..."
+	ARCH=$(dpkg --print-architecture 2>/dev/null || echo "amd64")
+	install_deb_from_release "ajeetdsouza/zoxide" "^zoxide_.*_${ARCH}\\.deb$"
+}
+
+install_fzf() {
+	if command -v fzf >/dev/null; then return; fi
+	echo "==> Installing fzf..."
+	git clone --depth 1 https://github.com/junegunn/fzf.git "$HOME/.fzf"
+	"$HOME/.fzf/install" --bin --no-update-rc --no-completion --no-key-bindings
+	sudo ln -sf "$HOME/.fzf/bin/fzf" /usr/local/bin/fzf
+}
+
+install_delta
+install_zoxide
+install_fzf
+
+echo "==> Tool installation complete"

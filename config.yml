@@ -1,8 +1,8 @@
 ---
 configure_dock: true
 dockitems_persist:
-  - name: Safari
-    path: "/Applications/Safari.app/"
+  - name: Google Chrome
+    path: "/Applications/Google Chrome.app/"
     pos: 1
   - name: Spotify
     path: "/Applications/Spotify.app/"
@@ -30,21 +30,17 @@ dockitems_remove:
   - News
   - Books
   - "App Store"
-  - "System Preferences"
+  - "System Settings"
 
 configure_sudoers: false
 
-dotfiles_repo: https://github.com/benbalter/dotfiles
-dotfiles_repo_accept_hostkey: true
-dotfiles_repo_version: main
-dotfiles_repo_local_destination: ~/.files
 dotfiles_files:
-  - .asdfrc
   - .Brewfile
   - .bundle/config
   - .digrc
   - .gemrc
   - .gitconfig
+  - .gitconfig.macos
   - .gitignore
   - .gnupg/gpg-agent.conf
   - .gnupg/gpg.conf
@@ -55,25 +51,35 @@ dotfiles_files:
   - .remarkrc
   - .ssh/config
   - .yamllint
+  - .zprofile
   - .zshrc
-  - heroku/config.json
+  - .config/mise/config.toml
+  - .config/starship.toml
+  - Library/Application Support/Code/User/settings.json
+  - Library/Application Support/com.mitchellh.ghostty/config
   - Library/Spelling/LocalDictionary
   - Library/LaunchAgents/com.balter.ben.tmpreaper.plist
   - Library/LaunchAgents/com.balter.ben.update.plist
 
-homebrew_upgrade_all_packages: true
-homebrew_brewfile_dir: ~/.files
-mas_upgrade_all_apps: true
+dotfile_root_dirs:
+  - ""
+  - "."
+
+homebrew_upgrade_all_packages: false
+homebrew_brewfile_dir: "{{ ansible_facts['user_dir'] }}/.files"
+mas_upgrade_all_apps: false
 mas_installed_apps: []
 mas_signin_dialog: false
 
 directories_to_create:
   - ~/.bundle
+  - ~/.config
   - ~/.gnupg
   - ~/.ssh
   - ~/github
-  - ~/heroku
   - ~/projects
+  - ~/Library/Application Support/Code/User
+  - ~/Library/Application Support/com.mitchellh.ghostty
   - ~/Library/LaunchAgents
   - ~/Library/Spelling
 
@@ -104,10 +110,70 @@ macos_defaults:
       key: globalstate
       value: 1
       type: integer
+    - name: Firewall stealth mode
+      domain: com.apple.alf
+      key: stealthenabled
+      type: integer
+      value: 1
+    - name: Firewall logging
+      domain: com.apple.alf
+      key: loggingenabled
+      type: integer
+      value: 1
+    - name: Auto-download updates
+      domain: com.apple.SoftwareUpdate
+      key: AutomaticDownload
+      type: integer
+      value: 1
+    - name: Auto-install macOS updates
+      domain: com.apple.SoftwareUpdate
+      key: AutomaticallyInstallMacOSUpdates
+      type: bool
+      value: true
+    - name: Install config data updates
+      domain: com.apple.SoftwareUpdate
+      key: ConfigDataInstall
+      type: bool
+      value: true
+    - name: Install critical security updates
+      domain: com.apple.SoftwareUpdate
+      key: CriticalUpdateInstall
+      type: integer
+      value: 1
+    - name: Library validation
+      domain: com.apple.security.libraryvalidation
+      key: DisableLibraryValidation
+      type: bool
+      value: false
+    - name: Disable guest account
+      domain: com.apple.MCX
+      key: DisableGuestAccount
+      type: bool
+      value: true
+    - name: Disable guest login
+      domain: com.apple.loginwindow
+      key: GuestEnabled
+      type: bool
+      value: false
+    - name: Login window show name and password
+      domain: com.apple.loginwindow
+      key: SHOWFULLNAME
+      type: bool
+      value: true
+    - name: Disable password hints
+      domain: com.apple.loginwindow
+      key: RetriesUntilHint
+      type: integer
+      value: 0
+    - name: Limit ad tracking
+      domain: com.apple.AdLib
+      key: forceLimitAdTracking
+      type: bool
+      value: true
   user:
     - name: Hot corner
       domain: com.apple.dock
-      key: wvous-br-corne
+      key: wvous-br-corner
       type: integer
       value: 5
     - name: Auto hide dock
@@ -135,39 +201,13 @@ macos_defaults:
       key: type
       type: string
       value: png
- #   - name: Safari disable Java
- #     domain: com.apple.Safari
- #     key: com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabled
- #     type: bool
- #     value: false
- #   - name: Safari disable Java for local
- #     domain: com.apple.Safari
- #     key: com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabledForLocalFiles
- #     type: bool
- #     value: false
     - name: Schedule auto update
       domain: com.apple.SoftwareUpdate
       key: ScheduleFrequency
       type: integer
       value: 1
- #   - name: Safari Do not track
- #     domain: com.apple.Safari
- #     key: ScheduleFreSendDoNotTrackHTTPHeaderquency
- #     type: bool
- #     value: true
- #   - name: Safari update extensions
- #     domain: com.apple.Safari
- #     key: InstallExtensionUpdatesAutomatically
- #     type: bool
- #     value: true
- #   - name: Safari enable developer tools
- #     domain: com.apple.Safari
- #     key: WebKitDeveloperExtrasEnabledPreferenceKey
- #     type: bool
- #     value: true
-  #  - name: Safari enable developer menu
-  #   domain: com.apple.Safari
-  #    key: IncludeDevelopMenu
-  #    type: bool
-  #    value: true
-  #    ignore_errors: true
+    - name: Secure keyboard entry in Terminal
+      domain: com.apple.Terminal
+      key: SecureKeyboardEntry
+      type: bool
+      value: true

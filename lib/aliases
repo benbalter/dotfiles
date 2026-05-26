@@ -16,30 +16,41 @@ alias gr="gh repo view"
 alias reset="git reset HEAD --hard; git clean -f -d"
 alias clean="git branch --merged | grep -v '\*' | xargs -n 1 git branch -d"
 alias ggb="git commit -m ':gem: bump'"
-gccd(){ gh repo clone "$1"; cd "$(basename "$1")" || exit; }
+gccd() {
+	gh repo clone "$1"
+	cd "$(basename "$1")" || exit
+}
 alias branches="git branch -v"
 
-# fasd
+# zoxide
 alias j='z'
 
 # Script/*
 alias sb="script/bootstrap"
-alias sc="script/cibuild"
-alias console="script/console"
+alias sc="script/lint"
 
-#simple server
-alias server="python -m SimpleHTTPServer"
+# Simple server
+alias server="python3 -m http.server"
 
 #ip
 alias ip="curl icanhazip.com"
-alias flushdns="sudo dscacheutil -flushcache;sudo killall -HUP mDNSResponder; echo 'Flushed DNS, btw here is your hosts file just in case:'; cat /etc/hosts"
 
 # .files
-alias up="~/.files/script/update"
-alias setup="~/.files/script/setup"
+# shellcheck disable=SC2139
+alias up="$DOTFILES_ROOT/script/update"
+# shellcheck disable=SC2139
+alias setup="$DOTFILES_ROOT/script/setup"
 
 # Misc
 alias p="cd ~/projects"
 alias gg="cd ~/github/github"
-alias afk="/System/Library/CoreServices/Menu\ Extras/User.menu/Contents/Resources/CGSession -suspend"
-alias lc='colorls -lA --sd'
+
+# GitHub Copilot CLI
+alias ghcs='gh copilot suggest'
+alias ghce='gh copilot explain'
+
+if [ "$(uname)" = "Darwin" ]; then
+	alias flushdns="sudo dscacheutil -flushcache;sudo killall -HUP mDNSResponder; echo 'Flushed DNS, btw here is your hosts file just in case:'; cat /etc/hosts"
+	alias afk="/System/Library/CoreServices/Menu\ Extras/User.menu/Contents/Resources/CGSession -suspend"
+fi
+alias lc='ls -lA'

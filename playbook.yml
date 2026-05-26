@@ -1,36 +1,106 @@
-- hosts: localhost
+- name: Configure development environment
+  hosts: localhost
   connection: local
 
   pre_tasks:
+    - name: Detect CI environment
+      ansible.builtin.set_fact:
+        is_ci: "{{ ansible_facts['env']['CI'] | default(false) | bool }}"
+      tags: always
+
     - name: Include config
       ansible.builtin.include_vars: "{{ playbook_dir }}/config.yml"
-    - name: Include dev config
+      tags: always
+
+    - name: Include CI config
       ansible.builtin.include_vars: "{{ playbook_dir }}/config_ci.yml"
-      when: lookup('env','CI') == "true"
+      when: is_ci
+      tags: always
 
   tasks:
     - name: Create directories
       ansible.builtin.file:
         path: "{{ item }}"
         state: directory
-        mode: 0755
+        mode: "0755"
       loop: "{{ directories_to_create }}"
+      tags: [directories]
+
     - name: Setup Dotfiles
-      ansible.builtin.include_role:
-        name: geerlingguy.dotfiles
+      tags: [dotfiles]
+      block:
+        - name: Ensure parent directories of dotfiles exist
+          ansible.builtin.file:
+            path: "{{ ansible_facts['user_dir'] }}/{{ item | dirname }}"
+            state: directory
+            mode: "0755"
+          loop: "{{ dotfiles_files }}"
+          when: item | dirname not in dotfile_root_dirs
+
+        - name: Stat existing dotfile targets
+          ansible.builtin.stat:
+            path: "{{ ansible_facts['user_dir'] }}/{{ item }}"
+          loop: "{{ dotfiles_files }}"
+          register: dotfile_targets
+
+        - name: Back up existing non-symlink dotfile targets
+          ansible.builtin.command:
+            cmd: mv "{{ ansible_facts['user_dir'] }}/{{ item.item }}" "{{ ansible_facts['user_dir'] }}/{{ item.item }}.bak"
+            creates: "{{ ansible_facts['user_dir'] }}/{{ item.item }}.bak"
+          loop: "{{ dotfile_targets.results }}"
+          loop_control:
+            label: "{{ item.item }}"
+          when:
+            - item.stat.exists
+            - not item.stat.islnk
+
+        - name: Symlink dotfiles into HOME
+          ansible.builtin.file:
+            src: "{{ playbook_dir }}/{{ item }}"
+            dest: "{{ ansible_facts['user_dir'] }}/{{ item }}"
+            state: link
+            force: true
+          loop: "{{ dotfiles_files }}"
+
     - name: Setup Homebrew
       ansible.builtin.include_role:
         name: geerlingguy.mac.homebrew
+      tags: [homebrew, packages]
+
+    - name: Configure LanguageTool server
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/homebrew/etc/languagetool/server.properties"
+        dest: /opt/homebrew/etc/languagetool/server.properties
+        mode: "0644"
+      when: not is_ci
+      tags: [languagetool]
+
     - name: Set up oh-my-zsh
       ansible.builtin.git:
-        repo: https://github.com/robbyrussell/oh-my-zsh
-        dest: ~/.oh-my-zsh
+        repo: https://github.com/ohmyzsh/ohmyzsh
+        dest: "{{ ansible_facts['user_dir'] }}/.oh-my-zsh"
+        version: master
+        depth: 1
+        single_branch: true
+      tags: [ohmyzsh]
+
     - name: Setup App Store
       ansible.builtin.include_role:
         name: geerlingguy.mac.mas
+      tags: [mas, packages]
+
+    - name: Install GitHub Copilot CLI
+      community.general.npm:
+        name: "@github/copilot"
+        global: true
+      when: not is_ci
+      tags: [packages]
+
     - name: Setup Dock
       ansible.builtin.include_role:
         name: geerlingguy.mac.dock
+      tags: [macos, dock]
+
     - name: Set MacOS system defaults
       community.general.osx_defaults:
         domain: "{{ item.domain }}"
@@ -39,6 +109,8 @@
         value: "{{ item.value }}"
       become: true
       loop: "{{ macos_defaults.system }}"
+      tags: [macos, defaults]
+
     - name: Set MacOS user defaults
       community.general.osx_defaults:
         domain: "{{ item.domain }}"
@@ -46,7 +118,73 @@
         type: "{{ item.type }}"
         value: "{{ item.value }}"
       loop: "{{ macos_defaults.user }}"
+      tags: [macos, defaults]
+
+    - name: Set screensaver idle time
+      community.general.osx_defaults:
+        domain: com.apple.screensaver
+        key: idleTime
+        type: integer
+        value: 300
+      when: not is_ci
+      tags: [macos, defaults]
+
     - name: Disable Comic Sans globally
       ansible.builtin.command: "{{ playbook_dir }}/script/disable-comic-sans"
+      when: not is_ci
       changed_when: false
       failed_when: false
+      tags: [macos, fonts]
+
+    - name: Configure security settings
+      tags: [macos, security]
+      block:
+        - name: Enable Gatekeeper
+          ansible.builtin.command:
+            cmd: spctl --master-enable
+          become: true
+          changed_when: false
+
+        - name: Disable automatic login
+          community.general.osx_defaults:
+            domain: com.apple.loginwindow
+            key: autoLoginUser
+            state: absent
+          become: true
+
+        - name: Check FileVault status
+          ansible.builtin.command:
+            cmd: fdesetup status
+          register: filevault_status
+          changed_when: false
+
+        - name: Enable FileVault
+          ansible.builtin.command:
+            cmd: fdesetup enable -defer /tmp/filevault-setup.plist
+          become: true
+          register: filevault_enable
+          when: "'FileVault is On' not in filevault_status.stdout"
+          changed_when: filevault_enable.rc == 0
+          notify: FileVault restart reminder
+
+        - name: Check TouchID PAM module availability
+          ansible.builtin.stat:
+            path: /usr/lib/pam/pam_tid.so
+          register: pam_tid
+
+        - name: Enable TouchID for sudo
+          ansible.builtin.lineinfile:
+            path: /etc/pam.d/sudo_local
+            line: "auth       sufficient     pam_tid.so"
+            insertafter: "^# sudo_local"
+            create: true
+            owner: root
+            group: wheel
+            mode: "0444"
+          become: true
+          when: pam_tid.stat.exists
+
+  handlers:
+    - name: FileVault restart reminder
+      ansible.builtin.debug:
+        msg: "FileVault will activate on next logout. Log out and back in to complete setup and save your recovery key."

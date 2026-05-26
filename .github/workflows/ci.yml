@@ -1,27 +1,39 @@
 name: CI
-on: [push]
-jobs:
-  test:
-    runs-on: macos-latest
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  HOMEBREW_NO_AUTO_UPDATE: 1
+
+jobs:
+  bootstrap:
+    runs-on: macos-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Pip Cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/Library/Caches/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
 
       - name: Venv cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ./env
           key: ${{ runner.os }}-env-${{ hashFiles('requirements.txt') }}
 
       - name: Ansible cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.ansible
           key: ${{ runner.os }}-ansible-${{ hashFiles('requirements.yml') }}
@@ -29,36 +41,163 @@ jobs:
       - name: Bootstrap
         run: script/bootstrap
 
+  test:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ansible cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.ansible
+          key: ${{ runner.os }}-ansible-${{ hashFiles('requirements.yml') }}
+
+      - name: Venv cache
+        uses: actions/cache@v4
+        with:
+          path: ./env
+          key: ${{ runner.os }}-env-${{ hashFiles('requirements.txt') }}
+
+      - name: Bootstrap (if cache miss)
+        run: script/bootstrap
+
       - name: Run playbook
         run: script/ansible
+
+      - name: Verify dotfile symlinks
+        run: |
+          for file in .zshrc .zprofile .gitconfig .gitignore .yamllint .Brewfile \
+            .config/mise/config.toml .config/starship.toml; do
+            test -L "$HOME/$file" || { echo "FAIL: $file not symlinked"; exit 1; }
+            target=$(readlink "$HOME/$file")
+            expected="$GITHUB_WORKSPACE/$file"
+            [ "$target" = "$expected" ] || { echo "FAIL: $file -> $target (expected $expected)"; exit 1; }
+          done
+          echo "All dotfile symlinks verified"
+
+      - name: Verify expected directories exist
+        run: |
+          for dir in .bundle .config .gnupg .ssh github projects \
+            "Library/Application Support/com.mitchellh.ghostty"; do
+            test -d "$HOME/$dir" || { echo "FAIL: ~/$dir missing"; exit 1; }
+          done
+          echo "All required directories present"
+
+      - name: Verify oh-my-zsh installed
+        run: test -d "$HOME/.oh-my-zsh/.git"
+
+      - name: Verify Homebrew installed
+        run: |
+          command -v brew
+          brew --version
+
+      - name: Verify macOS user defaults applied
+        run: |
+          autohide=$(defaults read com.apple.dock autohide)
+          [ "$autohide" = "1" ] || { echo "FAIL: dock autohide=$autohide (expected 1)"; exit 1; }
+          ss_type=$(defaults read com.apple.screencapture type)
+          [ "$ss_type" = "png" ] || { echo "FAIL: screencapture type=$ss_type (expected png)"; exit 1; }
+          ask_pw=$(defaults read com.apple.dock askForPassword)
+          [ "$ask_pw" = "1" ] || { echo "FAIL: dock askForPassword=$ask_pw (expected 1)"; exit 1; }
+          echo "macOS user defaults verified"
+
+      - name: Re-run playbook (no failures on second run)
+        run: |
+          # Re-run to catch tasks that error on a second invocation.
+          # Note: not asserting changed=0 because geerlingguy.mac.dock
+          # always reports changed for dock item positions.
+          output=$(script/ansible 2>&1)
+          echo "$output"
+          failed=$(echo "$output" | awk '/^localhost/ { for (i=1; i<=NF; i++) if ($i ~ /^failed=/) print substr($i, 8) }')
+          [ "$failed" = "0" ] || { echo "FAIL: re-run reported failed=$failed (expected 0)"; exit 1; }
+          echo "Playbook re-run completed without failures"
 
   lint:
     runs-on: macos-latest
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Pip Cache
-        uses: actions/cache@v3
-        with:
-          path: ~/Library/Caches/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-
-      - name: Venv cache
-        uses: actions/cache@v3
-        with:
-          path: ./env
-          key: ${{ runner.os }}-env-${{ hashFiles('requirements.txt') }}
+        uses: actions/checkout@v4
 
       - name: Ansible cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.ansible
           key: ${{ runner.os }}-ansible-${{ hashFiles('requirements.yml') }}
 
-      - name: Bootstrap
+      - name: Venv cache
+        uses: actions/cache@v4
+        with:
+          path: ./env
+          key: ${{ runner.os }}-env-${{ hashFiles('requirements.txt') }}
+
+      - name: Homebrew cache
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Caches/Homebrew/downloads
+          key: ${{ runner.os }}-brew-lint-shellcheck-shfmt-actionlint
+
+      - name: Bootstrap (if cache miss)
         run: script/bootstrap
 
-      - name: lint
+      - name: Install lint tools
+        run: |
+          brew install shellcheck shfmt actionlint
+          gem install rubocop
+          npm install
+
+      - name: Lint
         run: script/lint
+
+  unit-test:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Homebrew cache
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Caches/Homebrew/downloads
+          key: ${{ runner.os }}-brew-test-bats-core-yq
+
+      - name: Install dependencies
+        run: brew install bats-core yq
+
+      - name: Run tests
+        run: script/test
+
+  install-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run install.sh
+        run: |
+          chmod +x install.sh script/install-tools
+          ./install.sh
+
+      - name: Verify dotfile symlinks
+        run: |
+          for file in .digrc .gemrc .gitconfig .gitignore \
+            .hushlogin .irbrc .pryrc .remarkrc .yamllint .zprofile .zshrc; do
+            test -L "$HOME/$file" || { echo "FAIL: $file not symlinked"; exit 1; }
+          done
+          echo "All dotfile symlinks verified"
+
+      - name: Verify tools installed
+        run: |
+          command -v delta
+          command -v zoxide
+          command -v fzf
+
+      - name: Install bats and run unit tests
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q bats
+          script/test

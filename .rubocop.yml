@@ -16,3 +16,5 @@ AllCops:
   NewCops: enable
   Exclude:
     - env/**/*
+    - node_modules/**/*
+    - Brewfile

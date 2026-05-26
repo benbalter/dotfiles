@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Disable Comic Sans font globally on macOS
 # This script attempts to disable Comic Sans MS using Font Book
 
@@ -15,32 +15,32 @@ SYSTEM_FONTS="/Library/Fonts"
 
 # Function to check if font exists and try to disable it
 disable_font() {
-  local font_path="$1"
-  
-  if [ -d "$font_path" ]; then
-    # Look for Comic Sans files and store results
-    local comic_fonts
-    comic_fonts=$(find "$font_path" \( -iname "*Comic*Sans*MS*.ttf" -o -iname "*Comic*Sans*MS*.otf" \) 2>/dev/null || true)
-    
-    if [ -n "$comic_fonts" ]; then
-      echo "Found Comic Sans in $font_path"
-      
-      # Try to disable each font file found
-      while IFS= read -r font_file; do
-        if [ -n "$font_file" ]; then
-          # Extract the font name from the file
-          local font_basename
-          font_basename=$(basename "$font_file" | sed 's/\.[^.]*$//')
-          
-          # Try to disable using Font Book
-          # Note: This only works for user fonts, not system fonts
-          osascript -e "tell application \"Font Book\" to disable font \"$font_basename\"" 2>/dev/null || true
-          
-          echo "Attempted to disable: $font_basename"
-        fi
-      done <<< "$comic_fonts"
-    fi
-  fi
+	local font_path="$1"
+
+	if [ -d "$font_path" ]; then
+		# Look for Comic Sans files and store results
+		local comic_fonts
+		comic_fonts=$(find "$font_path" \( -iname "*Comic*Sans*MS*.ttf" -o -iname "*Comic*Sans*MS*.otf" \) 2>/dev/null || true)
+
+		if [ -n "$comic_fonts" ]; then
+			echo "Found Comic Sans in $font_path"
+
+			# Try to disable each font file found
+			while IFS= read -r font_file; do
+				if [ -n "$font_file" ]; then
+					# Extract the font name from the file
+					local font_basename
+					font_basename=$(basename "$font_file" | sed 's/\.[^.]*$//')
+
+					# Try to disable using Font Book
+					# Note: This only works for user fonts, not system fonts
+					osascript -e "tell application \"Font Book\" to disable font \"$font_basename\"" 2>/dev/null || true
+
+					echo "Attempted to disable: $font_basename"
+				fi
+			done <<<"$comic_fonts"
+		fi
+	fi
 }
 
 # Check and disable from user fonts

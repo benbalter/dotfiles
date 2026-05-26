@@ -10,11 +10,7 @@ source "$DOTFILES_ROOT/lib/globals"
 local plugins
 plugins=(
   ansible
-  battery
-  brew
-  bundler
   colored-man-pages
-  colorize
   command-not-found
   common-aliases
   cp
@@ -25,10 +21,7 @@ plugins=(
   git
   git-extras
   golang
-  heroku
   history-substring-search
-  iterm2 
-  macos
   node
   npm
   safe-paste
@@ -38,7 +31,17 @@ plugins=(
   zsh-interactive-cd
 )
 
-source $ZSH/oh-my-zsh.sh
+if [[ "$(uname)" == "Darwin" ]]; then
+  plugins+=(
+    battery
+    brew
+    bundler
+    iterm2
+    macos
+  )
+fi
+
+source "$ZSH/oh-my-zsh.sh"
 
 # shellcheck source=lib/auto-complete
 source "$DOTFILES_ROOT/lib/auto-complete"
@@ -46,8 +49,21 @@ source "$DOTFILES_ROOT/lib/auto-complete"
 # shellcheck source=lib/aliases
 source "$DOTFILES_ROOT/lib/aliases"
 
-test -e ${HOME}/.iterm2_shell_integration.zsh && source ${HOME}/.iterm2_shell_integration.zsh
+test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
-. /opt/homebrew/opt/asdf/libexec/asdf.sh
-# Created by `pipx` on 2023-12-27 20:40:19
-export PATH="$PATH:/Users/benbalter/.local/bin"
+if command -v mise >/dev/null; then
+  eval "$(mise activate zsh)"
+fi
+
+export PATH="$PATH:$HOME/.local/bin"
+
+# 1Password SSH agent
+export SSH_AUTH_SOCK="$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+
+eval "$(starship init zsh)"
+
+
+# Added by LM Studio CLI (lms)
+export PATH="$PATH:/Users/benbalter/.lmstudio/bin"
+# End of LM Studio CLI section
+

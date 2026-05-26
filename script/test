@@ -1,0 +1,10 @@
+#!/bin/sh
+# Run the test suite
+# Usage: script/test
+
+set -eu
+# shellcheck disable=SC3040
+(set -o pipefail) 2>/dev/null && set -o pipefail || true
+
+echo "==> Running tests..."
+bats test/

@@ -1,0 +1,31 @@
+#!/bin/bash
+# Fix permissions for dotfiles directory and Python venv
+
+set -e
+
+DOTFILES_DIR="${DOTFILES_DIR:-.}"
+VENV_DIR="${DOTFILES_DIR}/env"
+
+echo "🔧 Fixing permissions in ${DOTFILES_DIR}..."
+
+# Fix main dotfiles directory
+chmod -R u+rwx,g+rx,o+rx "${DOTFILES_DIR}"
+
+# Fix venv if it exists
+if [ -d "${VENV_DIR}" ]; then
+	echo "🐍 Fixing Python venv permissions in ${VENV_DIR}..."
+	chmod -R u+rwx,g+rx,o+rx "${VENV_DIR}"
+	chmod +x "${VENV_DIR}/bin"/*
+fi
+
+# Fix scripts
+if [ -d "${DOTFILES_DIR}/script" ]; then
+	echo "📝 Making scripts executable..."
+	chmod +x "${DOTFILES_DIR}/script"/*
+fi
+
+echo "✅ Permissions fixed!"
+echo ""
+echo "You can now run:"
+echo "  source ${VENV_DIR}/bin/activate"
+echo "  cd ${DOTFILES_DIR} && script/setup"

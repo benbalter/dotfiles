@@ -1,21 +1,13 @@
-[hub]
-	protocol = https
-
-[credential]
-	helper = osxkeychain
-
 [core]
 	excludesfile = ~/.gitignore
-	whitespace = trailing-space,space-before-tab
-	pager = "diff-so-fancy | less --tabs=1,5 -R"
+	whitespace = fix,-indent-with-non-tab,trailing-space,cr-at-eol,space-before-tab
+	pager = delta
 	autocrlf = input
-	whitespace = fix,-indent-with-non-tab,trailing-space,cr-at-eol
 	editor = code --wait
 
 [user]
 	name = Ben Balter
 	email = ben@balter.com
-	signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJVznDI5iSIoLzOLMW54ZU6fnCe9JHd/tetOimr9G3c5
 
 [color]
 	branch = always
@@ -53,7 +45,6 @@
 
 [github]
 	user = benbalter
-	token = !security find-internet-password -a benbalter -s github.com -w
 
 [push]
 	default = simple
@@ -63,23 +54,11 @@
 	check = true
 	autoinstall = true
 
-[filter "media"]
-	required = true
-	clean = git media clean %f
-	smudge = git media smudge %f
-
 [filter "lfs"]
 	required = true
 	clean = git-lfs clean -- %f
 	smudge = git-lfs smudge -- %f
 	process = git-lfs filter-process
-
-[ghi]
-	token = !security find-internet-password -a benbalter -s github.com -l 'ghi token' -w
-
-#[branch "master"]
-#  remote = origin
-#  merge = refs/heads/master
 
 [color "diff-highlight"]
 	oldHighlight = red bold 52
@@ -87,23 +66,47 @@
 	newHighlight = green bold 22
 	oldNormal = red bold
 
-[commit]
-	gpgsign = true
+[delta]
+	navigate = true
+	side-by-side = true
+	line-numbers = true
 
-[gpg]
-	program = gpg
-	format = ssh
+[interactive]
+	diffFilter = delta --color-only
+
+[merge]
+	conflictstyle = zdiff3
 
 [url "https://github.com"]
 	insteadOf = git://github.com
 
 [diff]
 	tool = default-difftool
+	colorMoved = default
 
 [difftool "default-difftool"]
 	cmd = code --wait --diff $LOCAL $REMOTE
 	
 [init]
 	defaultBranch = main
-[gpg "ssh"]
-	program = /Applications/1Password.app/Contents/MacOS/op-ssh-sign
+
+[transfer]
+	fsckObjects = true
+
+[fetch]
+	fsckObjects = true
+
+[fetch "fsck"]
+	zeroPaddedFilemode = ignore
+
+[receive]
+	fsckObjects = true
+
+[rebase]
+	autoStash = true
+
+[pull]
+	rebase = false
+
+[include]
+	path = ~/.gitconfig.macos

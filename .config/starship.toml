@@ -1,0 +1,67 @@
+"$schema" = 'https://starship.rs/config-schema.json'
+
+# Timeout for commands executed by starship (ms)
+command_timeout = 1000
+
+# Newline between prompts
+add_newline = true
+
+# Prompt format
+format = """
+$directory\
+$git_branch\
+$git_status\
+$python\
+$ruby\
+$nodejs\
+$golang\
+$rust\
+$docker_context\
+$cmd_duration\
+$line_break\
+$character"""
+
+[character]
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"
+
+[directory]
+truncation_length = 4
+truncate_to_repo = true
+style = "bold cyan"
+
+[git_branch]
+symbol = " "
+style = "bold purple"
+
+[git_status]
+style = "bold yellow"
+
+[cmd_duration]
+min_time = 2000
+format = "took [$duration]($style) "
+style = "bold yellow"
+
+[python]
+symbol = " "
+format = "[$symbol$version]($style) "
+
+[ruby]
+symbol = " "
+format = "[$symbol$version]($style) "
+
+[nodejs]
+symbol = " "
+format = "[$symbol$version]($style) "
+
+[golang]
+symbol = " "
+format = "[$symbol$version]($style) "
+
+[rust]
+symbol = " "
+format = "[$symbol$version]($style) "
+
+[docker_context]
+symbol = " "
+format = "[$symbol$context]($style) "

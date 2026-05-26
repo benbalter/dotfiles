@@ -4,4 +4,7 @@ node_modules
 Gemfile.lock
 .vscode
 /env
-/Brewfile.lock.json/.ansible
+/Brewfile.lock.json
+/.ansible
+
+**/.claude/settings.local.json

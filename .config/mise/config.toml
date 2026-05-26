@@ -1,0 +1,9 @@
+# mise configuration
+# https://mise.jdx.dev/configuration.html
+
+[settings]
+# Honor language-specific version files (.ruby-version, .nvmrc, .python-version, etc.)
+idiomatic_version_file_enable_tools = ["ruby", "node", "python"]
+
+[tools]
+ruby = "latest"

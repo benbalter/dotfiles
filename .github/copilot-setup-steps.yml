@@ -1,0 +1,22 @@
+---
+steps:
+  - name: Install system dependencies
+    run: |
+      sudo apt-get update -q
+      sudo apt-get install -y -q shellcheck bats
+
+  - name: Install Go tools
+    run: |
+      go install mvdan.cc/sh/v3/cmd/shfmt@latest
+      go install github.com/rhysd/actionlint/cmd/actionlint@latest
+
+  - name: Install project dependencies
+    run: |
+      npm install
+      bundle install
+      script/bootstrap
+
+  - name: Verify setup
+    run: |
+      script/lint
+      script/test
