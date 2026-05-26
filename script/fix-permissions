@@ -13,15 +13,15 @@ chmod -R u+rwx,g+rx,o+rx "${DOTFILES_DIR}"
 
 # Fix venv if it exists
 if [ -d "${VENV_DIR}" ]; then
-  echo "🐍 Fixing Python venv permissions in ${VENV_DIR}..."
-  chmod -R u+rwx,g+rx,o+rx "${VENV_DIR}"
-  chmod +x "${VENV_DIR}/bin"/*
+	echo "🐍 Fixing Python venv permissions in ${VENV_DIR}..."
+	chmod -R u+rwx,g+rx,o+rx "${VENV_DIR}"
+	chmod +x "${VENV_DIR}/bin"/*
 fi
 
 # Fix scripts
 if [ -d "${DOTFILES_DIR}/script" ]; then
-  echo "📝 Making scripts executable..."
-  chmod +x "${DOTFILES_DIR}/script"/*
+	echo "📝 Making scripts executable..."
+	chmod +x "${DOTFILES_DIR}/script"/*
 fi
 
 echo "✅ Permissions fixed!"
