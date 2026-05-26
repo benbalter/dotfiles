@@ -18,22 +18,22 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Pip Cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/Library/Caches/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
 
       - name: Venv cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ./env
           key: ${{ runner.os }}-env-${{ hashFiles('requirements.txt') }}
 
       - name: Ansible cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.ansible
           key: ${{ runner.os }}-ansible-${{ hashFiles('requirements.yml') }}
@@ -46,16 +46,16 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Ansible cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.ansible
           key: ${{ runner.os }}-ansible-${{ hashFiles('requirements.yml') }}
 
       - name: Venv cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ./env
           key: ${{ runner.os }}-env-${{ hashFiles('requirements.txt') }}
@@ -119,22 +119,22 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Ansible cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.ansible
           key: ${{ runner.os }}-ansible-${{ hashFiles('requirements.yml') }}
 
       - name: Venv cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ./env
           key: ${{ runner.os }}-env-${{ hashFiles('requirements.txt') }}
 
       - name: Homebrew cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/Library/Caches/Homebrew/downloads
           key: ${{ runner.os }}-brew-lint-shellcheck-shfmt-actionlint
@@ -156,10 +156,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Homebrew cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/Library/Caches/Homebrew/downloads
           key: ${{ runner.os }}-brew-test-bats-core-yq
@@ -175,7 +175,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Run install.sh
         run: |
