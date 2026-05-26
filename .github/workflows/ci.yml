@@ -21,19 +21,19 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Pip Cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/Library/Caches/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
 
       - name: Venv cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ./env
           key: ${{ runner.os }}-env-${{ hashFiles('requirements.txt') }}
 
       - name: Ansible cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.ansible
           key: ${{ runner.os }}-ansible-${{ hashFiles('requirements.yml') }}
@@ -49,13 +49,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Ansible cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.ansible
           key: ${{ runner.os }}-ansible-${{ hashFiles('requirements.yml') }}
 
       - name: Venv cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ./env
           key: ${{ runner.os }}-env-${{ hashFiles('requirements.txt') }}
@@ -122,19 +122,19 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Ansible cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.ansible
           key: ${{ runner.os }}-ansible-${{ hashFiles('requirements.yml') }}
 
       - name: Venv cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ./env
           key: ${{ runner.os }}-env-${{ hashFiles('requirements.txt') }}
 
       - name: Homebrew cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/Library/Caches/Homebrew/downloads
           key: ${{ runner.os }}-brew-lint-shellcheck-shfmt-actionlint
@@ -159,7 +159,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Homebrew cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/Library/Caches/Homebrew/downloads
           key: ${{ runner.os }}-brew-test-bats-core-yq
