@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/benbalter/dotfiles/actions/workflows/ci.yml/badge.svg)](https://github.com/benbalter/dotfiles/actions/workflows/ci.yml)
 
-@BenBalter's development environment and the scripts to initialize it and keep it up to date. Uses [Ansible](https://www.ansible.com/) for configuration management and [Homebrew](https://brew.sh/) for package management.
+@BenBalter's development environment and the scripts to initialize it and keep it up to date. Uses [Ansible](https://www.ansible.com/) for configuration management, with [Homebrew](https://brew.sh/) for package management on macOS and `dnf` on Fedora (including Asahi Remix).
 
 ## What's here
 
@@ -25,7 +25,7 @@
 
 ### What gets installed
 
-The `Brewfile` manages all packages. Highlights:
+On macOS, the `Brewfile` manages all packages. On Fedora, a curated list of dev essentials (`fedora_packages` in `config.yml`) is installed via `dnf`, plus third-party repos for `gh`, `mise`, `starship`, and 1Password. Highlights:
 
 | Category       | Examples                                                                 |
 | -------------- | ------------------------------------------------------------------------ |
@@ -37,8 +37,12 @@ The `Brewfile` manages all packages. Highlights:
 
 ## Setting up a new machine from scratch
 
+Works on both macOS and Fedora:
+
 1. `git clone https://github.com/benbalter/dotfiles ~/.files`
 2. `cd ~/.files && script/setup`
+
+The playbook detects the OS and runs the appropriate tasks: Homebrew, Mac App Store apps, Dock, and system defaults on macOS; `dnf` packages, third-party repos, and the default shell on Fedora. Dotfile symlinks and oh-my-zsh are set up on both. On Fedora, configs that live under `~/Library` on macOS (VS Code, Ghostty) are symlinked to their XDG paths under `~/.config`, and Linux variants of OS-specific files (`.gitconfig.linux`, `.ssh/config.linux`) are used.
 
 If macOS prompts for administrator access during Homebrew or App Store installs, keep an authenticated sudo session open while setup runs:
 
@@ -91,9 +95,10 @@ Runs seven linters in sequence:
 
 ### CI
 
-GitHub Actions runs four parallel jobs on every push:
+GitHub Actions runs five parallel jobs on every push:
 
 1. **Test** — Full Ansible playbook execution on macOS
-2. **Lint** — All linters above
-3. **Unit test** — BATS test suite on macOS
-4. **Install Linux** — Verify `install.sh`, symlinks, and tool installation on Ubuntu
+2. **Test Fedora** — Full Ansible playbook execution in a Fedora container
+3. **Lint** — All linters above
+4. **Unit test** — BATS test suite on macOS
+5. **Install Linux** — Verify `install.sh`, symlinks, and tool installation on Ubuntu

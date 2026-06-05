@@ -108,5 +108,16 @@
 [pull]
 	rebase = false
 
+# OS-specific overrides; git silently ignores missing include files,
+# so only the file for the current OS is symlinked into ~
 [include]
 	path = ~/.gitconfig.macos
+	path = ~/.gitconfig.linux
+
+[credential "https://github.com"]
+	helper =
+	helper = !gh auth git-credential
+
+[credential "https://gist.github.com"]
+	helper =
+	helper = !gh auth git-credential

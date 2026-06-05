@@ -4,9 +4,17 @@
 REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 
 @test "config.yml dotfiles_files all exist in the repo" {
+	for list in dotfiles_files_common dotfiles_files_macos dotfiles_files_linux; do
+		while IFS= read -r file; do
+			[ -e "$REPO_ROOT/$file" ] || fail "$list entry '$file' does not exist in repo"
+		done < <(yq -r ".${list}[]" "$REPO_ROOT/config.yml")
+	done
+}
+
+@test "config.yml linux_dotfile_links sources all exist in the repo" {
 	while IFS= read -r file; do
-		[ -e "$REPO_ROOT/$file" ] || fail "dotfiles_files entry '$file' does not exist in repo"
-	done < <(yq -r '.dotfiles_files[]' "$REPO_ROOT/config.yml")
+		[ -e "$REPO_ROOT/$file" ] || fail "linux_dotfile_links src '$file' does not exist in repo"
+	done < <(yq -r '.linux_dotfile_links[].src' "$REPO_ROOT/config.yml")
 }
 
 @test "install.sh dotfiles all exist in the repo" {
@@ -31,8 +39,9 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 }
 
 @test "config.yml has required top-level keys" {
-	for key in dotfiles_files homebrew_brewfile_dir \
-		directories_to_create macos_defaults; do
+	for key in dotfiles_files dotfiles_files_common dotfiles_files_macos \
+		dotfiles_files_linux linux_dotfile_links fedora_packages \
+		homebrew_brewfile_dir directories_to_create macos_defaults; do
 		grep -q "^${key}:" "$REPO_ROOT/config.yml" || fail "config.yml missing required key '$key'"
 	done
 }
@@ -55,9 +64,12 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 }
 
 @test "directories_to_create entries use tilde paths" {
-	count=$(yq '.directories_to_create | length' "$REPO_ROOT/config.yml")
-	for i in $(seq 0 $((count - 1))); do
-		dir=$(yq ".directories_to_create[$i]" "$REPO_ROOT/config.yml")
-		echo "$dir" | grep -q '^~/' || fail "directory '$dir' should use ~/ prefix"
+	for list in directories_to_create_common directories_to_create_macos \
+		directories_to_create_linux; do
+		count=$(yq ".${list} | length" "$REPO_ROOT/config.yml")
+		for i in $(seq 0 $((count - 1))); do
+			dir=$(yq ".${list}[$i]" "$REPO_ROOT/config.yml")
+			echo "$dir" | grep -q '^~/' || fail "directory '$dir' should use ~/ prefix"
+		done
 	done
 }

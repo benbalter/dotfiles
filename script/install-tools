@@ -16,6 +16,14 @@ if [ "$(uname)" = "Darwin" ]; then
 	exit 0
 fi
 
+# On rpm-based systems (Fedora), everything is in the distro repos
+if command -v dnf >/dev/null; then
+	echo "==> Installing tools via dnf..."
+	sudo dnf install -y git-delta zoxide fzf
+	echo "==> Tool installation complete"
+	exit 0
+fi
+
 # verify_sha256 <file> <expected_hex>
 # Aborts (and removes the file) if the file's sha256 does not match.
 verify_sha256() {

@@ -8,6 +8,12 @@
         is_ci: "{{ ansible_facts['env']['CI'] | default(false) | bool }}"
       tags: always
 
+    - name: Detect operating system
+      ansible.builtin.set_fact:
+        is_macos: "{{ ansible_facts['system'] == 'Darwin' }}"
+        is_fedora: "{{ ansible_facts['distribution'] == 'Fedora' }}"
+      tags: always
+
     - name: Include config
       ansible.builtin.include_vars: "{{ playbook_dir }}/config.yml"
       tags: always
@@ -62,9 +68,45 @@
             force: true
           loop: "{{ dotfiles_files }}"
 
+    - name: Setup Linux dotfile links (XDG destinations)
+      tags: [dotfiles]
+      when: not is_macos
+      block:
+        - name: Stat existing Linux dotfile targets
+          ansible.builtin.stat:
+            path: "{{ ansible_facts['user_dir'] }}/{{ item.dest }}"
+          loop: "{{ linux_dotfile_links }}"
+          loop_control:
+            label: "{{ item.dest }}"
+          register: linux_dotfile_targets
+
+        - name: Back up existing non-symlink Linux dotfile targets
+          ansible.builtin.command:
+            cmd: mv "{{ ansible_facts['user_dir'] }}/{{ item.item.dest }}" "{{ ansible_facts['user_dir'] }}/{{ item.item.dest }}.bak"
+            creates: "{{ ansible_facts['user_dir'] }}/{{ item.item.dest }}.bak"
+          loop: "{{ linux_dotfile_targets.results }}"
+          loop_control:
+            label: "{{ item.item.dest }}"
+          when:
+            - item.stat.exists
+            - not item.stat.islnk
+
+        - name: Symlink Linux dotfiles into HOME
+          ansible.builtin.file:
+            src: "{{ playbook_dir }}/{{ item.src }}"
+            dest: "{{ ansible_facts['user_dir'] }}/{{ item.dest }}"
+            state: link
+            force: true
+          loop: "{{ linux_dotfile_links }}"
+          loop_control:
+            label: "{{ item.dest }}"
+
     - name: Setup Homebrew
       ansible.builtin.include_role:
         name: geerlingguy.mac.homebrew
+        apply:
+          tags: [homebrew, packages]
+      when: is_macos
       tags: [homebrew, packages]
 
     - name: Configure LanguageTool server
@@ -72,8 +114,108 @@
         src: "{{ playbook_dir }}/homebrew/etc/languagetool/server.properties"
         dest: /opt/homebrew/etc/languagetool/server.properties
         mode: "0644"
-      when: not is_ci
+      when: is_macos and not is_ci
       tags: [languagetool]
+
+    - name: Setup Fedora packages
+      become: true
+      when: is_fedora
+      tags: [fedora, packages]
+      block:
+        - name: Ensure dnf5 Python bindings are available
+          ansible.builtin.command:
+            cmd: dnf install -y python3-libdnf5
+            creates: /usr/lib64/python3.*/site-packages/libdnf5
+
+        - name: Import third-party RPM signing keys
+          ansible.builtin.rpm_key:
+            key: "{{ item }}"
+            state: present
+          loop:
+            - https://cli.github.com/packages/githubcli-archive-keyring.asc
+            - https://mise.jdx.dev/gpg-key.pub
+            - https://download.copr.fedorainfracloud.org/results/atim/starship/pubkey.gpg
+            - https://downloads.1password.com/linux/keys/1password.asc
+
+        - name: Add GitHub CLI repository
+          ansible.builtin.yum_repository:
+            name: gh-cli
+            description: Packages for the GitHub CLI
+            baseurl: https://cli.github.com/packages/rpm
+            gpgcheck: true
+            gpgkey: https://cli.github.com/packages/githubcli-archive-keyring.asc
+
+        - name: Add mise repository
+          ansible.builtin.yum_repository:
+            name: mise
+            description: mise
+            baseurl: https://mise.jdx.dev/rpm
+            gpgcheck: true
+            gpgkey: https://mise.jdx.dev/gpg-key.pub
+
+        - name: Add starship COPR repository
+          ansible.builtin.yum_repository:
+            name: copr-atim-starship
+            description: Copr repo for starship owned by atim
+            baseurl: https://download.copr.fedorainfracloud.org/results/atim/starship/fedora-$releasever-$basearch/
+            gpgcheck: true
+            gpgkey: https://download.copr.fedorainfracloud.org/results/atim/starship/pubkey.gpg
+
+        - name: Add 1Password repository
+          ansible.builtin.yum_repository:
+            name: 1password
+            description: 1Password Stable Channel
+            baseurl: https://downloads.1password.com/linux/rpm/stable/$basearch
+            gpgcheck: true
+            repo_gpgcheck: true
+            gpgkey: https://downloads.1password.com/linux/keys/1password.asc
+
+        - name: Install packages
+          ansible.builtin.dnf5:
+            name: "{{ fedora_packages }}"
+            state: present
+
+        - name: Install 1Password CLI
+          ansible.builtin.dnf5:
+            name: 1password-cli
+            state: present
+          when: not is_ci
+
+        # The RPM repo only ships the desktop app for x86_64
+        - name: Install 1Password desktop (RPM)
+          ansible.builtin.dnf5:
+            name: 1password
+            state: present
+          when: not is_ci and ansible_facts['architecture'] == 'x86_64'
+
+        - name: Install 1Password desktop (aarch64 tarball)
+          when: not is_ci and ansible_facts['architecture'] == 'aarch64'
+          block:
+            - name: Check for existing 1Password desktop install
+              ansible.builtin.stat:
+                path: /opt/1Password/1password
+              register: op_desktop
+
+            - name: Download and extract 1Password
+              ansible.builtin.unarchive:
+                src: https://downloads.1password.com/linux/tar/stable/aarch64/1password-latest.tar.gz
+                dest: /opt
+                remote_src: true
+                extra_opts:
+                  - --transform
+                  - s,^1password-[^/]*,1Password,
+              when: not op_desktop.stat.exists
+
+            - name: Run 1Password after-install script
+              ansible.builtin.command:
+                cmd: /opt/1Password/after-install.sh
+              when: not op_desktop.stat.exists
+              changed_when: true
+
+        - name: Set zsh as default shell
+          ansible.builtin.user:
+            name: "{{ ansible_facts['user_id'] }}"
+            shell: /usr/bin/zsh
 
     - name: Set up oh-my-zsh
       ansible.builtin.git:
@@ -87,18 +229,25 @@
     - name: Setup App Store
       ansible.builtin.include_role:
         name: geerlingguy.mac.mas
+        apply:
+          tags: [mas, packages]
+      when: is_macos
       tags: [mas, packages]
 
     - name: Install GitHub Copilot CLI
       community.general.npm:
         name: "@github/copilot"
         global: true
+      become: "{{ not is_macos }}"
       when: not is_ci
       tags: [packages]
 
     - name: Setup Dock
       ansible.builtin.include_role:
         name: geerlingguy.mac.dock
+        apply:
+          tags: [macos, dock]
+      when: is_macos
       tags: [macos, dock]
 
     - name: Set MacOS system defaults
@@ -109,6 +258,7 @@
         value: "{{ item.value }}"
       become: true
       loop: "{{ macos_defaults.system }}"
+      when: is_macos
       tags: [macos, defaults]
 
     - name: Set MacOS user defaults
@@ -118,6 +268,7 @@
         type: "{{ item.type }}"
         value: "{{ item.value }}"
       loop: "{{ macos_defaults.user }}"
+      when: is_macos
       tags: [macos, defaults]
 
     - name: Set screensaver idle time
@@ -126,11 +277,12 @@
         key: idleTime
         type: integer
         value: 300
-      when: not is_ci
+      when: is_macos and not is_ci
       tags: [macos, defaults]
 
     - name: Configure security settings
       tags: [macos, security]
+      when: is_macos
       block:
         - name: Enable Gatekeeper
           ansible.builtin.command:

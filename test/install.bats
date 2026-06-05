@@ -15,7 +15,7 @@ teardown() {
 @test "install.sh symlinks dotfiles to HOME" {
 	# Stub out uname so we hit the Linux path and git/chsh so they no-op
 	# shellcheck disable=SC2016
-	run env HOME="$TEST_HOME" DOTFILES_SKIP_TOOLS=1 bash -c '
+	run env HOME="$TEST_HOME" DOTFILES_SKIP_TOOLS=1 DOTFILES_SIMPLE_INSTALL=1 bash -c '
 		uname() { echo Linux; }; export -f uname
 		git() { mkdir -p "$3"; }; export -f git
 		sudo() { :; }; export -f sudo
@@ -32,7 +32,7 @@ teardown() {
 
 @test "install.sh creates required directories" {
 	# shellcheck disable=SC2016
-	run env HOME="$TEST_HOME" DOTFILES_SKIP_TOOLS=1 bash -c '
+	run env HOME="$TEST_HOME" DOTFILES_SKIP_TOOLS=1 DOTFILES_SIMPLE_INSTALL=1 bash -c '
 		uname() { echo Linux; }; export -f uname
 		git() { mkdir -p "$3"; }; export -f git
 		sudo() { :; }; export -f sudo

@@ -34,32 +34,52 @@ dockitems_remove:
 
 configure_sudoers: false
 
-dotfiles_files:
-  - .Brewfile
+# Dotfiles symlinked into $HOME on every platform
+dotfiles_files_common:
   - .bundle/config
   - .digrc
   - .gemrc
   - .gitconfig
-  - .gitconfig.macos
   - .gitignore
-  - .gnupg/gpg-agent.conf
   - .gnupg/gpg.conf
   - .hushlogin
   - .irbrc
-  - .mackup.cfg
   - .pryrc
   - .remarkrc
-  - .ssh/config
   - .yamllint
   - .zprofile
   - .zshrc
   - .config/mise/config.toml
   - .config/starship.toml
+
+# Dotfiles symlinked into $HOME on macOS only
+dotfiles_files_macos:
+  - .Brewfile
+  - .gitconfig.macos
+  - .gnupg/gpg-agent.conf
+  - .mackup.cfg
+  - .ssh/config
   - Library/Application Support/Code/User/settings.json
   - Library/Application Support/com.mitchellh.ghostty/config
   - Library/Spelling/LocalDictionary
   - Library/LaunchAgents/com.balter.ben.tmpreaper.plist
   - Library/LaunchAgents/com.balter.ben.update.plist
+
+# Dotfiles symlinked into $HOME on Linux only
+dotfiles_files_linux:
+  - .gitconfig.linux
+
+# Linux symlinks whose destination differs from the repo path
+# (configs shared with macOS but expected at XDG paths on Linux)
+linux_dotfile_links:
+  - src: .ssh/config.linux
+    dest: .ssh/config
+  - src: Library/Application Support/Code/User/settings.json
+    dest: .config/Code/User/settings.json
+  - src: Library/Application Support/com.mitchellh.ghostty/config
+    dest: .config/ghostty/config
+
+dotfiles_files: "{{ dotfiles_files_common + (dotfiles_files_macos if is_macos else dotfiles_files_linux) }}"
 
 dotfile_root_dirs:
   - ""
@@ -71,17 +91,62 @@ mas_upgrade_all_apps: false
 mas_installed_apps: []
 mas_signin_dialog: false
 
-directories_to_create:
+# Curated dev essentials installed via dnf on Fedora.
+# (The Brewfile remains the source of truth on macOS; most of its entries
+# are transitive deps that dnf resolves automatically.)
+fedora_packages:
+  - bats
+  - cloc
+  - fd-find
+  - fzf
+  - gh
+  - git
+  - git-delta
+  - git-lfs
+  - gnupg2
+  - golang
+  - httpie
+  - jq
+  - mise
+  - mtr
+  - nmap
+  - nodejs
+  - npm
+  - ripgrep
+  - ShellCheck
+  - shfmt
+  - starship
+  - yamllint
+  - zoxide
+  - zsh
+  # Build deps so `mise install ruby` can compile Ruby
+  - autoconf
+  - gcc
+  - make
+  - libyaml-devel
+  - openssl-devel
+  - readline-devel
+  - zlib-devel
+
+directories_to_create_common:
   - ~/.bundle
   - ~/.config
   - ~/.gnupg
   - ~/.ssh
   - ~/github
   - ~/projects
+
+directories_to_create_macos:
   - ~/Library/Application Support/Code/User
   - ~/Library/Application Support/com.mitchellh.ghostty
   - ~/Library/LaunchAgents
   - ~/Library/Spelling
+
+directories_to_create_linux:
+  - ~/.config/Code/User
+  - ~/.config/ghostty
+
+directories_to_create: "{{ directories_to_create_common + (directories_to_create_macos if is_macos else directories_to_create_linux) }}"
 
 macos_defaults:
   system:

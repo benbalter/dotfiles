@@ -201,3 +201,58 @@ jobs:
           sudo apt-get update -q
           sudo apt-get install -y -q bats
           script/test
+
+  test-fedora:
+    runs-on: ubuntu-latest
+    container: fedora:latest
+
+    steps:
+      - name: Install bootstrap dependencies
+        run: dnf install -y git python3 python3-pip sudo
+
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Bootstrap
+        run: script/bootstrap
+
+      - name: Run playbook
+        run: script/ansible
+
+      - name: Verify dotfile symlinks
+        run: |
+          for file in .zshrc .zprofile .gitconfig .gitconfig.linux .gitignore \
+            .yamllint .config/mise/config.toml .config/starship.toml \
+            .config/ghostty/config .ssh/config; do
+            test -L "$HOME/$file" || { echo "FAIL: $file not symlinked"; exit 1; }
+          done
+          echo "All dotfile symlinks verified"
+
+      - name: Verify macOS-only dotfiles were not symlinked
+        run: |
+          for file in .Brewfile .gitconfig.macos .mackup.cfg; do
+            test ! -e "$HOME/$file" || { echo "FAIL: $file should not exist on Linux"; exit 1; }
+          done
+          echo "No macOS dotfiles leaked"
+
+      - name: Verify packages installed
+        run: |
+          for cmd in zsh git gh delta zoxide fzf rg starship mise jq shellcheck; do
+            command -v "$cmd" || { echo "FAIL: $cmd not installed"; exit 1; }
+          done
+
+      - name: Verify oh-my-zsh installed
+        run: test -d "$HOME/.oh-my-zsh/.git"
+
+      - name: Verify zsh loads cleanly
+        run: |
+          ln -sfn "$GITHUB_WORKSPACE" "$HOME/.files"
+          zsh -ic 'echo "zsh ok"'
+
+      - name: Re-run playbook (no failures on second run)
+        run: |
+          output=$(script/ansible 2>&1)
+          echo "$output"
+          failed=$(echo "$output" | awk '/^localhost/ { for (i=1; i<=NF; i++) if ($i ~ /^failed=/) print substr($i, 8) }')
+          [ "$failed" = "0" ] || { echo "FAIL: re-run reported failed=$failed (expected 0)"; exit 1; }
+          echo "Playbook re-run completed without failures"

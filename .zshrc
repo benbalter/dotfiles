@@ -39,6 +39,8 @@ if [[ "$(uname)" == "Darwin" ]]; then
     iterm2
     macos
   )
+elif command -v dnf >/dev/null; then
+  plugins+=(dnf)
 fi
 
 source "$ZSH/oh-my-zsh.sh"
@@ -58,12 +60,16 @@ fi
 export PATH="$PATH:$HOME/.local/bin"
 
 # 1Password SSH agent
-export SSH_AUTH_SOCK="$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+if [[ "$(uname)" == "Darwin" ]]; then
+  export SSH_AUTH_SOCK="$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
 
-eval "$(starship init zsh)"
+  # Added by LM Studio CLI (lms)
+  export PATH="$PATH:$HOME/.lmstudio/bin"
+elif [[ -S "$HOME/.1password/agent.sock" ]]; then
+  export SSH_AUTH_SOCK="$HOME/.1password/agent.sock"
+fi
 
-
-# Added by LM Studio CLI (lms)
-export PATH="$PATH:/Users/benbalter/.lmstudio/bin"
-# End of LM Studio CLI section
+if command -v starship >/dev/null; then
+  eval "$(starship init zsh)"
+fi
 

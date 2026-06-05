@@ -13,6 +13,14 @@ if [ "$(uname)" = "Darwin" ]; then
 	exec "$DOTFILES_DIR/script/setup"
 fi
 
+# On Fedora (and derivatives like Asahi Remix), delegate to the full
+# Ansible-based setup. Set DOTFILES_SIMPLE_INSTALL=1 to force the simple
+# symlink-only installer (used by tests and containers).
+if [ "${DOTFILES_SIMPLE_INSTALL:-}" != "1" ] && [ -z "${CODESPACES:-}" ] &&
+	grep -qsE '^(ID|ID_LIKE)=.*fedora' /etc/os-release; then
+	exec "$DOTFILES_DIR/script/setup"
+fi
+
 # --- Linux / Codespaces setup ---
 
 # Symlink dotfiles

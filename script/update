@@ -8,27 +8,40 @@ set -eu
 
 cd "${DOTFILES_ROOT:-$HOME/.files}"
 
-echo "==> Updating Homebrew packages..."
-brew update
-brew outdated
-brew upgrade
+if command -v brew >/dev/null; then
+	echo "==> Updating Homebrew packages..."
+	brew update
+	brew outdated
+	brew upgrade
 
-echo "==> Installing any new Brewfile entries..."
-brew bundle --global
+	echo "==> Installing any new Brewfile entries..."
+	brew bundle --global
+fi
 
-echo "==> Updating Mac App Store apps..."
-mas upgrade
+if command -v dnf >/dev/null; then
+	echo "==> Updating dnf packages..."
+	sudo dnf upgrade --refresh -y
+fi
 
-echo "==> Updating mise tools..."
+if command -v mas >/dev/null; then
+	echo "==> Updating Mac App Store apps..."
+	mas upgrade
+fi
+
 if command -v mise >/dev/null; then
+	echo "==> Updating mise tools..."
 	mise upgrade 2>/dev/null || true
 fi
 
-echo "==> Updating npm packages..."
-npm update
+if command -v npm >/dev/null; then
+	echo "==> Updating npm packages..."
+	npm update
+fi
 
-echo "==> Updating Ruby gems..."
-bundle update
+if command -v bundle >/dev/null; then
+	echo "==> Updating Ruby gems..."
+	bundle update
+fi
 
 echo "==> Updating Python packages..."
 if [ -d env ]; then
@@ -39,8 +52,8 @@ if [ -d env ]; then
 	else
 		pip install --upgrade -r requirements.txt
 	fi
+
+	echo "==> Updating Ansible roles and collections..."
+	ansible-galaxy install -r requirements.yml --force
 	deactivate
 fi
-
-echo "==> Updating Ansible roles and collections..."
-ansible-galaxy install -r requirements.yml --force
