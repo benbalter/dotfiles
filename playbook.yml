@@ -280,6 +280,13 @@
       when: is_macos and not is_ci
       tags: [macos, defaults]
 
+    - name: Disable Comic Sans globally
+      ansible.builtin.command: "{{ playbook_dir }}/script/disable-comic-sans"
+      when: not is_ci
+      changed_when: false
+      failed_when: false
+      tags: [macos, fonts]
+
     - name: Configure security settings
       tags: [macos, security]
       when: is_macos
