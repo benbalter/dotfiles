@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-tap 'cloudflare/cloudflare'
-tap 'github/bootstrap'
-tap 'hashicorp/tap'
 # Run your GitHub Actions locally
 brew 'act'
 # GNU multiple precision arithmetic library
@@ -97,8 +94,6 @@ brew 'pkgconf'
 brew 'hivemind'
 # User-friendly cURL replacement (command-line HTTP client)
 brew 'httpie'
-# C/C++ and Java libraries for Unicode and globalization
-brew 'icu4c@76'
 # ISO/IEC 23008-12:2017 HEIF file format decoder and encoder
 brew 'libheif'
 # Generic library support script
@@ -143,8 +138,6 @@ brew 'nmap'
 brew 'node'
 # Install NodeJS versions
 brew 'node-build'
-# Find newer versions of dependencies than what your package.json allows
-brew 'npm-check-updates'
 # Libraries for security-enabled client and server applications
 brew 'nss'
 # Adds an OCR text layer to scanned PDF files
@@ -185,12 +178,8 @@ brew 'sdl2_ttf'
 brew 'shfmt'
 # Cross-shell prompt for astronauts
 brew 'starship'
-# Detect compliance and security violations across Infrastructure as Code
-brew 'terrascan'
 # Enables extra languages support for Tesseract
 brew 'tesseract-lang'
-# Linter for Terraform files
-brew 'tflint'
 # Static analysis security scanner for your terraform code
 brew 'tfsec'
 # Clean up files in directories based on their age
@@ -217,10 +206,6 @@ brew 'yq'
 brew 'zoxide'
 # UNIX shell (command interpreter)
 brew 'zsh'
-# Utility to export your existing Cloudflare resources as Terraform resources
-brew 'cloudflare/cloudflare/cf-terraforming'
-# Terraform
-brew 'hashicorp/tap/terraform'
 # Password manager that keeps all passwords secure behind one password
 cask '1password'
 # Command-line interface for 1Password
@@ -229,8 +214,6 @@ cask '1password-cli'
 cask 'adguard'
 # Inspect application bundles
 cask 'apparency'
-# USB 3.0 to gigabit ethernet drivers for ASIX Electronics devices
-cask 'asix-ax88179'
 # Open source IDE for exploring and testing APIs
 cask 'bruno'
 # Utility that prevents the system from going to sleep
@@ -273,7 +256,7 @@ cask 'microsoft-auto-update'
 # Multi-platform web browser
 cask 'microsoft-edge'
 # Office suite
-cask 'microsoft-office'
+cask 'libreoffice'
 # Meet, chat, call, and collaborate in just one place
 cask 'microsoft-teams'
 # Intercept, modify, replay, save HTTP/S traffic
@@ -290,18 +273,10 @@ cask 'packetsender'
 cask 'pdfsam-basic'
 # Companion app for Flipper Zero devices
 cask 'qflipper'
-# Quick Look plug-in that renders source code with syntax highlighting
-cask 'qlcolorcode'
+# Quick Look extension for source code, plain text, and JSON/GeoJSON with syntax highlighting
+cask 'syntax-highlight'
 # Quick Look generator for Markdown files
 cask 'qlmarkdown'
-# Quick Look plugin for plaintext files without an extension
-cask 'qlstephen'
-# Quick Look plugin for GeoJSON and TopoJSON
-cask 'quickgeojson'
-# Quick Look plugin for CSV files
-cask 'quicklook-csv'
-# Quick Look generator for Adobe Swatch Exchange files
-cask 'quicklookase'
 # Imaging utility to install operating systems to a microSD card
 cask 'raspberry-pi-imager'
 # Screenshot measurement and annotation tool
@@ -407,4 +382,9 @@ vscode 'visualstudiotoolsforunity.vstuc'
 vscode 'yzhang.markdown-all-in-one'
 cargo 'just'
 cargo 'lychee'
+npm '@anthropic-ai/claude-code'
 npm '@github/copilot'
+npm 'npm-check-updates'
+npm 'serve'
+npm 'tsx'
+npm 'wrangler'
