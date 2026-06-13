@@ -235,9 +235,13 @@ jobs:
           done
           echo "No macOS dotfiles leaked"
 
-      - name: Verify packages installed
+      # Homebrew (and the Brewfile toolchain) is gated to non-CI runs because
+      # this Fedora container is root and Homebrew refuses to run as root.
+      # Here we only verify the dnf bootstrap set; the test-asahi-brew job
+      # exercises the Brewfile on Linux as a non-root user.
+      - name: Verify bootstrap packages installed
         run: |
-          for cmd in zsh git gh delta zoxide fzf rg starship mise jq shellcheck; do
+          for cmd in zsh git gcc make curl ps; do
             command -v "$cmd" || { echo "FAIL: $cmd not installed"; exit 1; }
           done
 
@@ -256,3 +260,50 @@ jobs:
           failed=$(echo "$output" | awk '/^localhost/ { for (i=1; i<=NF; i++) if ($i ~ /^failed=/) print substr($i, 8) }')
           [ "$failed" = "0" ] || { echo "FAIL: re-run reported failed=$failed (expected 0)"; exit 1; }
           echo "Playbook re-run completed without failures"
+
+  # Validates that the Brewfile runs under `brew bundle` on Linux the way it
+  # would on Asahi (Fedora aarch64). Uses an x86_64 ubuntu runner as a non-root
+  # user, since Homebrew on Linux is Tier 1 on both x86_64 and aarch64 and a
+  # native aarch64-Linux runner isn't available. This proves the Brewfile parses
+  # and that macOS-only entries are skipped; it can't confirm aarch64 bottle
+  # availability, which is verified on real hardware.
+  test-asahi-brew:
+    runs-on: ubuntu-latest
+    env:
+      # Formulae with no Linux bottle (mirrors homebrew_linux_brew_skip).
+      HOMEBREW_BUNDLE_BREW_SKIP: dockutil mas pinentry-mac
+      HOMEBREW_NO_AUTO_UPDATE: 1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Brewfile parses under brew bundle on Linux
+        run: |
+          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+          brew bundle list --file=Brewfile --all >/dev/null
+          echo "Brewfile parses"
+
+      - name: macOS-only entries are skipped, not errors, on Linux
+        run: |
+          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+          # A Brewfile of only macOS-specific entries must install cleanly on
+          # Linux: the three bottle-less formulae via HOMEBREW_BUNDLE_BREW_SKIP,
+          # and cask/mas entries via brew bundle's automatic Linux skip.
+          cat > "$RUNNER_TEMP/Brewfile.macos-only" <<'EOF'
+          brew 'dockutil'
+          brew 'pinentry-mac'
+          brew 'mas'
+          cask '1password'
+          mas '1Password for Safari', id: 1_569_813_296
+          EOF
+          brew bundle install --file="$RUNNER_TEMP/Brewfile.macos-only"
+          echo "macOS-only entries skipped cleanly on Linux"
+
+      - name: Install a representative subset (proves Linux bottles install)
+        run: |
+          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+          brew install gh jq ripgrep
+          for cmd in gh jq rg; do
+            command -v "$cmd" || { echo "FAIL: $cmd not installed via Homebrew"; exit 1; }
+          done
+          echo "Homebrew Linux bottles install correctly"

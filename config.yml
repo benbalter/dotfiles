@@ -91,42 +91,33 @@ mas_upgrade_all_apps: false
 mas_installed_apps: []
 mas_signin_dialog: false
 
-# Curated dev essentials installed via dnf on Fedora.
-# (The Brewfile remains the source of truth on macOS; most of its entries
-# are transitive deps that dnf resolves automatically.)
+# Asahi / Fedora uses Homebrew as the source of truth, running the same
+# Brewfile as macOS (Homebrew on Linux aarch64 is Tier 1 as of Homebrew 5.0).
+# dnf only provides what Homebrew on Linux needs to bootstrap, the login shell,
+# and the GUI apps Homebrew Cask cannot install on Linux (handled separately
+# in the playbook, e.g. 1Password desktop).
 fedora_packages:
-  - bats
-  - cloc
-  - fd-find
-  - fzf
-  - gh
-  - git
-  - git-delta
-  - git-lfs
-  - gnupg2
-  - golang
-  - httpie
-  - jq
-  - mise
-  - mtr
-  - nmap
-  - nodejs
-  - npm
-  - ripgrep
-  - ShellCheck
-  - shfmt
-  - starship
-  - yamllint
-  - zoxide
-  - zsh
-  # Build deps so `mise install ruby` can compile Ruby
-  - autoconf
+  # Homebrew on Linux build/runtime prerequisites
+  # (https://docs.brew.sh/Homebrew-on-Linux#requirements)
   - gcc
+  - gcc-c++
   - make
-  - libyaml-devel
-  - openssl-devel
-  - readline-devel
-  - zlib-devel
+  - procps-ng
+  - curl
+  - file
+  - git
+  # Sandboxing backend for Homebrew 6+ on Linux
+  - bubblewrap
+  # Login shell, set as the default before Homebrew runs
+  - zsh
+
+# Homebrew on Linux install prefix (used to locate `brew` in the playbook).
+homebrew_linux_prefix: /home/linuxbrew/.linuxbrew
+
+# Brewfile formulae with no Linux bottle (macOS-only); skipped on Asahi via
+# HOMEBREW_BUNDLE_BREW_SKIP. Casks and Mac App Store (`mas`) entries are skipped
+# automatically by `brew bundle` on Linux.
+homebrew_linux_brew_skip: dockutil mas pinentry-mac
 
 directories_to_create_common:
   - ~/.bundle

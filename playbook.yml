@@ -127,39 +127,13 @@
             cmd: dnf install -y python3-libdnf5
             creates: /usr/lib64/python3.*/site-packages/libdnf5
 
-        - name: Import third-party RPM signing keys
+        # Homebrew provides the CLI toolchain (gh, mise, starship, etc.) on
+        # Asahi, so the only third-party RPM repo we still need is 1Password's
+        # for the desktop GUI app (Homebrew Cask is macOS-only).
+        - name: Import 1Password RPM signing key
           ansible.builtin.rpm_key:
-            key: "{{ item }}"
+            key: https://downloads.1password.com/linux/keys/1password.asc
             state: present
-          loop:
-            - https://cli.github.com/packages/githubcli-archive-keyring.asc
-            - https://mise.jdx.dev/gpg-key.pub
-            - https://download.copr.fedorainfracloud.org/results/atim/starship/pubkey.gpg
-            - https://downloads.1password.com/linux/keys/1password.asc
-
-        - name: Add GitHub CLI repository
-          ansible.builtin.yum_repository:
-            name: gh-cli
-            description: Packages for the GitHub CLI
-            baseurl: https://cli.github.com/packages/rpm
-            gpgcheck: true
-            gpgkey: https://cli.github.com/packages/githubcli-archive-keyring.asc
-
-        - name: Add mise repository
-          ansible.builtin.yum_repository:
-            name: mise
-            description: mise
-            baseurl: https://mise.jdx.dev/rpm
-            gpgcheck: true
-            gpgkey: https://mise.jdx.dev/gpg-key.pub
-
-        - name: Add starship COPR repository
-          ansible.builtin.yum_repository:
-            name: copr-atim-starship
-            description: Copr repo for starship owned by atim
-            baseurl: https://download.copr.fedorainfracloud.org/results/atim/starship/fedora-$releasever-$basearch/
-            gpgcheck: true
-            gpgkey: https://download.copr.fedorainfracloud.org/results/atim/starship/pubkey.gpg
 
         - name: Add 1Password repository
           ansible.builtin.yum_repository:
@@ -170,10 +144,33 @@
             repo_gpgcheck: true
             gpgkey: https://downloads.1password.com/linux/keys/1password.asc
 
+        # VS Code (aarch64 RPM) is installed via Microsoft's repo so the `code`
+        # CLI is on PATH; the Brewfile's vscode extension entries then install
+        # through `brew bundle`. (Homebrew Cask, which provides VS Code on
+        # macOS, is unavailable on Linux.)
+        - name: Import Microsoft RPM signing key
+          ansible.builtin.rpm_key:
+            key: https://packages.microsoft.com/keys/microsoft.asc
+            state: present
+
+        - name: Add VS Code repository
+          ansible.builtin.yum_repository:
+            name: code
+            description: Visual Studio Code
+            baseurl: https://packages.microsoft.com/yumrepos/vscode
+            gpgcheck: true
+            gpgkey: https://packages.microsoft.com/keys/microsoft.asc
+
         - name: Install packages
           ansible.builtin.dnf5:
             name: "{{ fedora_packages }}"
             state: present
+
+        - name: Install VS Code
+          ansible.builtin.dnf5:
+            name: code
+            state: present
+          when: not is_ci
 
         - name: Install 1Password CLI
           ansible.builtin.dnf5:
@@ -217,6 +214,39 @@
             name: "{{ ansible_facts['user_id'] }}"
             shell: /usr/bin/zsh
 
+    # Homebrew is the package source of truth on Asahi, running the same
+    # Brewfile as macOS. It must NOT run as root, so this block stays separate
+    # from the become: true dnf block above. Skipped in CI (the Fedora CI
+    # container runs as root); the test-asahi-brew job validates brew on Linux.
+    - name: Setup Homebrew on Linux
+      become: false
+      when: is_fedora and not is_ci
+      tags: [homebrew, packages]
+      block:
+        - name: Check for an existing Homebrew install
+          ansible.builtin.stat:
+            path: "{{ homebrew_linux_prefix }}/bin/brew"
+          register: brew_bin
+
+        - name: Install Homebrew
+          ansible.builtin.shell:
+            cmd: >-
+              /bin/bash -c
+              "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          environment:
+            NONINTERACTIVE: "1"
+          when: not brew_bin.stat.exists
+          changed_when: true
+
+        - name: Install Brewfile packages
+          ansible.builtin.command:
+            cmd: "{{ homebrew_linux_prefix }}/bin/brew bundle install --file={{ playbook_dir }}/Brewfile --no-upgrade"
+          environment:
+            HOMEBREW_BUNDLE_BREW_SKIP: "{{ homebrew_linux_brew_skip }}"
+            HOMEBREW_NO_AUTO_UPDATE: "1"
+          register: brew_bundle
+          changed_when: "'Installing' in brew_bundle.stdout"
+
     - name: Set up oh-my-zsh
       ansible.builtin.git:
         repo: https://github.com/ohmyzsh/ohmyzsh
@@ -234,11 +264,14 @@
       when: is_macos
       tags: [mas, packages]
 
+    # Runs as the user on both platforms: Homebrew owns the npm prefix on Asahi
+    # (/home/linuxbrew) just as it does on macOS, so sudo would write root-owned
+    # files into a user-owned tree.
     - name: Install GitHub Copilot CLI
       community.general.npm:
         name: "@github/copilot"
         global: true
-      become: "{{ not is_macos }}"
+      become: false
       when: not is_ci
       tags: [packages]
 

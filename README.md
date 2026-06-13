@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/benbalter/dotfiles/actions/workflows/ci.yml/badge.svg)](https://github.com/benbalter/dotfiles/actions/workflows/ci.yml)
 
-@BenBalter's development environment and the scripts to initialize it and keep it up to date. Uses [Ansible](https://www.ansible.com/) for configuration management, with [Homebrew](https://brew.sh/) for package management on macOS and `dnf` on Fedora (including Asahi Remix).
+@BenBalter's development environment and the scripts to initialize it and keep it up to date. Uses [Ansible](https://www.ansible.com/) for configuration management, with [Homebrew](https://brew.sh/) for package management on both macOS and Fedora Asahi Remix (Apple Silicon). The same `Brewfile` drives both; `dnf` is used only to bootstrap Homebrew and install the GUI apps Homebrew Cask can't provide on Linux.
 
 ## What's here
 
@@ -25,7 +25,7 @@
 
 ### What gets installed
 
-On macOS, the `Brewfile` manages all packages. On Fedora, a curated list of dev essentials (`fedora_packages` in `config.yml`) is installed via `dnf`, plus third-party repos for `gh`, `mise`, `starship`, and 1Password. Highlights:
+The `Brewfile` manages packages on both macOS and Fedora Asahi Remix ([Homebrew on Linux aarch64 is Tier 1](https://brew.sh/2025/11/12/homebrew-5.0.0/) as of Homebrew 5.0). On Asahi, `dnf` installs only Homebrew's build prerequisites, `zsh`, and the 1Password desktop app (`fedora_packages` in `config.yml`); everything else comes from the Brewfile. Three macOS-only formulae (`dockutil`, `mas`, `pinentry-mac`) have no Linux bottle and are skipped via `HOMEBREW_BUNDLE_BREW_SKIP`, and `cask`/`mas` entries are skipped automatically by `brew bundle` on Linux. Highlights:
 
 | Category       | Examples                                                                 |
 | -------------- | ------------------------------------------------------------------------ |
@@ -42,9 +42,12 @@ Works on both macOS and Fedora:
 1. `git clone https://github.com/benbalter/dotfiles ~/.files`
 2. `cd ~/.files && script/setup`
 
-The playbook detects the OS and runs the appropriate tasks: Homebrew, Mac App Store apps, Dock, and system defaults on macOS; `dnf` packages, third-party repos, and the default shell on Fedora. Dotfile symlinks and oh-my-zsh are set up on both. On Fedora, configs that live under `~/Library` on macOS (VS Code, Ghostty) are symlinked to their XDG paths under `~/.config`, and Linux variants of OS-specific files (`.gitconfig.linux`, `.ssh/config.linux`) are used.
+The playbook detects the OS and runs the appropriate tasks: Mac App Store apps, Dock, and system defaults on macOS; `dnf` bootstrap packages, the 1Password repo, and the default shell on Fedora Asahi. Homebrew and the `Brewfile` run on both. Dotfile symlinks and oh-my-zsh are set up on both. On Fedora, configs that live under `~/Library` on macOS (VS Code, Ghostty) are symlinked to their XDG paths under `~/.config`, and Linux variants of OS-specific files (`.gitconfig.linux`, `.ssh/config.linux`) are used.
 
-If macOS prompts for administrator access during Homebrew or App Store installs, keep an authenticated sudo session open while setup runs:
+Keep an authenticated sudo session open while setup runs. On macOS this covers
+Homebrew and App Store installs; on Fedora Asahi the Homebrew installer runs its
+own `sudo` to create `/home/linuxbrew`, which `--ask-become-pass` does not cover,
+so an active session is required there too:
 
 ```sh
 sudo -v
@@ -95,10 +98,11 @@ Runs seven linters in sequence:
 
 ### CI
 
-GitHub Actions runs five parallel jobs on every push:
+GitHub Actions runs six parallel jobs on every push:
 
 1. **Test** — Full Ansible playbook execution on macOS
-2. **Test Fedora** — Full Ansible playbook execution in a Fedora container
-3. **Lint** — All linters above
-4. **Unit test** — BATS test suite on macOS
-5. **Install Linux** — Verify `install.sh`, symlinks, and tool installation on Ubuntu
+2. **Test Fedora** — Full Ansible playbook execution in a Fedora container (dnf bootstrap path)
+3. **Test Asahi Brew** — Runs the `Brewfile` under `brew bundle` on Linux as a non-root user, verifying it parses and skips macOS-only entries
+4. **Lint** — All linters above
+5. **Unit test** — BATS test suite on macOS
+6. **Install Linux** — Verify `install.sh`, symlinks, and tool installation on Ubuntu
