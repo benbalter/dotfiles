@@ -205,6 +205,12 @@ jobs:
   test-fedora:
     runs-on: ubuntu-latest
     container: fedora:latest
+    # GitHub sets HOME=/github/home for container jobs, but Ansible's user_dir
+    # (and the shell verify steps below) resolve to root's real home, /root.
+    # Pin HOME=/root so ~ expansion, ansible_facts.user_dir, and $HOME all agree
+    # — matching a real Fedora/Asahi machine where HOME == the user's home.
+    env:
+      HOME: /root
 
     steps:
       - name: Install bootstrap dependencies

@@ -72,6 +72,21 @@
       tags: [dotfiles]
       when: not is_macos
       block:
+        # Create each link's parent under user_dir before symlinking. These
+        # parents (e.g. ~/.ssh, ~/.config/ghostty) are otherwise only made by
+        # the directories_to_create task, which resolves ~ via $HOME — and in
+        # the GitHub Actions Fedora container $HOME (/github/home) differs from
+        # user_dir (/root), so those dirs land in the wrong place and the
+        # symlink fails with ENOENT. user_dir matches the symlink dest below.
+        - name: Ensure parent directories of Linux dotfile links exist
+          ansible.builtin.file:
+            path: "{{ ansible_facts['user_dir'] }}/{{ item.dest | dirname }}"
+            state: directory
+            mode: "0755"
+          loop: "{{ linux_dotfile_links }}"
+          loop_control:
+            label: "{{ item.dest | dirname }}"
+
         - name: Stat existing Linux dotfile targets
           ansible.builtin.stat:
             path: "{{ ansible_facts['user_dir'] }}/{{ item.dest }}"
