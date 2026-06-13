@@ -262,13 +262,18 @@ jobs:
           echo "Playbook re-run completed without failures"
 
   # Validates that the Brewfile runs under `brew bundle` on Linux the way it
-  # would on Asahi (Fedora aarch64). Uses an x86_64 ubuntu runner as a non-root
-  # user, since Homebrew on Linux is Tier 1 on both x86_64 and aarch64 and a
-  # native aarch64-Linux runner isn't available. This proves the Brewfile parses
-  # and that macOS-only entries are skipped; it can't confirm aarch64 bottle
-  # availability, which is verified on real hardware.
+  # would on Asahi (Fedora aarch64), as a non-root user. Runs on both x86_64 and
+  # native aarch64 GitHub-hosted runners — the aarch64 leg matches Asahi's
+  # architecture and confirms arm64_linux bottles actually install. This proves
+  # the Brewfile parses, that macOS-only entries are skipped, and that bottles
+  # install on both arches; the full playbook wiring is still verified on real
+  # hardware.
   test-asahi-brew:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.os }}
     env:
       # Formulae with no Linux bottle (mirrors homebrew_linux_brew_skip).
       HOMEBREW_BUNDLE_BREW_SKIP: dockutil mas pinentry-mac
@@ -276,6 +281,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+
+      # ARM64 runner images don't ship Homebrew preinstalled like x86_64 ones do.
+      - name: Ensure Homebrew is installed
+        run: |
+          if [ ! -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
+            NONINTERACTIVE=1 /bin/bash -c \
+              "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          fi
 
       - name: Brewfile parses under brew bundle on Linux
         run: |

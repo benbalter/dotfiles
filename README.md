@@ -102,7 +102,7 @@ GitHub Actions runs six parallel jobs on every push:
 
 1. **Test** — Full Ansible playbook execution on macOS
 2. **Test Fedora** — Full Ansible playbook execution in a Fedora container (dnf bootstrap path)
-3. **Test Asahi Brew** — Runs the `Brewfile` under `brew bundle` on Linux as a non-root user, verifying it parses and skips macOS-only entries
+3. **Test Asahi Brew** — Runs the `Brewfile` under `brew bundle` on x86_64 and native aarch64 Linux runners as a non-root user, verifying it parses, skips macOS-only entries, and installs Linux bottles (the aarch64 leg matches Asahi)
 4. **Lint** — All linters above
 5. **Unit test** — BATS test suite on macOS
 6. **Install Linux** — Verify `install.sh`, symlinks, and tool installation on Ubuntu
