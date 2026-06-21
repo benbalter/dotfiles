@@ -8,6 +8,16 @@ brew 'gmp'
 brew 'shellcheck'
 # Static checker for GitHub Actions workflow files
 brew 'actionlint'
+# Software library to render fonts
+brew 'freetype'
+# JPEG image codec that aids compression and decompression
+brew 'jpeg-turbo'
+# TIFF library and utilities
+brew 'libtiff'
+# OpenType text shaping engine
+brew 'harfbuzz'
+# Library to render SVG files using Cairo
+brew 'librsvg'
 # Cryptography and SSL/TLS Toolkit
 brew 'openssl@3'
 # C library SSHv1/SSHv2 client and server protocols
@@ -26,8 +36,6 @@ brew 'azure-cli'
 brew 'bats-core'
 # Powerful, enterprise-ready, open source web server with automatic HTTPS
 brew 'caddy', restart_service: :changed
-# Software library to render fonts
-brew 'freetype'
 # Statistics utility to count lines of code
 brew 'cloc'
 # Cross-platform make
@@ -40,24 +48,22 @@ brew 'libssh2'
 brew 'curl'
 # Tool for managing dock items
 brew 'dockutil'
+# Development kit for the Java programming language
+brew 'openjdk'
+# Validate EPUB files, version 2.0 and later
+brew 'epubcheck'
 # Read, write, modify, and display EXIF data on the command-line
 brew 'exif'
 # Perl lib for reading and writing EXIF metadata
 brew 'exiftool'
-# Low-level access to audio, keyboard, mouse, joystick, and graphics
-brew 'sdl2'
+# SDL2 compatibility layer that uses SDL3 behind the scenes
+brew 'sdl2-compat'
 # Play, record, convert, and stream select audio and video codecs
 brew 'ffmpeg'
 # Command-line fuzzy finder written in Go
 brew 'fzf'
-# JPEG image codec that aids compression and decompression
-brew 'jpeg-turbo'
-# TIFF library and utilities
-brew 'libtiff'
 # GitHub command-line tool
 brew 'gh'
-# OpenType text shaping engine
-brew 'harfbuzz'
 # Interpreter for PostScript and PDF
 brew 'ghostscript'
 # Distributed revision control system
@@ -70,6 +76,8 @@ brew 'git-filter-repo'
 brew 'git-lfs'
 # Audit git repos for secrets
 brew 'gitleaks'
+# Declarative configuration for Gmail filters
+brew 'gmailctl'
 # GNU implementation of the famous stream editor
 brew 'gnu-sed'
 # GNU Transport Layer Security (TLS) Library
@@ -78,6 +86,12 @@ brew 'gnutls'
 brew 'pinentry'
 # GNU Privacy Guard (OpenPGP)
 brew 'gnupg'
+# Package compiler and linker metadata toolkit
+brew 'pkgconf'
+# Use Realtek DVB-T dongles as a cheap SDR
+brew 'librtlsdr'
+# SDK for signal processing blocks to implement software radios
+brew 'gnuradio'
 # Open source programming language to build simple/reliable/efficient software
 brew 'go'
 # Ping, but with a graph
@@ -86,10 +100,10 @@ brew 'gping'
 brew 'grc'
 # GNU grep, egrep and fgrep
 brew 'grep'
+# Low cost software radio platform
+brew 'hackrf'
 # Smarter Dockerfile linter to validate best practices
 brew 'hadolint'
-# Package compiler and linker metadata toolkit
-brew 'pkgconf'
 # Process manager for Procfile-based applications
 brew 'hivemind'
 # User-friendly cURL replacement (command-line HTTP client)
@@ -114,18 +128,18 @@ brew 'jless'
 brew 'jq'
 # Domain specific configuration language for defining JSON data
 brew 'jsonnet'
+# Handy way to save and run project-specific commands
+brew 'just'
 # Development kit for the Java programming language
 brew 'openjdk@17'
 # Style and grammar checker
 brew 'languagetool', restart_service: :changed
-# Library to render SVG files using Cairo
-brew 'librsvg'
+# Fast, async, resource-friendly link checker
+brew 'lychee'
 # Keep your Mac's application settings in sync
 brew 'mackup'
 # Mac App Store command-line interface
 brew 'mas'
-# Development kit for the Java programming language
-brew 'openjdk'
 # Java-based project management
 brew 'maven'
 # Polyglot runtime manager (asdf rust clone)
@@ -176,6 +190,8 @@ brew 'sdl2_net'
 brew 'sdl2_ttf'
 # Autoformat shell script source code
 brew 'shfmt'
+# SoapySDR HackRF module
+brew 'soapyhackrf'
 # Cross-shell prompt for astronauts
 brew 'starship'
 # Enables extra languages support for Tesseract
@@ -220,6 +236,8 @@ cask 'bruno'
 cask 'caffeine'
 # Use your phone as a high-quality webcam with image tuning controls
 cask 'camo-studio'
+# Screen capturing tool
+cask 'cleanshot'
 # Drivers for DisplayLink docks, adapters and monitors
 cask 'displaylink'
 # App to build and share containerised applications and microservices
@@ -235,6 +253,8 @@ cask 'elgato-stream-deck'
 cask 'font-hack-nerd-font'
 # Terminal emulator that uses platform-native UI and GPU acceleration
 cask 'ghostty'
+# GIF recording and sharing
+cask 'gifox'
 # Desktop client for GitHub repositories
 cask 'github@beta'
 # Web browser
@@ -247,16 +267,20 @@ cask 'gpg-suite'
 cask 'iterm2@beta'
 # Keyboard customiser
 cask 'karabiner-elements'
+# Preview and audit Kindle eBooks
+cask 'kindle-previewer'
 # Grammar, spelling and style suggestions in all the writing apps
 cask 'languagetool-desktop'
+# Free cross-platform office suite, fresh version
+cask 'libreoffice'
+# Discover, download, and run local LLMs
+cask 'lm-studio'
 # Software for Logitech devices
 cask 'logi-options+'
 # Provides updates to various Microsoft products
 cask 'microsoft-auto-update'
 # Multi-platform web browser
 cask 'microsoft-edge'
-# Office suite
-cask 'libreoffice'
 # Meet, chat, call, and collaborate in just one place
 cask 'microsoft-teams'
 # Intercept, modify, replay, save HTTP/S traffic
@@ -267,14 +291,14 @@ cask 'mqttx'
 cask 'mutedeck'
 # Open-source software for live streaming and screen recording
 cask 'obs'
+# Get up and running with large language models locally
+cask 'ollama-app'
 # Network utility for sending / receiving TCP, UDP, SSL
 cask 'packetsender'
 # Extracts pages, splits, merges, mixes and rotates PDF files
 cask 'pdfsam-basic'
 # Companion app for Flipper Zero devices
 cask 'qflipper'
-# Quick Look extension for source code, plain text, and JSON/GeoJSON with syntax highlighting
-cask 'syntax-highlight'
 # Quick Look generator for Markdown files
 cask 'qlmarkdown'
 # Imaging utility to install operating systems to a microSD card
@@ -291,6 +315,10 @@ cask 'spotify'
 cask 'steam'
 # Application for inspecting installer packages
 cask 'suspicious-package'
+# Quicklook extension for source files
+cask 'syntax-highlight'
+# Menu bar manager
+cask 'thaw'
 # Mutes your keyboard while you type
 cask 'unclack'
 # Management tool for Unity
@@ -307,6 +335,7 @@ cask 'zed'
 cask 'zoom'
 mas '1Password for Safari', id: 1_569_813_296
 mas '24 Hour Wallpaper', id: 1_226_087_575
+mas '2FAS Auth - Two Factor Authentication Extension', id: 6_443_941_139
 mas 'AdGuard Mini', id: 1_440_147_259
 mas 'Dark Reader for Safari', id: 1_438_243_180
 mas 'GhostText', id: 1_552_641_506
@@ -344,7 +373,6 @@ vscode 'elijah-potter.harper'
 vscode 'fcrespo82.markdown-table-formatter'
 vscode 'ginfuru.ginfuru-vscode-jekyll-syntax'
 vscode 'github.codespaces'
-vscode 'github.copilot-chat'
 vscode 'github.copilot-workspace'
 vscode 'github.github-vscode-theme'
 vscode 'github.vscode-github-actions'
@@ -364,6 +392,7 @@ vscode 'ms-vscode-remote.vscode-remote-extensionpack'
 vscode 'ms-vscode.makefile-tools'
 vscode 'ms-vscode.remote-explorer'
 vscode 'ms-vscode.remote-server'
+vscode 'ms-vscode.vscode-chat-customizations-evaluations'
 vscode 'ms-vscode.vscode-typescript-next'
 vscode 'ms-vscode.wordcount'
 vscode 'neilding.language-liquid'
