@@ -16,6 +16,14 @@ cd "${DOTFILES_ROOT:-$HOME/.files}"
 [ -x /opt/homebrew/bin/brew ] && PATH="/opt/homebrew/bin:$PATH"
 [ -x /home/linuxbrew/.linuxbrew/bin/brew ] && PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
 [ -x /opt/workbrew/bin/brew ] && PATH="/opt/workbrew/bin:$PATH"
+
+# Resolve mise-managed runtimes (ruby, node, …) ahead of Homebrew's. This
+# non-interactive script never runs mise's shell hook, so without the shims
+# `bundle`/`npm` fall back to Homebrew's Ruby/Node, whose gem and package dirs
+# are owned by Workbrew and not user-writable (bundle install then fails with
+# Bundler::PermissionError). Shims only shadow installed tools, so `brew` still
+# resolves to the wrapper above.
+[ -d "$HOME/.local/share/mise/shims" ] && PATH="$HOME/.local/share/mise/shims:$PATH"
 export PATH
 
 if command -v brew >/dev/null; then
