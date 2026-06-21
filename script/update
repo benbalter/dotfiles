@@ -8,14 +8,36 @@ set -eu
 
 cd "${DOTFILES_ROOT:-$HOME/.files}"
 
+# This script may run from a minimal environment (e.g. the nightly launchd job,
+# whose PATH is only /usr/bin:/bin:/usr/sbin:/sbin), so make Homebrew
+# discoverable. Mirror lib/globals: Workbrew's wrapper must precede
+# /opt/homebrew/bin or brew aborts with a wrapper-conflict error. Prepend in
+# ascending priority so the last entry wins. No-op where a path is absent.
+[ -x /opt/homebrew/bin/brew ] && PATH="/opt/homebrew/bin:$PATH"
+[ -x /home/linuxbrew/.linuxbrew/bin/brew ] && PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
+[ -x /opt/workbrew/bin/brew ] && PATH="/opt/workbrew/bin:$PATH"
+export PATH
+
 if command -v brew >/dev/null; then
 	echo "==> Updating Homebrew packages..."
-	brew update
-	brew outdated
-	brew upgrade
+	# Keep errors visible but don't let `set -e` abort here: a single wedged
+	# cask must not skip every step below (dnf, mas, mise, npm, gems, pip).
+	brew update || true
+	brew outdated || true
+
+	# Cask upgrades replace GUI apps: they need an interactive sudo and a GUI
+	# session to quit the running app, neither of which the headless nightly
+	# launchd job has. From a terminal, upgrade everything; when headless,
+	# upgrade only formulae so self-updating casks don't fail (and re-orphan a
+	# stale Caskroom stage) on every run.
+	if [ -t 1 ]; then
+		brew upgrade || true
+	else
+		brew upgrade --formula || true
+	fi
 
 	echo "==> Installing any new Brewfile entries..."
-	brew bundle --global
+	brew bundle --global || true
 fi
 
 if command -v dnf >/dev/null; then
