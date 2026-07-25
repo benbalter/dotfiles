@@ -87,3 +87,12 @@ if [ -d env ]; then
 	ansible-galaxy install -r requirements.yml --force
 	deactivate
 fi
+
+# Mole deep-cleans and optimizes macOS. It's interactive (may prompt for sudo)
+# and macOS-only, so run it last and only from a terminal — never the headless
+# nightly launchd job, which mirrors the cask-upgrade guard above.
+if command -v mole >/dev/null && [ -t 1 ]; then
+	echo "==> Cleaning up and optimizing with mole..."
+	mole clean || true
+	mole optimize || true
+fi
