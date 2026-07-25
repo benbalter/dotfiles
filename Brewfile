@@ -241,11 +241,11 @@ cask 'adguard'
 # Inspect application bundles
 cask 'apparency'
 # Open source IDE for exploring and testing APIs
-cask 'bruno'
+# cask 'bruno' # PROPOSED REMOVAL: never opened
 # Utility that prevents the system from going to sleep
 cask 'caffeine'
 # Use your phone as a high-quality webcam with image tuning controls
-cask 'camo-studio'
+# cask 'camo-studio' # PROPOSED REMOVAL: never opened
 # Screen capturing tool
 cask 'cleanshot'
 # Drivers for DisplayLink docks, adapters and monitors
@@ -292,31 +292,31 @@ cask 'libreoffice'
 # Provides updates to various Microsoft products
 cask 'microsoft-auto-update'
 # Multi-platform web browser
-cask 'microsoft-edge'
+# cask 'microsoft-edge' # PROPOSED REMOVAL: never opened
 # Meet, chat, call, and collaborate in just one place
 cask 'microsoft-teams'
 # Intercept, modify, replay, save HTTP/S traffic
 cask 'mitmproxy'
 # Cross-platform MQTT 5.0 Desktop Client
-cask 'mqttx'
+# cask 'mqttx' # PROPOSED REMOVAL: never opened
 # Toggle mute, video, record, share, and leave a meeting in a call app
 cask 'mutedeck'
 # Open-source software for live streaming and screen recording
-cask 'obs'
+# cask 'obs' # PROPOSED REMOVAL: never opened
 # Get up and running with large language models locally
 cask 'ollama-app'
 # Local-first alternative to Logitech Options+ for HID++ devices
 cask 'openlogi'
 # Network utility for sending / receiving TCP, UDP, SSL
-cask 'packetsender'
+# cask 'packetsender' # PROPOSED REMOVAL: never opened
 # Extracts pages, splits, merges, mixes and rotates PDF files
 cask 'pdfsam-basic'
 # Companion app for Flipper Zero devices
-cask 'qflipper'
+# cask 'qflipper' # PROPOSED REMOVAL: never opened
 # Quick Look generator for Markdown files
 cask 'qlmarkdown'
 # Imaging utility to install operating systems to a microSD card
-cask 'raspberry-pi-imager'
+# cask 'raspberry-pi-imager' # PROPOSED REMOVAL: never opened
 # Screenshot measurement and annotation tool
 # cask 'shottr' # PROPOSED REMOVAL: last opened 11 days ago
 # Instant messaging application focusing on security
@@ -336,17 +336,17 @@ cask 'thaw'
 # Mutes your keyboard while you type
 cask 'unclack'
 # Management tool for Unity
-cask 'unity-hub'
+# cask 'unity-hub' # PROPOSED REMOVAL: never opened
 # Open-source code editor
 cask 'visual-studio-code'
 # Open-source code editor
-cask 'visual-studio-code@insiders'
+# cask 'visual-studio-code@insiders' # PROPOSED REMOVAL: redundant with visual-studio-code, never opened
 # Menu bar app for USB-C cable diagnostics
 cask 'whatcable'
 # Full-featured companion app to the YubiKey
 cask 'yubico-authenticator'
 # Multiplayer code editor
-cask 'zed'
+# cask 'zed' # PROPOSED REMOVAL: never opened (using visual-studio-code)
 # Video communication and virtual meeting platform
 cask 'zoom'
 mas '1Password for Safari', id: 1_569_813_296
