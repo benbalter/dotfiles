@@ -46,6 +46,27 @@ if command -v brew >/dev/null; then
 
 	echo "==> Installing any new Brewfile entries..."
 	brew bundle --global || true
+
+	# Prune orphaned dependencies and clear stale downloads/old versions. Both
+	# are non-interactive and safe headless, so they run every invocation
+	# (unlike cask upgrades). Housekeeping only: never removes a package you
+	# asked for. To prune unused casks, see script/audit-casks, which needs a
+	# human to judge what's actually unused.
+	echo "==> Removing unused dependencies and old versions..."
+	brew autoremove || true
+	brew cleanup || true
+
+	# Propose pruning casks whose app hasn't been opened in a while by
+	# commenting them out of the Brewfile. Interactive only: it edits a
+	# version-controlled dotfile off Spotlight's last-opened data, so it must
+	# never run unattended in the nightly launchd job. It only ever comments
+	# (never uninstalls) — review the diff and run `clean` to act on it. Tune
+	# the window with AUDIT_STALE_DAYS (default 14).
+	AUDIT="${DOTFILES_ROOT:-$HOME/.files}/script/audit-casks"
+	if [ -t 1 ] && [ -x "$AUDIT" ]; then
+		echo "==> Auditing casks for disuse..."
+		"$AUDIT" --comment || true
+	fi
 fi
 
 if command -v dnf >/dev/null; then

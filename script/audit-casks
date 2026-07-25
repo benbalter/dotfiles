@@ -1,0 +1,160 @@
+#!/bin/sh
+# Report how long it's been since each Brewfile cask's app was last opened.
+#
+#   audit-casks            Read-only report, most stale first. Changes nothing.
+#   audit-casks --comment  Comment out casks idle >= AUDIT_STALE_DAYS (14 by
+#                          default) so they drop out of the Brewfile. This is a
+#                          PROPOSAL, not a removal: it never uninstalls.
+#
+# Only casks with a real last-opened date are ever commented. Casks Spotlight
+# can't date — never-opened, untracked, or app-less (fonts, drivers, plugins) —
+# are left untouched, because that bucket includes apps you do use but macOS
+# just doesn't track (e.g. browsers, GitHub Desktop). Guessing there would let
+# `clean` uninstall something you rely on.
+#
+# Workflow: run --comment (or let `up` do it), eyeball the `git diff` in your
+# dotfiles, delete anything you want to keep, then run `clean` to uninstall the
+# casks still commented out. Never run `update-brewfile` in between: its
+# `brew bundle dump` rewrites the Brewfile from what's installed and silently
+# erases these proposals.
+
+set -eu
+# shellcheck disable=SC3040
+(set -o pipefail) 2>/dev/null && set -o pipefail || true
+
+STALE_DAYS="${AUDIT_STALE_DAYS:-14}"
+
+MODE=report
+case "${1:-}" in
+	--comment | --propose) MODE=comment ;;
+	--report | "") MODE=report ;;
+	*)
+		echo "usage: audit-casks [--comment]" >&2
+		exit 2
+		;;
+esac
+
+for cmd in brew jq mdls; do
+	command -v "$cmd" >/dev/null || {
+		echo "audit-casks: requires '$cmd' on PATH" >&2
+		exit 1
+	}
+done
+
+BREWFILE="${HOMEBREW_BUNDLE_FILE_GLOBAL:-$HOME/.Brewfile}"
+[ -f "$BREWFILE" ] || {
+	echo "audit-casks: no Brewfile at $BREWFILE" >&2
+	exit 1
+}
+
+now=$(date +%s)
+
+list_casks() { sed -n "s/^cask '\\([^']*\\)'.*/\\1/p" "$BREWFILE"; }
+
+# Resolve each cask's launchable app in ONE `brew info` call (per-cask spawns
+# would mean ~50 Homebrew launches on every interactive `up`). APPMAP holds
+# tab-separated "token<TAB>app" rows; casks with no app get an empty app field.
+# shellcheck disable=SC2046 # deliberate word-splitting; cask tokens are bare
+set -- $(list_casks)
+if [ "$#" -gt 0 ]; then
+	APPMAP=$(brew info --cask --json=v2 "$@" 2>/dev/null |
+		jq -r '.casks[] | [.token, (first(.artifacts[]? | select(.app != null) | .app[0]) // "")] | @tsv' 2>/dev/null || true)
+else
+	APPMAP=""
+fi
+
+app_for() { printf '%s\n' "$APPMAP" | awk -F '\t' -v t="$1" '$1 == t { print $2; exit }'; }
+
+# Echo "<days> <label>". days is the first token; -1 means unmeasurable
+# (app-less, not installed, or no recorded open date) and must never be pruned.
+cask_probe() {
+	cask="$1"
+	app=$(app_for "$cask")
+	if [ -z "$app" ]; then
+		printf '%d %s\n' -1 "(no app — font/driver/plugin?)"
+		return
+	fi
+
+	path="/Applications/$app"
+	[ -d "$path" ] || path="$HOME/Applications/$app"
+	if [ ! -d "$path" ]; then
+		printf '%d %s\n' -1 "(not installed)"
+		return
+	fi
+
+	raw=$(mdls -name kMDItemLastUsedDate -raw "$path" 2>/dev/null || true)
+	if [ -z "$raw" ] || [ "$raw" = "(null)" ]; then
+		printf '%d %s\n' -1 "never opened (or not tracked)"
+		return
+	fi
+
+	ts=$(date -j -f "%Y-%m-%d %H:%M:%S %z" "$raw" +%s 2>/dev/null || echo "")
+	if [ -z "$ts" ]; then
+		printf '%d %s\n' -1 "unparseable date: $raw"
+		return
+	fi
+
+	days=$(((now - ts) / 86400))
+	printf '%d last opened %d days ago\n' "$days" "$days"
+}
+
+if [ "$MODE" = report ]; then
+	echo "==> Auditing Brewfile casks by last-opened date (most stale first)..."
+	echo
+	list_casks | while IFS= read -r cask; do
+		[ -n "$cask" ] || continue
+		probe=$(cask_probe "$cask")
+		days=${probe%% *}
+		label=${probe#* }
+		printf '%d\t%-28s %s\n' "$days" "$cask" "$label"
+	done | sort -k1,1rn | cut -f2-
+	echo
+	echo "==> Review the list, then edit $BREWFILE to drop what you no longer"
+	echo "    want (or run 'audit-casks --comment'). Run 'clean' to uninstall."
+	exit 0
+fi
+
+# --comment: rewrite the Brewfile, commenting out casks idle past the
+# threshold. Follow symlinks to the real file so we don't clobber the link.
+real="$BREWFILE"
+while [ -L "$real" ]; do
+	link=$(readlink "$real")
+	case "$link" in
+		/*) real="$link" ;;
+		*) real="$(dirname "$real")/$link" ;;
+	esac
+done
+
+tmp="$real.audit-tmp.$$"
+trap 'rm -f "$tmp"' EXIT INT TERM
+: >"$tmp"
+changed=0
+
+while IFS= read -r line || [ -n "$line" ]; do
+	case "$line" in
+		"cask '"*)
+			cask=$(printf '%s\n' "$line" | sed -n "s/^cask '\\([^']*\\)'.*/\\1/p")
+			days=-1
+			if [ -n "$cask" ]; then
+				probe=$(cask_probe "$cask")
+				days=${probe%% *}
+				[ -n "$days" ] || days=-1
+			fi
+			if [ -n "$cask" ] && [ "$days" -ge 0 ] && [ "$days" -ge "$STALE_DAYS" ]; then
+				printf '# %s # PROPOSED REMOVAL: last opened %d days ago\n' "$line" "$days" >>"$tmp"
+				printf '  proposing removal: %s (%dd idle)\n' "$cask" "$days" >&2
+				changed=1
+				continue
+			fi
+			;;
+	esac
+	printf '%s\n' "$line" >>"$tmp"
+done <"$real"
+
+if [ "$changed" -eq 1 ]; then
+	cat "$tmp" >"$real"
+	echo "==> Commented out casks idle >= ${STALE_DAYS} days in $real."
+	echo "    Review the diff, then run 'clean' to uninstall them."
+else
+	echo "==> No casks idle >= ${STALE_DAYS} days; nothing to propose."
+fi

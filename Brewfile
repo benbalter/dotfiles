@@ -261,7 +261,7 @@ cask 'elgato-control-center'
 # Assign keys, and then decorate and label them
 cask 'elgato-stream-deck'
 # Offline voice-to-text dictation app with AI enhancement
-cask 'fluidvoice'
+# cask 'fluidvoice' # PROPOSED REMOVAL: last opened 10 days ago
 cask 'font-hack-nerd-font'
 # Terminal emulator that uses platform-native UI and GPU acceleration
 cask 'ghostty'
@@ -276,9 +276,9 @@ cask 'google-drive'
 # Tools to protect your emails and files
 cask 'gpg-suite'
 # Software-defined radio receiver powered by GNU Radio and Qt
-cask 'gqrx'
+# cask 'gqrx' # PROPOSED REMOVAL: last opened 20 days ago
 # Terminal emulator as alternative to Apple's Terminal app
-cask 'iterm2@beta'
+# cask 'iterm2@beta' # PROPOSED REMOVAL: last opened 28 days ago
 # Keyboard customiser
 cask 'karabiner-elements'
 # Preview and audit Kindle eBooks
@@ -288,7 +288,7 @@ cask 'languagetool-desktop'
 # Free cross-platform office suite, fresh version
 cask 'libreoffice'
 # Discover, download, and run local LLMs
-cask 'lm-studio'
+# cask 'lm-studio' # PROPOSED REMOVAL: last opened 10 days ago
 # Provides updates to various Microsoft products
 cask 'microsoft-auto-update'
 # Multi-platform web browser
@@ -318,7 +318,7 @@ cask 'qlmarkdown'
 # Imaging utility to install operating systems to a microSD card
 cask 'raspberry-pi-imager'
 # Screenshot measurement and annotation tool
-cask 'shottr'
+# cask 'shottr' # PROPOSED REMOVAL: last opened 11 days ago
 # Instant messaging application focusing on security
 cask 'signal'
 # Team communication and collaboration software
