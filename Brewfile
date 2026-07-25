@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+tap 'darrylmorley/whatcable'
+
 # Run your GitHub Actions locally
 brew 'act'
 # GNU multiple precision arithmetic library
@@ -64,6 +66,8 @@ brew 'ffmpeg'
 brew 'fzf'
 # GitHub command-line tool
 brew 'gh'
+# Publisher CLI tool for the Official Model Context Protocol (MCP) Registry
+brew 'mcp-publisher'
 # Interpreter for PostScript and PDF
 brew 'ghostscript'
 # Distributed revision control system
@@ -138,6 +142,8 @@ brew 'languagetool', restart_service: :changed
 brew 'lychee'
 # Keep your Mac's application settings in sync
 brew 'mackup'
+# Deep clean and optimize your Mac
+brew 'mole'
 # Mac App Store command-line interface
 brew 'mas'
 # Java-based project management
@@ -196,6 +202,8 @@ brew 'soapyhackrf'
 brew 'starship'
 # Enables extra languages support for Tesseract
 brew 'tesseract-lang'
+# Drop-in replacement for Terraform. Infrastructure as Code Tool
+brew 'opentofu'
 # Static analysis security scanner for your terraform code
 brew 'tfsec'
 # Clean up files in directories based on their age
@@ -204,6 +212,8 @@ brew 'tmpreaper'
 brew 'typescript'
 # Extremely fast Python package installer and resolver, written in Rust
 brew 'uv'
+# GNU diction and style
+brew 'diction'
 # Syntax-aware linter for prose
 brew 'vale'
 # Image processing library
@@ -250,6 +260,8 @@ cask 'elgato-camera-hub'
 cask 'elgato-control-center'
 # Assign keys, and then decorate and label them
 cask 'elgato-stream-deck'
+# Offline voice-to-text dictation app with AI enhancement
+cask 'fluidvoice'
 cask 'font-hack-nerd-font'
 # Terminal emulator that uses platform-native UI and GPU acceleration
 cask 'ghostty'
@@ -263,6 +275,8 @@ cask 'google-chrome'
 cask 'google-drive'
 # Tools to protect your emails and files
 cask 'gpg-suite'
+# Software-defined radio receiver powered by GNU Radio and Qt
+cask 'gqrx'
 # Terminal emulator as alternative to Apple's Terminal app
 cask 'iterm2@beta'
 # Keyboard customiser
@@ -275,8 +289,6 @@ cask 'languagetool-desktop'
 cask 'libreoffice'
 # Discover, download, and run local LLMs
 cask 'lm-studio'
-# Software for Logitech devices
-cask 'logi-options+'
 # Provides updates to various Microsoft products
 cask 'microsoft-auto-update'
 # Multi-platform web browser
@@ -293,6 +305,8 @@ cask 'mutedeck'
 cask 'obs'
 # Get up and running with large language models locally
 cask 'ollama-app'
+# Local-first alternative to Logitech Options+ for HID++ devices
+cask 'openlogi'
 # Network utility for sending / receiving TCP, UDP, SSL
 cask 'packetsender'
 # Extracts pages, splits, merges, mixes and rotates PDF files
@@ -327,6 +341,8 @@ cask 'unity-hub'
 cask 'visual-studio-code'
 # Open-source code editor
 cask 'visual-studio-code@insiders'
+# Menu bar app for USB-C cable diagnostics
+cask 'whatcable'
 # Full-featured companion app to the YubiKey
 cask 'yubico-authenticator'
 # Multiplayer code editor
@@ -346,6 +362,7 @@ mas 'Kindle', id: 302_584_613
 mas 'MeetingBar', id: 1_532_419_400
 mas 'Meshtastic', id: 1_586_432_531
 mas 'Okta Extension App', id: 1_439_967_473
+mas 'On Air Mode', id: 6_747_852_819
 mas 'Open In Webmail', id: 1_451_552_749
 mas 'PayPal Honey', id: 1_472_777_122
 mas 'reMarkable', id: 1_276_493_162
@@ -377,6 +394,7 @@ vscode 'github.copilot-workspace'
 vscode 'github.github-vscode-theme'
 vscode 'github.vscode-github-actions'
 vscode 'github.vscode-pull-request-github'
+vscode 'hashicorp.terraform'
 vscode 'jonathan-yeung.mark-sharp'
 vscode 'kargware.vscode-extension-jekyll-kw'
 vscode 'mechatroner.rainbow-csv'
