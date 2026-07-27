@@ -35,10 +35,12 @@ for file in \
 done
 
 # Symlink directories that need parent dirs
-mkdir -p "$HOME/.bundle" "$HOME/.gnupg"
+mkdir -p "$HOME/.bundle" "$HOME/.gnupg" "$HOME/.config/mise"
 [ -f "$DOTFILES_DIR/.bundle/config" ] && ln -sf "$DOTFILES_DIR/.bundle/config" "$HOME/.bundle/config"
 [ -f "$DOTFILES_DIR/.gnupg/gpg.conf" ] && ln -sf "$DOTFILES_DIR/.gnupg/gpg.conf" "$HOME/.gnupg/gpg.conf"
 [ -f "$DOTFILES_DIR/.gnupg/gpg-agent.conf" ] && ln -sf "$DOTFILES_DIR/.gnupg/gpg-agent.conf" "$HOME/.gnupg/gpg-agent.conf"
+[ -f "$DOTFILES_DIR/.config/mise/config.toml" ] && ln -sf "$DOTFILES_DIR/.config/mise/config.toml" "$HOME/.config/mise/config.toml"
+[ -f "$DOTFILES_DIR/.config/starship.toml" ] && ln -sf "$DOTFILES_DIR/.config/starship.toml" "$HOME/.config/starship.toml"
 
 # Skip .ssh/config on Linux — it contains macOS-specific directives
 # (UseKeychain, 1Password IdentityAgent) that break SSH on Linux.

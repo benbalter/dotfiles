@@ -73,3 +73,13 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 		done
 	done
 }
+
+@test "install.sh covers every dotfiles_files_common entry" {
+	# The Codespaces/simple-Linux installer maintains its own symlink list;
+	# ensure it does not drift from config.yml's common list. Each entry must
+	# appear somewhere in install.sh (the flat for-loop or a special-cased ln).
+	while IFS= read -r file; do
+		grep -qF "$file" "$REPO_ROOT/install.sh" ||
+			fail "install.sh does not handle dotfiles_files_common entry '$file'"
+	done < <(yq -r '.dotfiles_files_common[]' "$REPO_ROOT/config.yml")
+}
