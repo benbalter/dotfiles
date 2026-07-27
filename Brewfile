@@ -94,8 +94,6 @@ brew 'gnupg'
 brew 'pkgconf'
 # Use Realtek DVB-T dongles as a cheap SDR
 brew 'librtlsdr'
-# SDK for signal processing blocks to implement software radios
-brew 'gnuradio'
 # Open source programming language to build simple/reliable/efficient software
 brew 'go'
 # Ping, but with a graph
