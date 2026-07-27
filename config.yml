@@ -1,5 +1,4 @@
 ---
-configure_dock: true
 dockitems_persist:
   - name: Google Chrome
     path: "/Applications/Google Chrome.app/"
@@ -31,8 +30,6 @@ dockitems_remove:
   - Books
   - "App Store"
   - "System Settings"
-
-configure_sudoers: false
 
 # Dotfiles symlinked into $HOME on every platform
 dotfiles_files_common:
@@ -87,9 +84,6 @@ dotfile_root_dirs:
 
 homebrew_upgrade_all_packages: false
 homebrew_brewfile_dir: "{{ ansible_facts['user_dir'] }}/.files"
-mas_upgrade_all_apps: false
-mas_installed_apps: []
-mas_signin_dialog: false
 
 # Asahi / Fedora uses Homebrew as the source of truth, running the same
 # Brewfile as macOS (Homebrew on Linux aarch64 is Tier 1 as of Homebrew 5.0).
