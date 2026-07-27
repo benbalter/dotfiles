@@ -17,6 +17,13 @@ GOPATH=$HOME/go
 export GOPATH
 
 PATH="/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/local/sbin:$GOPATH/bin:$PATH"
+# Workbrew (enterprise-managed Homebrew) forces every `brew` invocation through
+# its wrapper at /opt/workbrew/bin; it must precede /opt/homebrew/bin or brew
+# aborts with a "conflicting Homebrew wrapper configuration" error. No-op on
+# Linux and on Macs without Workbrew.
+if [ -x /opt/workbrew/bin/brew ]; then
+	PATH="/opt/workbrew/bin:$PATH"
+fi
 export PATH
 
 # ZSH settings and initializations

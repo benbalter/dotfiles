@@ -25,7 +25,6 @@ plugins=(
   node
   npm
   safe-paste
- # ssh-agent
   sudo
   vscode
   zsh-interactive-cd
@@ -42,6 +41,12 @@ if [[ "$(uname)" == "Darwin" ]]; then
 elif command -v dnf >/dev/null; then
   plugins+=(dnf)
 fi
+
+# Workbrew installs apps (e.g. Docker.app) as the `workbrew` user, so their
+# bundled completion files are owned by workbrew rather than us. compinit's
+# audit flags those as insecure and skips them. They are trusted local files,
+# so disable the audit (oh-my-zsh's sanctioned escape hatch for this case).
+ZSH_DISABLE_COMPFIX="true"
 
 source "$ZSH/oh-my-zsh.sh"
 

@@ -23,6 +23,38 @@
       when: is_ci
       tags: always
 
+    # Workbrew wraps Homebrew and forces every `brew` invocation through
+    # /opt/workbrew/bin/brew (HOMEBREW_FORCE_BREW_WRAPPER). Calling
+    # /opt/homebrew/bin/brew directly then fails with a wrapper-conflict error,
+    # so point the geerlingguy.mac.homebrew role (and our own bundle task) at
+    # the wrapper when present. Stat-based detection (not an env check: the var
+    # is loaded from brew's config, not exported) keeps CI runners without
+    # Workbrew on the default /opt/homebrew/bin.
+    - name: Detect Workbrew wrapper
+      ansible.builtin.stat:
+        path: /opt/workbrew/bin/brew
+      register: workbrew_bin
+      tags: always
+
+    - name: Select the brew executable directory
+      ansible.builtin.set_fact:
+        homebrew_brew_bin_path: "{{ '/opt/workbrew/bin' if workbrew_bin.stat.exists else '/opt/homebrew/bin' }}"
+      when: is_macos
+      tags: always
+
+    # Workbrew runs brew as the `workbrew` user, which shares the `staff` group
+    # with the prefix owner but cannot write the download-lock dir unless it is
+    # group-writable. Ensure it is so `brew bundle` can acquire locks when
+    # fetching new packages.
+    - name: Ensure Homebrew locks dir is group-writable for the Workbrew user
+      ansible.builtin.file:
+        path: /opt/homebrew/var/homebrew/locks
+        state: directory
+        mode: g+w
+        recurse: true
+      when: is_macos and workbrew_bin.stat.exists
+      tags: [homebrew, packages]
+
   tasks:
     - name: Create directories
       ansible.builtin.file:
@@ -121,7 +153,25 @@
         name: geerlingguy.mac.homebrew
         apply:
           tags: [homebrew, packages]
+      vars:
+        # Run our own `brew bundle` task below instead of the role's, so we can
+        # pass --no-upgrade (see the Install Brewfile packages task).
+        homebrew_use_brewfile: false
       when: is_macos
+      tags: [homebrew, packages]
+
+    # Mirrors the Linux Brewfile task: --no-upgrade so already-installed,
+    # self-updating casks (Chrome, Slack, VS Code, …) are treated as satisfied
+    # rather than force-upgraded, which fails on their auto-updated app bundles.
+    # Skipped in CI, which installs a minimal Brewfile subset separately.
+    - name: Install Brewfile packages
+      ansible.builtin.command:
+        cmd: "{{ homebrew_brew_bin_path }}/brew bundle install --file={{ playbook_dir }}/Brewfile --no-upgrade"
+      environment:
+        HOMEBREW_NO_AUTO_UPDATE: "1"
+      register: brew_bundle_macos
+      changed_when: "'Installing' in brew_bundle_macos.stdout"
+      when: is_macos and not is_ci
       tags: [homebrew, packages]
 
     - name: Configure LanguageTool server
@@ -271,13 +321,10 @@
         single_branch: true
       tags: [ohmyzsh]
 
-    - name: Setup App Store
-      ansible.builtin.include_role:
-        name: geerlingguy.mac.mas
-        apply:
-          tags: [mas, packages]
-      when: is_macos
-      tags: [mas, packages]
+    # Mac App Store apps are declared directly in the Brewfile (`mas '…'`
+    # entries) and installed by `brew bundle`, so the geerlingguy.mac.mas role
+    # is redundant here — and its homebrew module call invokes brew directly,
+    # tripping the Workbrew wrapper. The Brewfile is the source of truth.
 
     # Runs as the user on both platforms: Homebrew owns the npm prefix on Asahi
     # (/home/linuxbrew) just as it does on macOS, so sudo would write root-owned
@@ -295,6 +342,10 @@
         name: geerlingguy.mac.dock
         apply:
           tags: [macos, dock]
+      vars:
+        # dockutil is installed via the Brewfile; skip the role's own install
+        # task, whose homebrew module call would trip the Workbrew wrapper.
+        dockutil_install: false
       when: is_macos
       tags: [macos, dock]
 
