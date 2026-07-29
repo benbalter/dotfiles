@@ -56,6 +56,15 @@ if command -v brew >/dev/null; then
 	brew autoremove || true
 	brew cleanup || true
 
+	# Re-staging the microsoft-auto-update cask (above) resets MAU to
+	# AutomaticCheck and re-registers its launch agent, so it starts popping
+	# the "Check for Updates" window several times a day. Pin it back to Manual
+	# after every bundle so the nightly run stops clobbering the setting. macOS
+	# only; the domain is absent elsewhere, so guard on `defaults`.
+	if command -v defaults >/dev/null; then
+		defaults write com.microsoft.autoupdate2 HowToCheck Manual || true
+	fi
+
 	# Propose pruning casks whose app hasn't been opened in a while by
 	# commenting them out of the Brewfile. Interactive only: it edits a
 	# version-controlled dotfile off Spotlight's last-opened data, so it must
