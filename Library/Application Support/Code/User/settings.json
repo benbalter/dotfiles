@@ -150,5 +150,7 @@
   "dotfiles.repository": "https://github.com/benbalter/dotfiles",
   "dotfiles.installCommand": "install.sh",
   "dotfiles.targetPath": "~/.files",
-  "claudeCode.initialPermissionMode": "acceptEdits"
+  "claudeCode.initialPermissionMode": "acceptEdits",
+  "editor.fontFamily": "'Hack Nerd Font', Menlo, Monaco, 'Courier New', monospace",
+  "terminal.integrated.fontFamily": "'Hack Nerd Font', Menlo, Monaco, 'Courier New', monospace"
 }
