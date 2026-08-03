@@ -163,7 +163,8 @@
     # Mirrors the Linux Brewfile task: --no-upgrade so already-installed,
     # self-updating casks (Chrome, Slack, VS Code, …) are treated as satisfied
     # rather than force-upgraded, which fails on their auto-updated app bundles.
-    # Skipped in CI, which installs a minimal Brewfile subset separately.
+    # Skipped in CI: installing the full app/cask set there is unnecessary, and
+    # jobs that need specific tools install them directly.
     - name: Install Brewfile packages
       ansible.builtin.command:
         cmd: "{{ homebrew_brew_bin_path }}/brew bundle install --file={{ playbook_dir }}/Brewfile --no-upgrade"
@@ -343,9 +344,11 @@
         apply:
           tags: [macos, dock]
       vars:
-        # dockutil is installed via the Brewfile; skip the role's own install
-        # task, whose homebrew module call would trip the Workbrew wrapper.
-        dockutil_install: false
+        # On real hardware dockutil comes from the Brewfile, and letting the
+        # role install it via its homebrew module would trip the Workbrew
+        # wrapper. CI skips the full Brewfile (and has no Workbrew), so let the
+        # role install dockutil itself there.
+        dockutil_install: "{{ is_ci }}"
       when: is_macos
       tags: [macos, dock]
 
