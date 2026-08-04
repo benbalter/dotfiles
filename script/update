@@ -80,7 +80,15 @@ fi
 
 if command -v dnf >/dev/null; then
 	echo "==> Updating dnf packages..."
-	sudo dnf upgrade --refresh -y
+	# dnf needs root. From a terminal, allow an interactive sudo prompt. Headless
+	# (the nightly launchd/cron job) there's no one to answer it, so use `sudo -n`
+	# to fail fast instead of hanging on a password prompt, and `|| true` so a
+	# skipped upgrade doesn't abort the steps below (mas, mise, npm, gems, pip).
+	if [ -t 1 ]; then
+		sudo dnf upgrade --refresh -y || true
+	else
+		sudo -n dnf upgrade --refresh -y || true
+	fi
 fi
 
 if command -v mas >/dev/null; then
