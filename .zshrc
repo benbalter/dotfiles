@@ -78,3 +78,8 @@ if command -v starship >/dev/null; then
   eval "$(starship init zsh)"
 fi
 
+# Better shell history (Ctrl-R). Leave the up-arrow to history-substring-search.
+if command -v atuin >/dev/null; then
+  eval "$(atuin init zsh --disable-up-arrow)"
+fi
+

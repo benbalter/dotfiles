@@ -81,12 +81,27 @@
 	insteadOf = git://github.com
 
 [diff]
-	tool = default-difftool
+	tool = difftastic
 	colorMoved = default
+
+# `git diff` still uses delta (see core.pager); difftastic is opt-in via
+# `git difftool` / `git dft`. VS Code remains available with `-t default-difftool`.
+[difftool]
+	prompt = false
+
+[difftool "difftastic"]
+	cmd = difft "$LOCAL" "$REMOTE"
 
 [difftool "default-difftool"]
 	cmd = code --wait --diff $LOCAL $REMOTE
-	
+
+# Page difftool output so difftastic's long diffs scroll like `git diff`.
+[pager]
+	difftool = true
+
+[alias]
+	dft = difftool
+
 [init]
 	defaultBranch = main
 

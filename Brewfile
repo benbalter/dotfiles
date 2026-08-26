@@ -4,6 +4,8 @@ tap 'darrylmorley/whatcable'
 
 # Run your GitHub Actions locally
 brew 'act'
+# Improved shell history for zsh, bash, fish and nushell
+brew 'atuin'
 # GNU multiple precision arithmetic library
 brew 'gmp'
 # Static analysis and lint tool, for (ba)sh scripts
@@ -36,6 +38,8 @@ brew 'python@3.13'
 brew 'azure-cli'
 # Bash Automated Testing System
 brew 'bats-core'
+# Resource monitor. C++ version and continuation of bashtop and bpytop
+brew 'btop'
 # Powerful, enterprise-ready, open source web server with automatic HTTPS
 brew 'caddy', restart_service: :changed
 # Statistics utility to count lines of code
@@ -50,6 +54,10 @@ brew 'libssh2'
 brew 'curl'
 # Tool for managing dock items
 brew 'dockutil'
+# Disk Usage/Free Utility - a better 'df' alternative
+brew 'duf'
+# More intuitive version of du in rust
+brew 'dust'
 # Development kit for the Java programming language
 brew 'openjdk'
 # Validate EPUB files, version 2.0 and later
@@ -58,10 +66,16 @@ brew 'epubcheck'
 brew 'exif'
 # Perl lib for reading and writing EXIF metadata
 brew 'exiftool'
+# Modern, maintained replacement for ls
+brew 'eza'
 # SDL2 compatibility layer that uses SDL3 behind the scenes
 brew 'sdl2-compat'
 # Play, record, convert, and stream select audio and video codecs
 brew 'ffmpeg'
+# Clone of cat(1) with syntax highlighting and Git integration
+brew 'bat'
+# Simple, fast and user-friendly alternative to find
+brew 'fd'
 # Command-line fuzzy finder written in Go
 brew 'fzf'
 # GitHub command-line tool
@@ -74,6 +88,8 @@ brew 'ghostscript'
 brew 'git'
 # Syntax-highlighting pager for git and diff output
 brew 'git-delta'
+# Structural diff that understands syntax
+brew 'difftastic'
 # Quickly rewrite git repository history
 brew 'git-filter-repo'
 # Git extension for versioning large files
@@ -206,6 +222,8 @@ brew 'opentofu'
 brew 'tfsec'
 # Clean up files in directories based on their age
 brew 'tmpreaper'
+# Very fast implementation of tldr in Rust
+brew 'tealdeer'
 # Language for application scale JavaScript development
 brew 'typescript'
 # Extremely fast Python package installer and resolver, written in Rust
@@ -224,6 +242,8 @@ brew 'wget'
 brew 'yamllint'
 # JavaScript package manager
 brew 'yarn'
+# Friendly and fast tool for sending HTTP requests
+brew 'xh'
 # Process YAML, JSON, XML, CSV and properties documents from the CLI
 brew 'yq'
 # Shell extension to navigate your filesystem faster

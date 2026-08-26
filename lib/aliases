@@ -25,6 +25,32 @@ alias branches="git branch -v"
 # zoxide
 alias j='z'
 
+# Modern CLI replacements (keep old muscle memory, get better tools).
+# Originals remain reachable via a leading backslash, e.g. \grep or `command ls`.
+if command -v bat >/dev/null; then
+	alias cat='bat --paging=never'
+fi
+if command -v rg >/dev/null; then
+	alias grep='rg'
+fi
+if command -v eza >/dev/null; then
+	alias ls='eza --group-directories-first'
+	alias ll='eza -l --git --group-directories-first'
+	alias la='eza -la --git --group-directories-first'
+	alias lc='eza -la --git --group-directories-first'
+	alias lt='eza --tree --level=2'
+fi
+if command -v difft >/dev/null; then
+	alias diff='difft'
+fi
+if command -v xh >/dev/null; then
+	alias http='xh'
+	alias https='xhs'
+fi
+# find -> fd is intentionally NOT aliased: their syntaxes are incompatible
+# (`find . -name "*.txt"` isn't valid fd), which would break muscle memory.
+# Use `fd` directly for the modern experience.
+
 # Script/*
 alias sb="script/bootstrap"
 alias sc="script/lint"
@@ -53,4 +79,6 @@ if [ "$(uname)" = "Darwin" ]; then
 	alias flushdns="sudo dscacheutil -flushcache;sudo killall -HUP mDNSResponder; echo 'Flushed DNS, btw here is your hosts file just in case:'; cat /etc/hosts"
 	alias afk="/System/Library/CoreServices/Menu\ Extras/User.menu/Contents/Resources/CGSession -suspend"
 fi
-alias lc='ls -lA'
+# lc is defined in the "Modern CLI replacements" section above (eza when available).
+# Fall back to plain ls only if eza is not installed.
+command -v eza >/dev/null || alias lc='ls -lA'
