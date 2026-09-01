@@ -8,3 +8,5 @@ Gemfile.lock
 /.ansible
 
 **/.claude/settings.local.json
+
+**/.claude/.cc-writes/
