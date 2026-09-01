@@ -65,6 +65,7 @@ dotfiles_files_macos:
   - .ssh/config
   - Library/Application Support/Code/User/settings.json
   - Library/Application Support/com.mitchellh.ghostty/config
+  - Library/Application Support/com.mitchellh.ghostty/shaders/bloom.glsl
   - Library/Spelling/LocalDictionary
   - Library/LaunchAgents/com.balter.ben.tmpreaper.plist
   - Library/LaunchAgents/com.balter.ben.update.plist
@@ -82,6 +83,8 @@ linux_dotfile_links:
     dest: .config/Code/User/settings.json
   - src: Library/Application Support/com.mitchellh.ghostty/config
     dest: .config/ghostty/config
+  - src: Library/Application Support/com.mitchellh.ghostty/shaders/bloom.glsl
+    dest: .config/ghostty/shaders/bloom.glsl
 
 dotfiles_files: "{{ dotfiles_files_common + (dotfiles_files_macos if is_macos else dotfiles_files_linux) }}"
 

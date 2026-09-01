@@ -10,6 +10,7 @@ source "$DOTFILES_ROOT/lib/globals"
 typeset -a plugins
 plugins=(
   ansible
+  bgnotify
   colored-man-pages
   command-not-found
   common-aliases
@@ -92,4 +93,14 @@ fi
 if command -v atuin >/dev/null; then
   eval "$(atuin init zsh --disable-up-arrow)"
 fi
+
+# ── Loaded shell (ORDER MATTERS) ──────────────────────────────────
+# Notify when a >Ns command finishes in an unfocused terminal (bgnotify plugin).
+bgnotify_threshold=8
+
+# fzf-tab: fuzzy completion menu. Then autosuggestions, and finally
+# syntax-highlighting (which MUST be sourced last). All from Homebrew formulae.
+[[ -f $HOMEBREW_PREFIX/share/fzf-tab/fzf-tab.zsh ]] && source $HOMEBREW_PREFIX/share/fzf-tab/fzf-tab.zsh
+[[ -f $HOMEBREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]] && source $HOMEBREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+[[ -f $HOMEBREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] && source $HOMEBREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 

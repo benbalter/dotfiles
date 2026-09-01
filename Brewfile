@@ -214,6 +214,16 @@ brew 'shfmt'
 brew 'soapyhackrf'
 # Cross-shell prompt for astronauts
 brew 'starship'
+# Fish-like fast/unobtrusive autosuggestions for zsh
+brew 'zsh-autosuggestions'
+# Fish shell-like syntax highlighting for zsh
+brew 'zsh-syntax-highlighting'
+# Replace zsh's completion selection menu with an fzf fuzzy finder
+brew 'fzf-tab'
+# bat wrappers: batman, batgrep, batwatch, batdiff, prettybat
+brew 'bat-extras'
+# Send macOS notifications from the command line (used by bgnotify)
+brew 'terminal-notifier'
 # Enables extra languages support for Tesseract
 brew 'tesseract-lang'
 # Drop-in replacement for Terraform. Infrastructure as Code Tool

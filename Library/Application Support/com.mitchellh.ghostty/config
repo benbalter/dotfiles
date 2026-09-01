@@ -36,6 +36,12 @@ shell-integration-features = cursor,sudo,title,ssh-env,ssh-terminfo
 background-opacity = 0.92
 background-blur = 20
 
+# ── Shaders ───────────────────────────────────────────────────────
+# Subtle bloom/glow on bright text. Static (no iTime) — animation off so it
+# only redraws on content change instead of every frame.
+custom-shader = shaders/bloom.glsl
+custom-shader-animation = false
+
 # ── Quick Terminal ────────────────────────────────────────────────
 quick-terminal-animation-duration = 0.12
 
