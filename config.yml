@@ -34,6 +34,7 @@ dockitems_remove:
 # Dotfiles symlinked into $HOME on every platform
 dotfiles_files_common:
   - .bundle/config
+  - .default-gems
   - .digrc
   - .gemrc
   - .gitconfig
@@ -41,12 +42,17 @@ dotfiles_files_common:
   - .gnupg/gpg.conf
   - .hushlogin
   - .irbrc
+  - .npmrc
   - .pryrc
   - .remarkrc
+  - .ripgreprc
   - .yamllint
   - .zprofile
   - .zshrc
+  - .config/atuin/config.toml
+  - .config/bat/config
   - .config/git/allowed_signers
+  - .config/git/attributes
   - .config/mise/config.toml
   - .config/starship.toml
 

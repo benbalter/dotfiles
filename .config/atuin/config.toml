@@ -1,0 +1,10 @@
+# atuin config — https://docs.atuin.sh/configuration/config/
+# Ctrl-R is bound in .zshrc; up-arrow is deliberately left to zsh
+# (atuin init runs with --disable-up-arrow).
+search_mode = "fuzzy"
+filter_mode = "global"
+style = "compact"
+inline_height = 20
+# Enter puts the selected command on the prompt without auto-running it,
+# so you can review/edit before executing.
+enter_accept = false

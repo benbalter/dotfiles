@@ -1,0 +1,7 @@
+# bat config — https://github.com/sharkdp/bat
+# `ansi` theme uses the terminal's 16 colors, so it adapts to Ghostty's
+# light/dark auto-switch. plain + no paging keeps `cat` (aliased to bat) cat-like
+# while retaining syntax highlighting.
+--theme=ansi
+--style=plain
+--paging=never

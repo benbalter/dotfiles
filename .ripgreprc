@@ -1,0 +1,10 @@
+# ripgrep default flags — pointed to by RIPGREP_CONFIG_PATH (see lib/globals)
+--smart-case
+--hidden
+--glob=!.git/
+--glob=!node_modules/
+--glob=!_site/
+--glob=!.jekyll-cache/
+--glob=!dist/
+--max-columns=250
+--max-columns-preview

@@ -1,0 +1,12 @@
+# Global gitattributes — pointed to by core.attributesfile
+
+# Reduce diff noise on generated lockfiles
+*.lock            -diff
+Gemfile.lock      -diff
+package-lock.json -diff
+
+# Language-aware diff hunk headers
+*.rb   diff=ruby
+*.md   diff=markdown
+*.css  diff=css
+*.html diff=html
