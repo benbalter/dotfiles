@@ -46,6 +46,7 @@ dotfiles_files_common:
   - .yamllint
   - .zprofile
   - .zshrc
+  - .config/git/allowed_signers
   - .config/mise/config.toml
   - .config/starship.toml
 

@@ -8,16 +8,17 @@
 [user]
 	name = Ben Balter
 	email = ben@balter.com
+	signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJVznDI5iSIoLzOLMW54ZU6fnCe9JHd/tetOimr9G3c5
 
 [color]
-	branch = always
-	diff = always
-	grep = always
-	interactive = always
+	branch = auto
+	diff = auto
+	grep = auto
+	interactive = auto
 	pager = true
 	showbranch = auto
 	status = auto
-	ui = always
+	ui = auto
 
 [color "interactive"]
 	error = red bold
@@ -26,13 +27,6 @@
 	current = yellow reverse
 	local = yellow
 	remote = green
-
-[color "diff"]
-	meta = yellow
-	frag = magenta
-	old = red
-	new = green
-	whitespace = white reverse
 
 [color "status"]
 	added = yellow
@@ -49,22 +43,13 @@
 [push]
 	default = simple
 	autoSetupRemote = true
-
-[git-up "bundler"]
-	check = true
-	autoinstall = true
+	followTags = true
 
 [filter "lfs"]
 	required = true
 	clean = git-lfs clean -- %f
 	smudge = git-lfs smudge -- %f
 	process = git-lfs filter-process
-
-[color "diff-highlight"]
-	oldHighlight = red bold 52
-	newNormal = green bold
-	newHighlight = green bold 22
-	oldNormal = red bold
 
 [delta]
 	navigate = true
@@ -83,6 +68,7 @@
 [diff]
 	tool = difftastic
 	colorMoved = default
+	algorithm = histogram
 
 # `git diff` still uses delta (see core.pager); difftastic is opt-in via
 # `git difftool` / `git dft`. VS Code remains available with `-t default-difftool`.
@@ -110,6 +96,8 @@
 
 [fetch]
 	fsckObjects = true
+	prune = true
+	pruneTags = true
 
 [fetch "fsck"]
 	zeroPaddedFilemode = ignore
@@ -119,9 +107,35 @@
 
 [rebase]
 	autoStash = true
+	autosquash = true
+	updateRefs = true
 
 [pull]
 	rebase = false
+
+[rerere]
+	enabled = true
+	autoUpdate = true
+
+[commit]
+	verbose = true
+	gpgsign = true
+
+[branch]
+	sort = -committerdate
+
+[tag]
+	sort = version:refname
+	gpgSign = true
+
+[column]
+	ui = auto
+
+[gpg]
+	format = ssh
+
+[gpg "ssh"]
+	allowedSignersFile = ~/.config/git/allowed_signers
 
 # OS-specific overrides; git silently ignores missing include files,
 # so only the file for the current OS is symlinked into ~
