@@ -8,8 +8,10 @@ add_newline = true
 
 # Prompt format
 format = """
+$container\
 $directory\
 $git_branch\
+$git_state\
 $git_status\
 $python\
 $ruby\
@@ -33,6 +35,14 @@ style = "bold cyan"
 [git_branch]
 symbol = " "
 style = "bold purple"
+
+[container]
+format = '[$symbol \[$name\]]($style) '
+style = "bold red dimmed"
+
+[git_state]
+format = '\([$state( $progress_current/$progress_total)]($style)\) '
+style = "bold yellow"
 
 [git_status]
 style = "bold yellow"

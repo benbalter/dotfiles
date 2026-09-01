@@ -6,4 +6,4 @@
 idiomatic_version_file_enable_tools = ["ruby", "node", "python"]
 
 [tools]
-ruby = "latest"
+ruby = "3.4"
