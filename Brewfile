@@ -303,8 +303,6 @@ cask 'karabiner-elements'
 cask 'kindle-previewer'
 # Grammar, spelling and style suggestions in all the writing apps
 cask 'languagetool-desktop'
-# Free cross-platform office suite, fresh version
-cask 'libreoffice'
 # Discover, download, and run local LLMs
 # cask 'lm-studio' # PROPOSED REMOVAL: last opened 10 days ago
 # Provides updates to various Microsoft products
