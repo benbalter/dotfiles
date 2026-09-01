@@ -55,3 +55,7 @@ export COMPLETION_WAITING_DOTS
 
 # You've got mail
 unset MAILCHECK
+
+EDITOR=${EDITOR:-$(command -v code >/dev/null && echo "code --wait" || echo vi)}
+VISUAL="$EDITOR"
+export EDITOR VISUAL

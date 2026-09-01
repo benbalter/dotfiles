@@ -2,4 +2,11 @@
 # Init ZSH and the shell environment
 # Usage source script/init
 
-if command -v gh >/dev/null; then eval "$(gh completion --shell zsh)"; fi
+if command -v gh >/dev/null; then
+  gh_comp="${ZSH_CACHE_DIR:-$HOME/.cache}/gh-completion.zsh"
+  if [[ ! -s "$gh_comp" || "$(command -v gh)" -nt "$gh_comp" ]]; then
+    mkdir -p "$(dirname "$gh_comp")"
+    gh completion --shell zsh > "$gh_comp"
+  fi
+  source "$gh_comp"
+fi

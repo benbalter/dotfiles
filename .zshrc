@@ -7,7 +7,7 @@ fi
 # shellcheck source=lib/globals
 source "$DOTFILES_ROOT/lib/globals"
 
-local plugins
+typeset -a plugins
 plugins=(
   ansible
   colored-man-pages
@@ -76,6 +76,16 @@ fi
 
 if command -v starship >/dev/null; then
   eval "$(starship init zsh)"
+fi
+
+# fzf: Ctrl-T (files), Alt-C (cd). Sourced BEFORE atuin so atuin keeps Ctrl-R.
+if command -v fzf >/dev/null; then
+  export FZF_DEFAULT_COMMAND='fd --type f --hidden --exclude .git'
+  export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+  export FZF_ALT_C_COMMAND='fd --type d --hidden --exclude .git'
+  export FZF_CTRL_T_OPTS="--preview 'bat --color=always --style=numbers --line-range=:200 {}'"
+  export FZF_ALT_C_OPTS="--preview 'eza --tree --level=2 --color=always {}'"
+  source <(fzf --zsh)
 fi
 
 # Better shell history (Ctrl-R). Leave the up-arrow to history-substring-search.
