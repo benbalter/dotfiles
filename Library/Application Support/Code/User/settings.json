@@ -34,7 +34,7 @@
   "vale.core.useCLI": true,
   "cSpell.userWords": ["Hubber", "Hubbers", "thurghouput"],
   "git.autofetch": true,
-  "languageToolLinter.languageTool.ignoredWordsGlobal": ["hubber"],
+  "ltex.dictionary": { "en-US": ["hubber"] },
   "vale.doNotShowWarningForFileToBeSavedBeforeLinting": true,
   "[javascript]": {
     "editor.defaultFormatter": "vscode.typescript-language-features"
@@ -68,8 +68,11 @@
   },
   "github.copilot.editor.enableAutoCompletions": true,
   "workbench.colorTheme": "Dark Modern",
-  "languageToolLinter.diagnosticSeverityAuto": true,
-  "languageToolLinter.languageTool.url": "http://localhost:8081",
+  "ltex.languageToolHttpServerUri": "http://localhost:8081",
+  "ltex.language": "en-US",
+  // Universal voice + product-name suppressions — merged into every repo's
+  // ltex.disabledRules (LTeX+ unions scopes). Un-disable per-repo with a "-" prefix.
+  "ltex.disabledRules": { "en-US": ["ARROWS", "DOUBLE_PUNCTUATION", "EN_PLAIN_ENGLISH_REPLACE", "GITHUB", "GOOGLE_PRODUCTS", "HUNSPELL_NO_SUGGEST_RULE", "HUNSPELL_RULE", "IN_FACEBOOK", "MICROSOFT_PRODUCTS", "MORFOLOGIK_RULE_EN_US", "PASSIVE_VOICE", "SENTENCE_FRAGMENT", "TOO_LONG_SENTENCE"] },
   "remote.autoForwardPortsSource": "hybrid",
   "chat.editing.alwaysSaveWithGeneratedChanges": true,
   "github.copilot.nextEditSuggestions.enabled": true,
