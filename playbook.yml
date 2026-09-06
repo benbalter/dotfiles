@@ -338,6 +338,20 @@
       when: not is_ci
       tags: [packages]
 
+    # Global Claude Code writing skills that strip AI-slop patterns from prose.
+    # `creates` skips the network call (and keeps this idempotent) once the
+    # skill is symlinked into ~/.claude/skills by `npx skills add --global`.
+    - name: Install Claude writing skills
+      ansible.builtin.command:
+        cmd: "npx -y skills add {{ item.repo }} --global --yes"
+        creates: "{{ ansible_env.HOME }}/.claude/skills/{{ item.name }}"
+      loop:
+        - { repo: petergyang/no-ai-slop, name: no-ai-slop }
+        - { repo: hardikpandya/stop-slop, name: stop-slop }
+      become: false
+      when: not is_ci
+      tags: [packages]
+
     - name: Setup Dock
       ansible.builtin.include_role:
         name: geerlingguy.mac.dock
