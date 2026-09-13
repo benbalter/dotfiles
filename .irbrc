@@ -15,7 +15,7 @@ end
 require 'irb/completion'
 require 'irb/ext/save-history'
 
-IRB.conf[:SAVE_HISTORY] = 100000
+IRB.conf[:SAVE_HISTORY] = 100_000
 IRB.conf[:HISTORY_FILE] = "#{Dir.home}/.history/ruby"
 IRB.conf[:PROMPT_MODE] = :SIMPLE
 IRB.conf[:AUTO_INDENT] = true

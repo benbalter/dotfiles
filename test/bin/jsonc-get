@@ -1,0 +1,47 @@
+#!/usr/bin/env node
+// Read a top-level key out of a JSONC file (JSON with comments).
+//
+// VS Code settings.json is JSONC by design, so JSON.parse and `yq -p json` both
+// choke on it. Comment-stripping with a regex is not an option either: these
+// files contain "//" inside string values (e.g. "http://localhost:8081"), which
+// a naive sed would corrupt. jsonc-parser is the tokenizer VS Code itself uses.
+//
+// Usage: test/bin/jsonc-get <file> <key>
+// Prints the value as JSON on stdout; exits 1 if the key is absent.
+
+'use strict'
+
+const path = require('path')
+const fs = require('fs')
+
+const [file, key] = process.argv.slice(2)
+if (!file || !key) {
+  console.error('usage: jsonc-get <file> <key>')
+  process.exit(2)
+}
+
+let parse
+try {
+  ;({ parse } = require('jsonc-parser'))
+} catch {
+  console.error(
+    'jsonc-get: jsonc-parser not found. Run `npm ci` in the repo root first.'
+  )
+  process.exit(2)
+}
+
+const errors = []
+const data = parse(fs.readFileSync(file, 'utf8'), errors, {
+  allowTrailingComma: true
+})
+if (errors.length > 0) {
+  console.error(`jsonc-get: ${path.basename(file)} is not valid JSONC`)
+  process.exit(2)
+}
+
+if (data === undefined || !Object.prototype.hasOwnProperty.call(data, key)) {
+  process.exit(1)
+}
+
+const value = data[key]
+console.log(typeof value === 'string' ? value : JSON.stringify(value))

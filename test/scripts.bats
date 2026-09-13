@@ -1,6 +1,8 @@
 #!/usr/bin/env bats
 # Validate that all scripts have valid shell syntax and are executable.
 
+load test_helper
+
 REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 
 @test "scripts are executable" {
