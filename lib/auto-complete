@@ -3,10 +3,12 @@
 # Usage source script/init
 
 if command -v gh >/dev/null; then
-  gh_comp="${ZSH_CACHE_DIR:-$HOME/.cache}/gh-completion.zsh"
-  if [[ ! -s "$gh_comp" || "$(command -v gh)" -nt "$gh_comp" ]]; then
-    mkdir -p "$(dirname "$gh_comp")"
-    gh completion --shell zsh > "$gh_comp"
-  fi
-  source "$gh_comp"
+	gh_comp="${ZSH_CACHE_DIR:-$HOME/.cache}/gh-completion.zsh"
+	if [[ ! -s "$gh_comp" || "$(command -v gh)" -nt "$gh_comp" ]]; then
+		mkdir -p "$(dirname "$gh_comp")"
+		gh completion --shell zsh >"$gh_comp"
+	fi
+	# Generated at runtime into a cache dir; nothing for shellcheck to follow.
+	# shellcheck source=/dev/null
+	source "$gh_comp"
 fi

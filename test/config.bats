@@ -1,6 +1,8 @@
 #!/usr/bin/env bats
 # Validate configuration files and cross-reference dotfile inventories.
 
+load test_helper
+
 REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 
 @test "config.yml dotfiles_files all exist in the repo" {

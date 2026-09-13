@@ -1,6 +1,8 @@
 #!/usr/bin/env bats
 # Test that install.sh (Linux path) creates the correct symlinks.
 
+load test_helper
+
 REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 
 setup() {

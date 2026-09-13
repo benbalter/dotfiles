@@ -25,8 +25,8 @@ fi
 
 # Symlink dotfiles
 for file in \
-	.digrc .gemrc .gitconfig .gitignore .hushlogin \
-	.irbrc .pryrc .remarkrc .yamllint .zprofile .zshrc; do
+	.default-gems .digrc .gemrc .gitconfig .gitignore .hushlogin \
+	.irbrc .npmrc .pryrc .remarkrc .ripgreprc .yamllint .zprofile .zshrc; do
 	if [ -e "$HOME/$file" ] && [ ! -L "$HOME/$file" ]; then
 		echo "Backing up $HOME/$file to $HOME/$file.bak"
 		mv "$HOME/$file" "$HOME/$file.bak"
@@ -35,12 +35,17 @@ for file in \
 done
 
 # Symlink directories that need parent dirs
-mkdir -p "$HOME/.bundle" "$HOME/.gnupg" "$HOME/.config/mise"
+mkdir -p "$HOME/.bundle" "$HOME/.gnupg" "$HOME/.config/mise" \
+	"$HOME/.config/git" "$HOME/.config/bat" "$HOME/.config/atuin"
 [ -f "$DOTFILES_DIR/.bundle/config" ] && ln -sf "$DOTFILES_DIR/.bundle/config" "$HOME/.bundle/config"
 [ -f "$DOTFILES_DIR/.gnupg/gpg.conf" ] && ln -sf "$DOTFILES_DIR/.gnupg/gpg.conf" "$HOME/.gnupg/gpg.conf"
 [ -f "$DOTFILES_DIR/.gnupg/gpg-agent.conf" ] && ln -sf "$DOTFILES_DIR/.gnupg/gpg-agent.conf" "$HOME/.gnupg/gpg-agent.conf"
 [ -f "$DOTFILES_DIR/.config/mise/config.toml" ] && ln -sf "$DOTFILES_DIR/.config/mise/config.toml" "$HOME/.config/mise/config.toml"
 [ -f "$DOTFILES_DIR/.config/starship.toml" ] && ln -sf "$DOTFILES_DIR/.config/starship.toml" "$HOME/.config/starship.toml"
+[ -f "$DOTFILES_DIR/.config/git/attributes" ] && ln -sf "$DOTFILES_DIR/.config/git/attributes" "$HOME/.config/git/attributes"
+[ -f "$DOTFILES_DIR/.config/git/allowed_signers" ] && ln -sf "$DOTFILES_DIR/.config/git/allowed_signers" "$HOME/.config/git/allowed_signers"
+[ -f "$DOTFILES_DIR/.config/bat/config" ] && ln -sf "$DOTFILES_DIR/.config/bat/config" "$HOME/.config/bat/config"
+[ -f "$DOTFILES_DIR/.config/atuin/config.toml" ] && ln -sf "$DOTFILES_DIR/.config/atuin/config.toml" "$HOME/.config/atuin/config.toml"
 
 # Skip .ssh/config on Linux — it contains macOS-specific directives
 # (UseKeychain, 1Password IdentityAgent) that break SSH on Linux.

@@ -2,15 +2,20 @@
 # Verify Comic Sans is suppressed: VS Code font overrides are set,
 # and the disable script is wired into the playbook.
 
+load test_helper
+
 REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 USER_SETTINGS="$REPO_ROOT/Library/Application Support/Code/User/settings.json"
 WORKSPACE_SETTINGS="$REPO_ROOT/.vscode/settings.json"
 
+# Both settings files are JSONC (JSON with comments) -- VS Code's own format.
+# yq/JSON.parse choke on the comments, and stripping them with a regex would
+# corrupt the "http://..." values these files contain, so parse them properly.
 assert_font_overridden() {
 	local file="$1" key="$2"
 	local value
-	value=$(yq -p json -o json ".\"${key}\"" "$file")
-	[ "$value" != "null" ] || fail "$file missing '$key'"
+	value=$("$BATS_TEST_DIRNAME/bin/jsonc-get" "$file" "$key") ||
+		fail "$file missing '$key'"
 	echo "$value" | grep -qi 'comic sans' && fail "$file '$key' must not include Comic Sans: $value"
 	return 0
 }

@@ -167,6 +167,11 @@ jobs:
       - name: Install dependencies
         run: brew install bats-core yq
 
+      # comic-sans.bats parses VS Code's JSONC settings via test/bin/jsonc-get,
+      # which needs the jsonc-parser package from package.json.
+      - name: Install node dependencies
+        run: npm ci
+
       - name: Run tests
         run: script/test
 
@@ -184,9 +189,13 @@ jobs:
 
       - name: Verify dotfile symlinks
         run: |
-          for file in .digrc .gemrc .gitconfig .gitignore \
-            .hushlogin .irbrc .pryrc .remarkrc .yamllint .zprofile .zshrc; do
+          for file in .default-gems .digrc .gemrc .gitconfig .gitignore \
+            .hushlogin .irbrc .npmrc .pryrc .remarkrc .ripgreprc .yamllint \
+            .zprofile .zshrc \
+            .config/git/attributes .config/git/allowed_signers \
+            .config/bat/config .config/atuin/config.toml; do
             test -L "$HOME/$file" || { echo "FAIL: $file not symlinked"; exit 1; }
+            test -e "$HOME/$file" || { echo "FAIL: $file is a broken symlink"; exit 1; }
           done
           echo "All dotfile symlinks verified"
 
@@ -200,6 +209,7 @@ jobs:
         run: |
           sudo apt-get update -q
           sudo apt-get install -y -q bats
+          npm ci
           script/test
 
   test-fedora:
