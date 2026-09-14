@@ -155,5 +155,11 @@
   "dotfiles.targetPath": "~/.files",
   "claudeCode.initialPermissionMode": "acceptEdits",
   "editor.fontFamily": "'Hack Nerd Font', Menlo, Monaco, 'Courier New', monospace",
-  "terminal.integrated.fontFamily": "'Hack Nerd Font', Menlo, Monaco, 'Courier New', monospace"
+  "terminal.integrated.fontFamily": "'Hack Nerd Font', Menlo, Monaco, 'Courier New', monospace",
+  // App is installed & updated via Homebrew cask (see Brewfile). Disable VS Code's
+  // built-in updater: the app bundle is root-owned, so its self-update can't write
+  // in place and falls back to a privileged-helper sudo prompt on every attempt.
+  "update.mode": "none",
+  "extensions.autoCheckUpdates": false,
+  "extensions.autoUpdate": "off"
 }
