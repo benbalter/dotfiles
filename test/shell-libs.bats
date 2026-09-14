@@ -33,3 +33,20 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 	"
 	[ "$status" -eq 0 ]
 }
+
+@test "lib/globals sets HOMEBREW_PREFIX without invoking brew" {
+	# Regression: .zprofile and oh-my-zsh's brew plugin used to call
+	# `brew --prefix`. Under Workbrew that wrapper can fail outright, leaving
+	# HOMEBREW_PREFIX empty and silently skipping the fzf-tab /
+	# zsh-autosuggestions / zsh-syntax-highlighting source lines in .zshrc.
+	# Sabotage `brew` and assert the prefix still resolves.
+	run bash -c "
+		brew() { echo 'Error: brew is broken' >&2; return 1; }
+		export -f brew
+		PATH='/usr/bin:/bin'
+		. '$REPO_ROOT/lib/globals'
+		test -x \"\$HOMEBREW_PREFIX/bin/brew\" || { echo \"FAIL: HOMEBREW_PREFIX=[\$HOMEBREW_PREFIX]\"; exit 1; }
+		echo \"\$HOMEBREW_PREFIX\"
+	"
+	[ "$status" -eq 0 ]
+}
