@@ -327,16 +327,23 @@
     # is redundant here — and its homebrew module call invokes brew directly,
     # tripping the Workbrew wrapper. The Brewfile is the source of truth.
 
-    # Runs as the user on both platforms: Homebrew owns the npm prefix on Asahi
-    # (/home/linuxbrew) just as it does on macOS, so sudo would write root-owned
-    # files into a user-owned tree.
-    - name: Install GitHub Copilot CLI
-      community.general.npm:
-        name: "@github/copilot"
-        global: true
+    # Install mise-managed runtimes and global npm CLIs (node plus tsx, wrangler,
+    # claude-code, copilot, ncu, serve, zx, ni, degit, taze — see
+    # .config/mise/config.toml). mise installs into its own user-owned prefix
+    # (~/.local/share/mise), so unlike `npm install -g` it never writes to the
+    # Homebrew/Workbrew-owned node prefix that broke the former Brewfile `npm`
+    # entries. Supersedes those entries and the old standalone copilot npm task.
+    # Runs from $HOME so mise uses the symlinked global config and needn't trust
+    # the repo checkout.
+    - name: Install mise tools
+      ansible.builtin.command:
+        cmd: mise install
+        chdir: "{{ ansible_env.HOME }}"
       become: false
+      register: mise_install
+      changed_when: "'✓' in mise_install.stdout"
       when: not is_ci
-      tags: [packages]
+      tags: [packages, mise]
 
     # Global Claude Code writing skills that strip AI-slop patterns from prose.
     # `creates` skips the network call (and keeps this idempotent) once the
