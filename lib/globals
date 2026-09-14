@@ -13,6 +13,33 @@ if [ "$(uname)" = "Darwin" ]; then
 	export HOMEBREW_CASK_OPTS
 fi
 
+# Resolve the Homebrew prefix by probing known paths rather than shelling out
+# to `brew --prefix`. Under Workbrew, `brew` is a setuid wrapper that can fail
+# outright (Homebrew 7.0 refuses to run when real and effective UIDs differ),
+# and a failed `brew --prefix` leaves HOMEBREW_PREFIX empty -- which silently
+# skips every `$HOMEBREW_PREFIX/share/...` source line in .zshrc. Probing paths
+# keeps the shell fully loaded even when brew itself is broken, and skips two
+# subprocesses per shell start. Exporting it also short-circuits the identical
+# `brew --prefix` call in oh-my-zsh's brew plugin.
+for _brew_prefix in /opt/homebrew /home/linuxbrew/.linuxbrew "$HOME/.linuxbrew" /usr/local; do
+	if [ -x "$_brew_prefix/bin/brew" ]; then
+		HOMEBREW_PREFIX="$_brew_prefix"
+		export HOMEBREW_PREFIX
+		break
+	fi
+done
+unset _brew_prefix
+
+# Completions shipped by Homebrew formulae. Set here rather than in .zprofile
+# so non-login shells (Codespaces, `zsh -i`) get them too, and because this
+# must precede the compinit that oh-my-zsh runs.
+if [ -n "${HOMEBREW_PREFIX:-}" ]; then
+	# Deliberately not exported: zsh ties FPATH to the fpath array and rebuilds
+	# it per shell, so exporting would re-prepend this on every nested shell.
+	# shellcheck disable=SC2034
+	FPATH="$HOMEBREW_PREFIX/share/zsh/site-functions${FPATH:+:$FPATH}"
+fi
+
 GOPATH=$HOME/go
 export GOPATH
 
