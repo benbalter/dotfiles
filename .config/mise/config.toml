@@ -6,4 +6,19 @@
 idiomatic_version_file_enable_tools = ["ruby", "node", "python"]
 
 [tools]
+node = "22"
+python = "3.14.5"
 ruby = "3.4"
+
+# Global npm CLIs (managed by mise so they survive node upgrades,
+# rather than Brewfile `npm` entries that fight Workbrew's node prefix)
+"npm:tsx" = "latest"
+"npm:@anthropic-ai/claude-code" = "latest"
+"npm:@github/copilot" = "latest"
+"npm:npm-check-updates" = "latest"
+"npm:serve" = "latest"
+"npm:wrangler" = "latest"
+"npm:zx" = "latest"
+"npm:@antfu/ni" = "latest"
+"npm:degit" = "latest"
+"npm:taze" = "latest"
