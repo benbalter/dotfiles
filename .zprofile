@@ -4,6 +4,5 @@ if [ -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
   eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 fi
 
-if command -v brew > /dev/null; then
-  FPATH="$(brew --prefix)/share/zsh/site-functions:${FPATH}"
-fi
+# HOMEBREW_PREFIX and the Homebrew site-functions FPATH entry are set in
+# lib/globals, which .zshrc sources before oh-my-zsh runs compinit.

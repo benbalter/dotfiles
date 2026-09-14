@@ -93,6 +93,22 @@ jobs:
           command -v brew
           brew --version
 
+      # The full Brewfile (and thus mise) is skipped in CI, so install mise
+      # directly, then materialize the mise-managed runtimes and global npm CLIs
+      # and assert each lands on PATH. The playbook symlinked
+      # ~/.config/mise/config.toml above (verified earlier), so installing from
+      # $HOME picks up that global config.
+      - name: Install and verify mise-managed CLIs
+        run: |
+          brew install mise
+          cd "$HOME"
+          mise install
+          export PATH="$HOME/.local/share/mise/shims:$PATH"
+          for cmd in node tsx wrangler ncu serve claude copilot zx ni degit taze; do
+            command -v "$cmd" >/dev/null || { echo "FAIL: $cmd not on PATH"; exit 1; }
+          done
+          echo "All mise-managed CLIs verified"
+
       - name: Verify macOS user defaults applied
         run: |
           autohide=$(defaults read com.apple.dock autohide)

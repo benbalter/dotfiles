@@ -33,6 +33,17 @@ if command -v brew >/dev/null; then
 	brew update || true
 	brew outdated || true
 
+	# Never upgrade casks that update themselves. Homebrew used to skip these
+	# unless asked with --greedy; it now upgrades them by default and points at
+	# this variable to opt out. The default is actively harmful here: the app has
+	# already replaced itself in /Applications, so Homebrew's recorded version is
+	# stale (Chrome 149 vs 152, VS Code 1.128 vs 1.133). Its uninstall step then
+	# moves the live app back onto the old Caskroom stage, hits the copy already
+	# sitting there, and dies with "It seems there is already an App at ...",
+	# rolling back and re-orphaning the stage. 8.7GB of orphaned app bundles had
+	# accumulated this way. Non-auto-updating casks still upgrade normally.
+	export HOMEBREW_NO_UPGRADE_AUTO_UPDATES_CASKS=1
+
 	# Cask upgrades replace GUI apps: they need an interactive sudo and a GUI
 	# session to quit the running app, neither of which the headless nightly
 	# launchd job has. From a terminal, upgrade everything; when headless,
@@ -44,8 +55,12 @@ if command -v brew >/dev/null; then
 		brew upgrade --formula || true
 	fi
 
+	# --no-upgrade: install missing entries only. bundle does its own cask
+	# upgrades, which the variable above does not cover — that is how spotify
+	# got wedged the same way. Upgrades are line 42's job. Mirrors the
+	# playbook's macOS bundle task.
 	echo "==> Installing any new Brewfile entries..."
-	brew bundle --global || true
+	brew bundle --global --no-upgrade || true
 
 	# Prune orphaned dependencies and clear stale downloads/old versions. Both
 	# are non-interactive and safe headless, so they run every invocation
