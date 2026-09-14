@@ -330,9 +330,9 @@ cask 'mutedeck'
 # Open-source software for live streaming and screen recording
 # cask 'obs' # PROPOSED REMOVAL: never opened
 # Get up and running with large language models locally
-cask 'ollama-app'
+# cask 'ollama-app' # PROPOSED REMOVAL: last opened 16 days ago
 # Local-first alternative to Logitech Options+ for HID++ devices
-cask 'openlogi'
+# cask 'openlogi' # PROPOSED REMOVAL: last opened 20 days ago
 # Network utility for sending / receiving TCP, UDP, SSL
 # cask 'packetsender' # PROPOSED REMOVAL: never opened
 # Extracts pages, splits, merges, mixes and rotates PDF files
@@ -352,7 +352,7 @@ cask 'slack@beta'
 # Music streaming service
 cask 'spotify'
 # Video game digital distribution service
-cask 'steam'
+# cask 'steam' # PROPOSED REMOVAL: last opened 21 days ago
 # Application for inspecting installer packages
 cask 'suspicious-package'
 # Quicklook extension for source files
