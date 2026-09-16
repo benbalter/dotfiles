@@ -384,19 +384,33 @@
       when: is_macos
       tags: [macos, defaults]
 
-    # Guards against the bare-domain trap described in config.yml: if a system
-    # default is written somewhere that doesn't take effect, the key is absent
-    # from the real system domain and this fails instead of reporting green.
-    # These plists are world-readable, so no become is needed.
+    # Guards against the bare-domain trap described in config.yml. This reads the
+    # EFFECTIVE value macOS resolves by merging the user, system and managed
+    # domains -- not just the file we wrote. A plain `defaults read` only proves
+    # the write landed somewhere, which is precisely what kept the com.apple.alf
+    # firewall bug invisible: the file said 1 while the OS ignored the file.
     - name: Verify MacOS system defaults applied
       ansible.builtin.command:
-        cmd: "defaults read {{ item.domain }} {{ item.key }}"
+        cmd: >-
+          osascript -l JavaScript -e
+          "ObjC.unwrap($.NSUserDefaults.alloc.initWithSuiteName('{{ item.domain | basename }}').objectForKey('{{ item.key }}'))"
       loop: "{{ macos_defaults.system }}"
       loop_control:
-        label: "{{ item.domain }} {{ item.key }}"
+        label: "{{ item.domain | basename }} {{ item.key }}"
       register: system_defaults_check
       changed_when: false
-      failed_when: system_defaults_check.rc != 0
+      failed_when: (system_defaults_check.stdout | trim) in ["", "null"]
+      when: is_macos
+      tags: [macos, defaults]
+
+    - name: Remove MacOS defaults written to the wrong domain
+      community.general.osx_defaults:
+        domain: "{{ item.domain }}"
+        key: "{{ item.key }}"
+        state: absent
+      loop: "{{ macos_defaults.absent }}"
+      loop_control:
+        label: "{{ item.domain }} {{ item.key }}"
       when: is_macos
       tags: [macos, defaults]
 
@@ -487,6 +501,49 @@
               changed_when: false
               failed_when: "'stealth mode is on' not in stealth_verify.stdout"
 
+            # --getallowsigned prints built-in policy on line 1 and downloaded
+            # (notarized) policy on line 2. "ENABLED" is not a substring of
+            # "DISABLED", so a plain containment test is unambiguous here.
+            - name: Check firewall signed-software policy
+              ansible.builtin.command:
+                cmd: /usr/libexec/ApplicationFirewall/socketfilterfw --getallowsigned
+              register: allowsigned_state
+              changed_when: false
+
+            - name: Set firewall policy for built-in signed software
+              ansible.builtin.command:
+                cmd: >-
+                  /usr/libexec/ApplicationFirewall/socketfilterfw
+                  --setallowsigned {{ 'on' if macos_firewall_allow_signed_builtin else 'off' }}
+              become: true
+              when: builtin_expected not in allowsigned_state.stdout_lines[0]
+              changed_when: true
+              vars:
+                builtin_expected: "{{ 'ENABLED' if macos_firewall_allow_signed_builtin else 'DISABLED' }}"
+
+            - name: Set firewall policy for downloaded signed software
+              ansible.builtin.command:
+                cmd: >-
+                  /usr/libexec/ApplicationFirewall/socketfilterfw
+                  --setallowsignedapp {{ 'on' if macos_firewall_allow_signed_downloaded else 'off' }}
+              become: true
+              when: downloaded_expected not in allowsigned_state.stdout_lines[1]
+              changed_when: true
+              vars:
+                downloaded_expected: "{{ 'ENABLED' if macos_firewall_allow_signed_downloaded else 'DISABLED' }}"
+
+            - name: Verify firewall signed-software policy
+              ansible.builtin.command:
+                cmd: /usr/libexec/ApplicationFirewall/socketfilterfw --getallowsigned
+              register: allowsigned_verify
+              changed_when: false
+              failed_when: >-
+                builtin_expected not in allowsigned_verify.stdout_lines[0]
+                or downloaded_expected not in allowsigned_verify.stdout_lines[1]
+              vars:
+                builtin_expected: "{{ 'ENABLED' if macos_firewall_allow_signed_builtin else 'DISABLED' }}"
+                downloaded_expected: "{{ 'ENABLED' if macos_firewall_allow_signed_downloaded else 'DISABLED' }}"
+
         # Firewall logging has no socketfilterfw flag on current macOS (there is
         # no --setloggingmode), so it is deliberately not managed here. The old
         # com.apple.alf loggingenabled write was a no-op.
@@ -497,6 +554,24 @@
             key: autoLoginUser
             state: absent
           become: true
+
+        # Wake for network access lets the machine be woken by unsolicited
+        # traffic. On a laptop that buys nothing and keeps a sleeping machine
+        # reachable. `pmset -g` reports the live value, so no separate read-back
+        # task is needed beyond this check.
+        - name: Check wake for network access
+          ansible.builtin.command:
+            cmd: pmset -g
+          register: pmset_state
+          changed_when: false
+          when: not is_ci
+
+        - name: Disable wake for network access
+          ansible.builtin.command:
+            cmd: pmset -a womp 0
+          become: true
+          when: not is_ci and pmset_state.stdout is search('womp\s+1')
+          changed_when: true
 
         - name: Check FileVault status
           ansible.builtin.command:
@@ -513,9 +588,15 @@
           changed_when: filevault_enable.rc == 0
           notify: FileVault restart reminder
 
+        # macOS ships only ABI-versioned PAM modules (pam_tid.so.2); the
+        # unversioned path never exists, so stat'ing it made this guard
+        # permanently false and the task below silently never ran. PAM itself
+        # resolves the unversioned name at load time, which is why
+        # /etc/pam.d/sudo can reference pam_tid.so and still work.
         - name: Check TouchID PAM module availability
-          ansible.builtin.stat:
-            path: /usr/lib/pam/pam_tid.so
+          ansible.builtin.find:
+            paths: /usr/lib/pam
+            patterns: "pam_tid.so*"
           register: pam_tid
 
         - name: Enable TouchID for sudo
@@ -528,7 +609,7 @@
             group: wheel
             mode: "0444"
           become: true
-          when: pam_tid.stat.exists
+          when: pam_tid.matched > 0
 
   handlers:
     - name: FileVault restart reminder

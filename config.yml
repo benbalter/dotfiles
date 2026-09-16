@@ -271,3 +271,21 @@ macos_defaults:
       key: SecureKeyboardEntry
       type: bool
       value: true
+  # Keys that were written to the wrong domain for years. Removing them keeps a
+  # stale value from shadowing the correct one if Apple ever starts reading it.
+  absent:
+    - name: Stale screensaver password flag on the dock domain
+      domain: com.apple.dock
+      key: askForPassword
+    - name: Stale screensaver delay on the dock domain
+      domain: com.apple.dock
+      key: askForPasswordDelay
+
+# Application Firewall policy. macOS defaults to auto-allowing any *downloaded*
+# signed (notarized) app to accept inbound connections, which quietly undoes
+# much of the point of turning the firewall on -- Dropbox, Spotify and friends
+# are admitted without ever asking. Turning it off means each app prompts once
+# the first time it wants to listen. Set this back to true if the prompts are
+# not worth it to you.
+macos_firewall_allow_signed_builtin: true
+macos_firewall_allow_signed_downloaded: false
