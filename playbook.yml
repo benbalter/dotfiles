@@ -384,6 +384,22 @@
       when: is_macos
       tags: [macos, defaults]
 
+    # Guards against the bare-domain trap described in config.yml: if a system
+    # default is written somewhere that doesn't take effect, the key is absent
+    # from the real system domain and this fails instead of reporting green.
+    # These plists are world-readable, so no become is needed.
+    - name: Verify MacOS system defaults applied
+      ansible.builtin.command:
+        cmd: "defaults read {{ item.domain }} {{ item.key }}"
+      loop: "{{ macos_defaults.system }}"
+      loop_control:
+        label: "{{ item.domain }} {{ item.key }}"
+      register: system_defaults_check
+      changed_when: false
+      failed_when: system_defaults_check.rc != 0
+      when: is_macos
+      tags: [macos, defaults]
+
     - name: Set MacOS user defaults
       community.general.osx_defaults:
         domain: "{{ item.domain }}"
@@ -420,9 +436,64 @@
           become: true
           changed_when: false
 
+        # The firewall can only be driven through socketfilterfw. Writing
+        # globalstate/stealthenabled to com.apple.alf silently does nothing on
+        # modern macOS, so each setter below is followed by a read-back that
+        # fails the play if the setting did not actually take. Without that
+        # verification an ineffective setter reports "changed" and the drift
+        # goes unnoticed -- which is exactly how the firewall sat off for months.
+        # Skipped in CI: the verification below is meant to fail loudly, and a
+        # throwaway runner is not a machine we intend to harden.
+        - name: Configure firewall
+          when: not is_ci
+          block:
+            - name: Check firewall state
+              ansible.builtin.command:
+                cmd: /usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate
+              register: firewall_state
+              changed_when: false
+
+            - name: Enable firewall
+              ansible.builtin.command:
+                cmd: /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate on
+              become: true
+              when: "'State = 1' not in firewall_state.stdout"
+              changed_when: true
+
+            - name: Verify firewall is enabled
+              ansible.builtin.command:
+                cmd: /usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate
+              register: firewall_verify
+              changed_when: false
+              failed_when: "'State = 1' not in firewall_verify.stdout"
+
+            - name: Check firewall stealth mode
+              ansible.builtin.command:
+                cmd: /usr/libexec/ApplicationFirewall/socketfilterfw --getstealthmode
+              register: stealth_state
+              changed_when: false
+
+            - name: Enable firewall stealth mode
+              ansible.builtin.command:
+                cmd: /usr/libexec/ApplicationFirewall/socketfilterfw --setstealthmode on
+              become: true
+              when: "'stealth mode is on' not in stealth_state.stdout"
+              changed_when: true
+
+            - name: Verify firewall stealth mode is enabled
+              ansible.builtin.command:
+                cmd: /usr/libexec/ApplicationFirewall/socketfilterfw --getstealthmode
+              register: stealth_verify
+              changed_when: false
+              failed_when: "'stealth mode is on' not in stealth_verify.stdout"
+
+        # Firewall logging has no socketfilterfw flag on current macOS (there is
+        # no --setloggingmode), so it is deliberately not managed here. The old
+        # com.apple.alf loggingenabled write was a no-op.
+
         - name: Disable automatic login
           community.general.osx_defaults:
-            domain: com.apple.loginwindow
+            domain: /Library/Preferences/com.apple.loginwindow
             key: autoLoginUser
             state: absent
           become: true

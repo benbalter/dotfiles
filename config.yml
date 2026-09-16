@@ -144,92 +144,81 @@ directories_to_create_linux:
 directories_to_create: "{{ directories_to_create_common + (directories_to_create_macos if is_macos else directories_to_create_linux) }}"
 
 macos_defaults:
+  # Every entry here is applied with `become: true`. A BARE domain in that
+  # context makes `defaults write` run as root with HOME=/var/root, so the value
+  # lands in root's personal preferences (/var/root/Library/Preferences/) and
+  # affects nothing -- while Ansible still reports the task green. System
+  # settings must therefore use an absolute /Library/Preferences/<domain> path.
+  # The playbook verifies each key afterwards so this cannot silently regress.
   system:
     - name: App Store Auto-update
-      domain: com.apple.commerce
+      domain: /Library/Preferences/com.apple.commerce
       key: AutoUpdate
       type: bool
       value: true
     - name: App Store auto restart
-      domain: com.apple.commerce
+      domain: /Library/Preferences/com.apple.commerce
       key: AutoUpdateRestartRequired
       type: bool
       value: true
     - name: App Store Auto check
-      domain: com.apple.SoftwareUpdate
+      domain: /Library/Preferences/com.apple.SoftwareUpdate
       key: AutomaticCheckEnabled
       type: bool
       value: true
     - name: Set lock screen message
-      domain: /Library/Preferences/com.apple.loginwindow.plist
+      domain: /Library/Preferences/com.apple.loginwindow
       key: LoginwindowText
       value: "Found this computer? Please contact Ben Balter at ben@balter.com."
       type: string
-    - name: Enable firewall
-      domain: /Library/Preferences/com.apple.alf
-      key: globalstate
-      value: 1
-      type: integer
-    - name: Firewall stealth mode
-      domain: com.apple.alf
-      key: stealthenabled
-      type: integer
-      value: 1
-    - name: Firewall logging
-      domain: com.apple.alf
-      key: loggingenabled
-      type: integer
-      value: 1
+    # Firewall settings are NOT set here. The com.apple.alf plist is vestigial
+    # on modern macOS -- the Application Firewall is an NEContentFilter now, so
+    # `defaults write` lands in a file nothing reads and reports green forever.
+    # See the "Configure firewall" block in playbook.yml, which drives
+    # socketfilterfw and verifies the result.
     - name: Auto-download updates
-      domain: com.apple.SoftwareUpdate
+      domain: /Library/Preferences/com.apple.SoftwareUpdate
       key: AutomaticDownload
       type: integer
       value: 1
     - name: Auto-install macOS updates
-      domain: com.apple.SoftwareUpdate
+      domain: /Library/Preferences/com.apple.SoftwareUpdate
       key: AutomaticallyInstallMacOSUpdates
       type: bool
       value: true
     - name: Install config data updates
-      domain: com.apple.SoftwareUpdate
+      domain: /Library/Preferences/com.apple.SoftwareUpdate
       key: ConfigDataInstall
       type: bool
       value: true
     - name: Install critical security updates
-      domain: com.apple.SoftwareUpdate
+      domain: /Library/Preferences/com.apple.SoftwareUpdate
       key: CriticalUpdateInstall
       type: integer
       value: 1
     - name: Library validation
-      domain: com.apple.security.libraryvalidation
+      domain: /Library/Preferences/com.apple.security.libraryvalidation
       key: DisableLibraryValidation
       type: bool
       value: false
-    - name: Disable guest account
-      domain: com.apple.MCX
-      key: DisableGuestAccount
-      type: bool
-      value: true
+    # `com.apple.MCX DisableGuestAccount` used to live here. It is inert on
+    # modern macOS -- MCX is the managed-preferences domain, written by MDM, not
+    # by `defaults`. `GuestEnabled` below is the control that actually works.
     - name: Disable guest login
-      domain: com.apple.loginwindow
+      domain: /Library/Preferences/com.apple.loginwindow
       key: GuestEnabled
       type: bool
       value: false
     - name: Login window show name and password
-      domain: com.apple.loginwindow
+      domain: /Library/Preferences/com.apple.loginwindow
       key: SHOWFULLNAME
       type: bool
       value: true
     - name: Disable password hints
-      domain: com.apple.loginwindow
+      domain: /Library/Preferences/com.apple.loginwindow
       key: RetriesUntilHint
       type: integer
       value: 0
-    - name: Limit ad tracking
-      domain: com.apple.AdLib
-      key: forceLimitAdTracking
-      type: bool
-      value: true
   user:
     - name: Hot corner
       domain: com.apple.dock
@@ -241,16 +230,27 @@ macos_defaults:
       key: autohide
       type: bool
       value: true
+    # These belong to com.apple.screensaver, not com.apple.dock -- they were
+    # written to the dock domain for years, where nothing reads them. Note macOS
+    # 14+ increasingly defers screen-lock timing to System Settings/MDM, so
+    # treat these as best-effort rather than a guarantee.
     - name: Screensaver ask for password
-      domain: com.apple.dock
+      domain: com.apple.screensaver
       key: askForPassword
       type: bool
       value: true
     - name: Screensaver delay
-      domain: com.apple.dock
+      domain: com.apple.screensaver
       key: askForPasswordDelay
       type: integer
       value: 0
+    # Replaces the legacy system-level `com.apple.AdLib forceLimitAdTracking`.
+    # Personalized-ad opt-out is a per-user preference on modern macOS.
+    - name: Limit ad tracking
+      domain: com.apple.AdLib
+      key: allowApplePersonalizedAdvertising
+      type: bool
+      value: false
     - name: Screenshot location
       domain: com.apple.screencapture
       key: location

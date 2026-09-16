@@ -115,8 +115,8 @@ jobs:
           [ "$autohide" = "1" ] || { echo "FAIL: dock autohide=$autohide (expected 1)"; exit 1; }
           ss_type=$(defaults read com.apple.screencapture type)
           [ "$ss_type" = "png" ] || { echo "FAIL: screencapture type=$ss_type (expected png)"; exit 1; }
-          ask_pw=$(defaults read com.apple.dock askForPassword)
-          [ "$ask_pw" = "1" ] || { echo "FAIL: dock askForPassword=$ask_pw (expected 1)"; exit 1; }
+          ask_pw=$(defaults read com.apple.screensaver askForPassword)
+          [ "$ask_pw" = "1" ] || { echo "FAIL: screensaver askForPassword=$ask_pw (expected 1)"; exit 1; }
           echo "macOS user defaults verified"
 
       - name: Re-run playbook (no failures on second run)
