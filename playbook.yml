@@ -338,7 +338,7 @@
     - name: Install mise tools
       ansible.builtin.command:
         cmd: mise install
-        chdir: "{{ ansible_env.HOME }}"
+        chdir: "{{ ansible_facts['env']['HOME'] }}"
       become: false
       register: mise_install
       changed_when: "'✓' in mise_install.stdout"
@@ -351,7 +351,7 @@
     - name: Install Claude writing skills
       ansible.builtin.command:
         cmd: "npx -y skills add {{ item.repo }} --global --yes"
-        creates: "{{ ansible_env.HOME }}/.claude/skills/{{ item.name }}"
+        creates: "{{ ansible_facts['env']['HOME'] }}/.claude/skills/{{ item.name }}"
       loop:
         - { repo: petergyang/no-ai-slop, name: no-ai-slop }
         - { repo: hardikpandya/stop-slop, name: stop-slop }

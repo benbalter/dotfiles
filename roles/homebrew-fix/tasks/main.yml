@@ -32,13 +32,13 @@
     update_homebrew: "{{ homebrew_upgrade_all_packages }}"
   become: false
   environment:
-    PATH: "/opt/homebrew/bin:{{ ansible_env.PATH }}"
+    PATH: "/opt/homebrew/bin:{{ ansible_facts['env']['PATH'] }}"
 
 - name: Upgrade all Homebrew packages
   ansible.builtin.shell:
     cmd: brew upgrade
   become: false
   environment:
-    PATH: "/opt/homebrew/bin:{{ ansible_env.PATH }}"
+    PATH: "/opt/homebrew/bin:{{ ansible_facts['env']['PATH'] }}"
   when: homebrew_upgrade_all_packages
   changed_when: false
