@@ -5,6 +5,9 @@
 # Honor language-specific version files (.ruby-version, .nvmrc, .python-version, etc.)
 idiomatic_version_file_enable_tools = ["ruby", "node", "python"]
 
+[settings.npm]
+shell_out = true
+
 [tools]
 node = "22"
 python = "3.14.5"
@@ -13,7 +16,10 @@ ruby = "3.4"
 # Global npm CLIs (managed by mise so they survive node upgrades,
 # rather than Brewfile `npm` entries that fight Workbrew's node prefix)
 "npm:tsx" = "latest"
-"npm:@anthropic-ai/claude-code" = "latest"
+# claude-code ships a stub `bin/claude.exe` that its postinstall replaces with the
+# ~200MB native binary. mise installs npm tools with --ignore-scripts=true, so
+# without this the CLI is a stub that errors out after every upgrade.
+"npm:@anthropic-ai/claude-code" = { version = "latest", npm_args = "--ignore-scripts=false" }
 "npm:@github/copilot" = "latest"
 "npm:npm-check-updates" = "latest"
 "npm:serve" = "latest"
