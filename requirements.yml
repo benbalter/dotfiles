@@ -5,6 +5,6 @@ roles:
 
 collections:
   - name: geerlingguy.mac
-    version: ">=5.0.0,<6.0.0"
+    version: "5.0.0"
   - name: community.general
-    version: ">=12.0.0,<13.0.0"
+    version: "13.4.0"

@@ -136,8 +136,17 @@ if [ -d env ]; then
 		pip install --upgrade -r requirements.txt
 	fi
 
+	# Split the role and collection halves; the old combined `install --force`
+	# re-downloaded everything every run. Collections are pinned to exact
+	# versions (Renovate opens the bump PRs), so a plain install converges on its
+	# own: it installs whenever the pin is unsatisfied, in either direction, and
+	# no-ops when it already matches. Roles still need --force -- `role install`
+	# has no --upgrade and otherwise refuses to touch an already-installed role
+	# ("use --force to change version to 2.4.0"), so a pin bump would silently
+	# never apply. One small role, so the re-download is cheap.
 	echo "==> Updating Ansible roles and collections..."
-	ansible-galaxy install -r requirements.yml --force
+	ansible-galaxy role install -r requirements.yml --force
+	ansible-galaxy collection install -r requirements.yml
 	deactivate
 fi
 
