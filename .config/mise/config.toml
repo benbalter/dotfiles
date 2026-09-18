@@ -6,7 +6,10 @@
 idiomatic_version_file_enable_tools = ["ruby", "node", "python"]
 
 [settings.npm]
-shell_out = true
+# Use real npm instead of mise's built-in pnpm-style resolver, so npm lifecycle
+# scripts run (see the "npm:@anthropic-ai/claude-code" postinstall note below).
+# This replaces the old `shell_out = true`, renamed in mise 2026.7.
+package_manager = "npm"
 
 [tools]
 node = "22"
