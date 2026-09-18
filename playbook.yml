@@ -42,18 +42,15 @@
       when: is_macos
       tags: always
 
-    # Workbrew runs brew as the `workbrew` user, which shares the `staff` group
-    # with the prefix owner but cannot write the download-lock dir unless it is
-    # group-writable. Ensure it is so `brew bundle` can acquire locks when
-    # fetching new packages.
-    - name: Ensure Homebrew locks dir is group-writable for the Workbrew user
-      ansible.builtin.file:
-        path: /opt/homebrew/var/homebrew/locks
-        state: directory
-        mode: g+w
-        recurse: true
-      when: is_macos and workbrew_bin.stat.exists
-      tags: [homebrew, packages]
+    # Everything Homebrew owns must belong to the user that actually runs brew:
+    # `workbrew` under Workbrew, the login user otherwise. An earlier attempt to
+    # paper over this by making the download-lock dir group-writable lived here;
+    # the ownership rule below replaces it.
+    - name: Select the Homebrew prefix owner
+      ansible.builtin.set_fact:
+        homebrew_owner: "{{ 'workbrew' if workbrew_bin.stat.exists else ansible_facts['user_id'] }}"
+      when: is_macos
+      tags: always
 
   tasks:
     - name: Create directories
@@ -148,6 +145,21 @@
           loop_control:
             label: "{{ item.dest }}"
 
+    # Skipped under Workbrew, which installs and owns Homebrew itself. The role
+    # would contribute nothing there -- brew is already installed, the tap/
+    # package/cask lists are empty and homebrew_use_brewfile is false -- while
+    # every remaining task rewrites ownership in ways that break this machine:
+    #
+    #   * "Ensure proper ownership on homebrew_install_path subdirs" chowns all
+    #     of /opt/homebrew to the login user, recursively, on every run. brew
+    #     then runs as `workbrew` against a tree it cannot write and aborts with
+    #     "/opt/homebrew/Cellar is not writable" (broke 2026-09-16 16:35).
+    #   * "Ensure proper permissions and ownership on homebrew_brew_bin_path
+    #     dirs" chowns that path 0775 to the login user -- and we point
+    #     homebrew_brew_bin_path at /opt/workbrew/bin, which holds the
+    #     setuid-root brew wrapper. That dir must stay root:wheel 0755.
+    #
+    # Package installation happens in the brew bundle task below either way.
     - name: Setup Homebrew
       ansible.builtin.include_role:
         name: geerlingguy.mac.homebrew
@@ -157,7 +169,7 @@
         # Run our own `brew bundle` task below instead of the role's, so we can
         # pass --no-upgrade (see the Install Brewfile packages task).
         homebrew_use_brewfile: false
-      when: is_macos
+      when: is_macos and not workbrew_bin.stat.exists
       tags: [homebrew, packages]
 
     # Mirrors the Linux Brewfile task: --no-upgrade so already-installed,
@@ -175,10 +187,16 @@
       when: is_macos and not is_ci
       tags: [homebrew, packages]
 
+    # become: the Homebrew prefix is owned by the user that runs brew, which is
+    # `workbrew` (not the login user) under Workbrew, so this write needs root
+    # and has to leave the file owned by the prefix owner.
     - name: Configure LanguageTool server
+      become: true
       ansible.builtin.copy:
         src: "{{ playbook_dir }}/homebrew/etc/languagetool/server.properties"
         dest: /opt/homebrew/etc/languagetool/server.properties
+        owner: "{{ homebrew_owner }}"
+        group: "{{ ansible_facts['user_gid'] }}"
         mode: "0644"
       when: is_macos and not is_ci
       tags: [languagetool]
