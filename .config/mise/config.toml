@@ -13,7 +13,7 @@ package_manager = "npm"
 
 [tools]
 node = "22"
-python = "3.14.5"
+python = "3.14.7"
 ruby = "3.4"
 
 # Global npm CLIs (managed by mise so they survive node upgrades,
