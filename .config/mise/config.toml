@@ -12,7 +12,7 @@ idiomatic_version_file_enable_tools = ["ruby", "node", "python"]
 package_manager = "npm"
 
 [tools]
-node = "22"
+node = "24"
 python = "3.14.7"
 ruby = "3.4"
 
