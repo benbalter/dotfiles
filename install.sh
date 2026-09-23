@@ -36,7 +36,7 @@ done
 
 # Symlink directories that need parent dirs
 mkdir -p "$HOME/.bundle" "$HOME/.gnupg" "$HOME/.config/mise" \
-	"$HOME/.config/git" "$HOME/.config/bat" "$HOME/.config/atuin"
+	"$HOME/.config/git" "$HOME/.config/bat" "$HOME/.config/atuin" "$HOME/.config/zed"
 [ -f "$DOTFILES_DIR/.bundle/config" ] && ln -sf "$DOTFILES_DIR/.bundle/config" "$HOME/.bundle/config"
 [ -f "$DOTFILES_DIR/.gnupg/gpg.conf" ] && ln -sf "$DOTFILES_DIR/.gnupg/gpg.conf" "$HOME/.gnupg/gpg.conf"
 [ -f "$DOTFILES_DIR/.gnupg/gpg-agent.conf" ] && ln -sf "$DOTFILES_DIR/.gnupg/gpg-agent.conf" "$HOME/.gnupg/gpg-agent.conf"
@@ -46,6 +46,7 @@ mkdir -p "$HOME/.bundle" "$HOME/.gnupg" "$HOME/.config/mise" \
 [ -f "$DOTFILES_DIR/.config/git/allowed_signers" ] && ln -sf "$DOTFILES_DIR/.config/git/allowed_signers" "$HOME/.config/git/allowed_signers"
 [ -f "$DOTFILES_DIR/.config/bat/config" ] && ln -sf "$DOTFILES_DIR/.config/bat/config" "$HOME/.config/bat/config"
 [ -f "$DOTFILES_DIR/.config/atuin/config.toml" ] && ln -sf "$DOTFILES_DIR/.config/atuin/config.toml" "$HOME/.config/atuin/config.toml"
+[ -f "$DOTFILES_DIR/.config/zed/settings.json" ] && ln -sf "$DOTFILES_DIR/.config/zed/settings.json" "$HOME/.config/zed/settings.json"
 
 # Skip .ssh/config on Linux — it contains macOS-specific directives
 # (UseKeychain, 1Password IdentityAgent) that break SSH on Linux.
