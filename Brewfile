@@ -321,6 +321,8 @@ cask 'google-drive'
 cask 'gpg-suite'
 # Software-defined radio receiver powered by GNU Radio and Qt
 # cask 'gqrx' # PROPOSED REMOVAL: last opened 20 days ago
+# Grammar checker for developers
+cask 'harper-desktop'
 # Keyboard customiser
 cask 'karabiner-elements'
 # Preview and audit Kindle eBooks
