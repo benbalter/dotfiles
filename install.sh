@@ -40,7 +40,6 @@ mkdir -p "$HOME/.bundle" "$HOME/.gnupg" "$HOME/.config/mise" \
 	"$HOME/.claude"
 [ -f "$DOTFILES_DIR/.bundle/config" ] && ln -sf "$DOTFILES_DIR/.bundle/config" "$HOME/.bundle/config"
 [ -f "$DOTFILES_DIR/.gnupg/gpg.conf" ] && ln -sf "$DOTFILES_DIR/.gnupg/gpg.conf" "$HOME/.gnupg/gpg.conf"
-[ -f "$DOTFILES_DIR/.gnupg/gpg-agent.conf" ] && ln -sf "$DOTFILES_DIR/.gnupg/gpg-agent.conf" "$HOME/.gnupg/gpg-agent.conf"
 [ -f "$DOTFILES_DIR/.config/mise/config.toml" ] && ln -sf "$DOTFILES_DIR/.config/mise/config.toml" "$HOME/.config/mise/config.toml"
 [ -f "$DOTFILES_DIR/.config/starship.toml" ] && ln -sf "$DOTFILES_DIR/.config/starship.toml" "$HOME/.config/starship.toml"
 [ -f "$DOTFILES_DIR/.config/git/attributes" ] && ln -sf "$DOTFILES_DIR/.config/git/attributes" "$HOME/.config/git/attributes"
@@ -49,6 +48,9 @@ mkdir -p "$HOME/.bundle" "$HOME/.gnupg" "$HOME/.config/mise" \
 [ -f "$DOTFILES_DIR/.config/atuin/config.toml" ] && ln -sf "$DOTFILES_DIR/.config/atuin/config.toml" "$HOME/.config/atuin/config.toml"
 [ -f "$DOTFILES_DIR/.config/zed/settings.json" ] && ln -sf "$DOTFILES_DIR/.config/zed/settings.json" "$HOME/.config/zed/settings.json"
 [ -f "$DOTFILES_DIR/claude/CLAUDE.md" ] && ln -sf "$DOTFILES_DIR/claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
+
+# Skip .gnupg/gpg-agent.conf on Linux: it points pinentry-program at
+# /opt/homebrew/bin/pinentry-mac, so gpg fails the moment it needs a passphrase.
 
 # Skip .ssh/config on Linux — it contains macOS-specific directives
 # (UseKeychain, 1Password IdentityAgent) that break SSH on Linux.

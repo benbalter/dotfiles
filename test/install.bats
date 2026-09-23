@@ -46,3 +46,19 @@ teardown() {
 		[ -d "$TEST_HOME/$dir" ] || fail "$dir directory was not created"
 	done
 }
+
+@test "install.sh does not link macOS-only dotfiles" {
+	# shellcheck disable=SC2016
+	run env HOME="$TEST_HOME" DOTFILES_SKIP_TOOLS=1 DOTFILES_SIMPLE_INSTALL=1 bash -c '
+		uname() { echo Linux; }; export -f uname
+		git() { mkdir -p "$3"; }; export -f git
+		sudo() { :; }; export -f sudo
+		. "'"$REPO_ROOT"'/install.sh"
+	'
+	[ "$status" -eq 0 ]
+
+	# e.g. .gnupg/gpg-agent.conf hardcodes pinentry-mac and breaks gpg on Linux
+	while IFS= read -r file; do
+		[ ! -L "$TEST_HOME/$file" ] || fail "install.sh linked macOS-only '$file'"
+	done < <(yq -r '.dotfiles_files_macos[]' "$REPO_ROOT/config.yml")
+}

@@ -108,7 +108,7 @@ fi
 
 if command -v mas >/dev/null; then
 	echo "==> Updating Mac App Store apps..."
-	mas upgrade
+	mas upgrade || true
 fi
 
 if command -v mise >/dev/null; then
@@ -118,12 +118,12 @@ fi
 
 if command -v npm >/dev/null; then
 	echo "==> Updating npm packages..."
-	npm update
+	npm update || true
 fi
 
 if command -v bundle >/dev/null; then
 	echo "==> Updating Ruby gems..."
-	bundle update
+	bundle update || true
 fi
 
 echo "==> Updating Python packages..."
@@ -131,9 +131,9 @@ if [ -d env ]; then
 	# shellcheck disable=SC1091
 	. env/bin/activate
 	if command -v uv >/dev/null; then
-		uv pip install --upgrade -r requirements.txt
+		uv pip install --upgrade -r requirements.txt || true
 	else
-		pip install --upgrade -r requirements.txt
+		pip install --upgrade -r requirements.txt || true
 	fi
 
 	# Split the role and collection halves; the old combined `install --force`
@@ -145,8 +145,8 @@ if [ -d env ]; then
 	# ("use --force to change version to 2.4.0"), so a pin bump would silently
 	# never apply. One small role, so the re-download is cheap.
 	echo "==> Updating Ansible roles and collections..."
-	ansible-galaxy role install -r requirements.yml --force
-	ansible-galaxy collection install -r requirements.yml
+	ansible-galaxy role install -r requirements.yml --force || true
+	ansible-galaxy collection install -r requirements.yml || true
 	deactivate
 fi
 
