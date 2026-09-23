@@ -36,7 +36,6 @@ if [[ "$(uname)" == "Darwin" ]]; then
     battery
     brew
     bundler
-    iterm2
     macos
   )
 elif command -v dnf >/dev/null; then
@@ -56,8 +55,6 @@ source "$DOTFILES_ROOT/lib/auto-complete"
 
 # shellcheck source=lib/aliases
 source "$DOTFILES_ROOT/lib/aliases"
-
-test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
 if command -v mise >/dev/null; then
   eval "$(mise activate zsh)"

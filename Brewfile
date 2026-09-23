@@ -305,8 +305,6 @@ cask 'google-drive'
 cask 'gpg-suite'
 # Software-defined radio receiver powered by GNU Radio and Qt
 # cask 'gqrx' # PROPOSED REMOVAL: last opened 20 days ago
-# Terminal emulator as alternative to Apple's Terminal app
-# cask 'iterm2@beta' # PROPOSED REMOVAL: last opened 28 days ago
 # Keyboard customiser
 cask 'karabiner-elements'
 # Preview and audit Kindle eBooks

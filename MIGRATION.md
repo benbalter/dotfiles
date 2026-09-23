@@ -39,10 +39,6 @@ step is idempotent, so it's safe to start over if something goes sideways.
       grep -v '^#' /etc/hosts | grep -vE '^(127\.|255\.|::1)' > ~/hosts-custom.txt
       ```
       Known custom entry: `192.168.1.36 dns.balter.com`.
-- [ ] Export iTerm2 preferences (not in dotfiles):
-      Preferences → General → Preferences → "Save current settings to folder"
-      and point at a synced folder (e.g., `~/Dropbox/iterm2`). Or accept
-      defaults on the new machine — Ghostty config already travels in dotfiles.
 - [ ] Confirm **VS Code Settings Sync** is enabled (Settings → Settings Sync,
       signed in with GitHub). The playbook installs extensions but not user
       settings/keybindings.
@@ -131,9 +127,6 @@ These are **not** managed by the playbook — copy or restore as needed.
       ```sh
       sudo sh -c "cat ~/hosts-custom.txt >> /etc/hosts"
       ```
-- [ ] **iTerm2 preferences** — Preferences → General → Preferences →
-      "Load preferences from custom folder" pointing at the same synced
-      folder used in step 1.
 - [ ] **Working repos**: clone fresh from GitHub, or `rsync ~/projects` and
       `~/github` from the old machine.
 - [ ] **`~/.ssh/known_hosts`** (optional — will rebuild as you connect):

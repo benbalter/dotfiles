@@ -33,7 +33,7 @@ The `Brewfile` manages packages on both macOS and Fedora Asahi Remix ([Homebrew 
 | Dev tools      | git, gh, delta, fzf, ripgrep, jq, mise                                   |
 | Linters        | shellcheck, shfmt, actionlint, ansible-lint, yamllint, vale, rubocop     |
 | Infrastructure | tflint, tfsec, terrascan, docker, act                                    |
-| Applications   | iTerm2, VS Code, 1Password, Chrome, and more                             |
+| Applications   | Ghostty, VS Code, 1Password, Chrome, and more                             |
 
 ## Setting up a new machine from scratch
 
