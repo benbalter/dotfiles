@@ -23,7 +23,11 @@ setup() {
 		  {"token": "zz-fresh", "artifacts": [{"app": ["Zz Fresh.app"]}]},
 		  {"token": "zz-never", "artifacts": [{"app": ["Zz Never.app"]}]},
 		  {"token": "zz-missing", "artifacts": [{"app": ["Zz Missing.app"]}]},
-		  {"token": "zz-font", "artifacts": [{"font": ["Zz.ttf"]}]}
+		  {"token": "zz-font", "artifacts": [{"font": ["Zz.ttf"]}]},
+		  {"token": "zz-pkg", "artifacts": [{"pkg": ["Zz.pkg"]}, {"uninstall": [{"delete": ["/Applications/zz pkg.app", "/Library/Zz"]}]}]},
+		  {"token": "zz-named", "name": ["Zz Named"], "artifacts": [{"pkg": ["Zz.pkg"]}]},
+		  {"token": "zz-hyphen", "name": ["Zz Hyphen Elements"], "artifacts": [{"pkg": ["Zz.pkg"]}]},
+		  {"token": "zz-unguessable", "name": ["Zz Driver"], "artifacts": [{"pkg": ["Zz.pkg"]}]}
 		]}
 		JSON
 	EOF
@@ -48,12 +52,15 @@ setup() {
 	EOF
 	chmod +x "$STUB_BIN"/*
 
-	for app in "Zz Stale" "Zz Fresh" "Zz Never"; do
+	for app in "Zz Stale" "Zz Fresh" "Zz Never" "zz pkg" "Zz Named" "Zz-Hyphen-Elements"; do
 		mkdir "$TEST_HOME/Applications/$app.app"
 	done
 	echo T-30 >"$TEST_HOME/lastused/Zz Stale.app"
 	echo T-3 >"$TEST_HOME/lastused/Zz Fresh.app"
 	echo "(null)" >"$TEST_HOME/lastused/Zz Never.app"
+	echo T-40 >"$TEST_HOME/lastused/zz pkg.app"
+	echo T-50 >"$TEST_HOME/lastused/Zz Named.app"
+	echo T-60 >"$TEST_HOME/lastused/Zz-Hyphen-Elements.app"
 
 	# Mirror the real layout: ~/.Brewfile is a symlink into the dotfiles.
 	cat >"$TEST_HOME/dotfiles/Brewfile" <<-'EOF'
@@ -63,6 +70,10 @@ setup() {
 		cask 'zz-never'
 		cask 'zz-missing'
 		cask 'zz-font'
+		cask 'zz-pkg'
+		cask 'zz-named'
+		cask 'zz-hyphen'
+		cask 'zz-unguessable'
 		brew 'jq'
 	EOF
 	ln -s "$TEST_HOME/dotfiles/Brewfile" "$TEST_HOME/.Brewfile"
@@ -91,13 +102,29 @@ run_audit() {
 	brewfile="$TEST_HOME/dotfiles/Brewfile"
 	grep -qxF "# cask 'zz-stale' # PROPOSED REMOVAL: last opened 30 days ago" "$brewfile" ||
 		fail "stale cask not proposed: $(cat "$brewfile")"
+	for cask in zz-pkg zz-named zz-hyphen; do
+		grep -q "^# cask '$cask' # PROPOSED REMOVAL" "$brewfile" ||
+			fail "stale .pkg cask $cask not proposed: $(cat "$brewfile")"
+	done
 	# Recently used, undated, uninstalled, and app-less casks are never
 	# guessed at: `clean` would uninstall whatever gets commented out.
-	for cask in zz-fresh zz-never zz-missing zz-font; do
+	for cask in zz-fresh zz-never zz-missing zz-font zz-unguessable; do
 		grep -qxF "cask '$cask'" "$brewfile" || fail "$cask should be untouched: $(cat "$brewfile")"
 	done
 	grep -qxF "brew 'jq'" "$brewfile" || fail "non-cask line lost"
 	grep -qxF "# Stale app" "$brewfile" || fail "comment line lost"
+}
+
+@test "audit-casks finds apps for casks that install through a .pkg" {
+	# No `app` artifact: resolve via the uninstall stanza's /Applications
+	# path, else the display name as-is or hyphenated.
+	run_audit
+	[ "$status" -eq 0 ] || fail "exited $status: $output"
+	echo "$output" | grep -q 'zz-pkg .*last opened 40 days ago' || fail "$output"
+	echo "$output" | grep -q 'zz-named .*last opened 50 days ago' || fail "$output"
+	echo "$output" | grep -q 'zz-hyphen .*last opened 60 days ago' || fail "$output"
+	# A guess that matches no bundle stays unmeasurable, never "not installed".
+	echo "$output" | grep -q 'zz-unguessable .*(no app' || fail "$output"
 }
 
 @test "audit-casks --comment edits the real file, not the symlink" {
@@ -107,7 +134,9 @@ run_audit() {
 }
 
 @test "audit-casks --comment is a no-op when nothing is stale" {
-	echo T-1 >"$TEST_HOME/lastused/Zz Stale.app"
+	for app in "Zz Stale" "zz pkg" "Zz Named" "Zz-Hyphen-Elements"; do
+		echo T-1 >"$TEST_HOME/lastused/$app.app"
+	done
 	before=$(cat "$TEST_HOME/dotfiles/Brewfile")
 	run_audit --comment
 	[ "$status" -eq 0 ] || fail "exited $status: $output"

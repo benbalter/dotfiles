@@ -53,17 +53,41 @@ list_casks() { sed -n "s/^cask '\\([^']*\\)'.*/\\1/p" "$BREWFILE"; }
 
 # Resolve each cask's launchable app in ONE `brew info` call (per-cask spawns
 # would mean ~50 Homebrew launches on every interactive `up`). APPMAP holds
-# tab-separated "token<TAB>app" rows; casks with no app get an empty app field.
+# tab-separated "token<TAB>app<TAB>name" rows. app comes from the cask's `app`
+# artifact or, for casks that install through a .pkg (Zoom, Teams, Stream
+# Deck), the /Applications/*.app its uninstall stanza deletes; it is empty when
+# neither exists. name is the cask's display name, the fallback guess below.
 # shellcheck disable=SC2046 # deliberate word-splitting; cask tokens are bare
 set -- $(list_casks)
 if [ "$#" -gt 0 ]; then
 	APPMAP=$(brew info --cask --json=v2 "$@" 2>/dev/null |
-		jq -r '.casks[] | [.token, (first(.artifacts[]? | select(.app != null) | .app[0]) // "")] | @tsv' 2>/dev/null || true)
+		jq -r '.casks[] | [
+			.token,
+			( first(.artifacts[]? | select(.app != null) | .app[0])
+			  // first(.artifacts[]? | (.uninstall? // [])[]? | (.delete? // empty)
+			       | if type == "array" then .[] else . end
+			       | select(type == "string" and test("^/Applications/[^/]+\\.app$"))
+			       | ltrimstr("/Applications/"))
+			  // "" ),
+			(.name[0] // "")
+		] | @tsv' 2>/dev/null || true)
 else
 	APPMAP=""
 fi
 
 app_for() { printf '%s\n' "$APPMAP" | awk -F '\t' -v t="$1" '$1 == t { print $2; exit }'; }
+name_for() { printf '%s\n' "$APPMAP" | awk -F '\t' -v t="$1" '$1 == t { print $3; exit }'; }
+
+# find_app <bundle>: print the bundle's path if installed.
+find_app() {
+	for dir in /Applications "$HOME/Applications"; do
+		[ -d "$dir/$1" ] && {
+			echo "$dir/$1"
+			return
+		}
+	done
+	return 1
+}
 
 # Echo "<days> <label>". days is the first token; -1 means unmeasurable
 # (app-less, not installed, or no recorded open date) and must never be pruned.
@@ -71,13 +95,20 @@ cask_probe() {
 	cask="$1"
 	app=$(app_for "$cask")
 	if [ -z "$app" ]; then
-		printf '%d %s\n' -1 "(no app — font/driver/plugin?)"
-		return
-	fi
-
-	path="/Applications/$app"
-	[ -d "$path" ] || path="$HOME/Applications/$app"
-	if [ ! -d "$path" ]; then
+		# No app on record: guess from the display name, as-is ("Google
+		# Drive.app") and hyphenated ("Karabiner-Elements.app"). Only a bundle
+		# that actually exists counts, so a wrong guess stays unmeasurable
+		# rather than reading as "not installed".
+		name=$(name_for "$cask")
+		path=""
+		if [ -n "$name" ]; then
+			path=$(find_app "$name.app" || find_app "$(printf '%s' "$name" | tr ' ' '-').app" || true)
+		fi
+		if [ -z "$path" ]; then
+			printf '%d %s\n' -1 "(no app — font/driver/plugin?)"
+			return
+		fi
+	elif ! path=$(find_app "$app"); then
 		printf '%d %s\n' -1 "(not installed)"
 		return
 	fi
