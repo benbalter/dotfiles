@@ -1,0 +1,111 @@
+#!/bin/sh
+# Check that this machine matches the dotfiles: every configured symlink
+# points into the repo, no stale .bak files are left from setup, Homebrew
+# resolves to the right binary, and the nightly update job last succeeded.
+# Read-only; exits non-zero if anything needs attention.
+# Usage: script/doctor
+
+set -eu
+# shellcheck disable=SC3040
+(set -o pipefail) 2>/dev/null && set -o pipefail || true
+
+DOTFILES_ROOT="${DOTFILES_ROOT:-$HOME/.files}"
+CONFIG="$DOTFILES_ROOT/config.yml"
+problems=0
+
+ok() { echo "  ok    $1"; }
+bad() {
+	echo "  FAIL  $1"
+	problems=$((problems + 1))
+}
+warn() { echo "  warn  $1"; }
+
+if [ "$(uname)" = "Darwin" ]; then
+	files_query='.dotfiles_files_common[], .dotfiles_files_macos[]'
+	links_query='.dotfile_links_common[] | [.src, .dest] | @tsv'
+else
+	files_query='.dotfiles_files_common[], .dotfiles_files_linux[]'
+	links_query='(.dotfile_links_common[], .linux_dotfile_links[]) | [.src, .dest] | @tsv'
+fi
+
+# check_link <repo path> <path under $HOME>
+check_link() {
+	target="$HOME/$2"
+	if [ -L "$target" ]; then
+		actual=$(readlink "$target")
+		if [ "$actual" = "$DOTFILES_ROOT/$1" ]; then
+			ok "$target"
+		else
+			bad "$target points to $actual, expected $DOTFILES_ROOT/$1"
+		fi
+	elif [ -e "$target" ]; then
+		bad "$target is a regular file, not a symlink (run script/setup)"
+	else
+		bad "$target is missing (run script/setup)"
+	fi
+	# The playbook moves a pre-existing file to .bak before linking. Once the
+	# link is in place, a leftover .bak is either obsolete or holds local edits
+	# that never made it into the repo; either way it wants a look.
+	if [ -e "$target.bak" ]; then
+		warn "$target.bak left over from setup; merge or delete it"
+	fi
+}
+
+echo "==> Dotfile symlinks"
+if command -v yq >/dev/null; then
+	# Heredocs, not pipes: a piped `while` runs in a subshell and would lose
+	# the $problems count.
+	files=$(yq -r "$files_query" "$CONFIG")
+	while IFS= read -r file; do
+		check_link "$file" "$file"
+	done <<EOF
+$files
+EOF
+	links=$(yq -r "$links_query" "$CONFIG")
+	tab=$(printf '\t')
+	while IFS="$tab" read -r src dest; do
+		check_link "$src" "$dest"
+	done <<EOF
+$links
+EOF
+else
+	bad "yq not found; can't read config.yml (brew install yq)"
+fi
+
+echo "==> Homebrew"
+# Workbrew's wrapper must win over /opt/homebrew/bin/brew, or brew aborts with
+# a wrapper-conflict error (see lib/globals).
+if [ -x /opt/workbrew/bin/brew ]; then
+	brew_path=$(command -v brew || true)
+	if [ "$brew_path" = /opt/workbrew/bin/brew ]; then
+		ok "brew resolves to the Workbrew wrapper"
+	else
+		bad "brew resolves to ${brew_path:-nothing}, expected /opt/workbrew/bin/brew"
+	fi
+elif command -v brew >/dev/null; then
+	ok "brew at $(command -v brew)"
+else
+	bad "brew not found on PATH"
+fi
+
+if [ "$(uname)" = "Darwin" ] && command -v launchctl >/dev/null; then
+	echo "==> Nightly update job"
+	job="gui/$(id -u)/com.balter.ben.update"
+	if info=$(launchctl print "$job" 2>/dev/null); then
+		code=$(echo "$info" | sed -n 's/^[[:space:]]*last exit code = //p' | head -1)
+		case "$code" in
+			0 | "(never exited)") ok "loaded, last exit code ${code:-unknown}" ;;
+			*) bad "last exit code $code; see ~/Library/Logs/dotfiles-update.log" ;;
+		esac
+	else
+		bad "$job is not loaded (launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.balter.ben.update.plist)"
+	fi
+fi
+
+echo
+if [ "$problems" -eq 0 ]; then
+	echo "All checks passed."
+else
+	echo "$problems problem(s) found."
+	exit 1
+fi
