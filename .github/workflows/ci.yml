@@ -183,6 +183,12 @@ jobs:
       - name: Install dependencies
         run: brew install bats-core yq
 
+      # For the spike's test/dotbot.bats, which skips without it.
+      - name: Install dotbot
+        run: |
+          pipx install dotbot
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
       # comic-sans.bats parses VS Code's JSONC settings via test/bin/jsonc-get,
       # which needs the jsonc-parser package from package.json.
       - name: Install node dependencies
@@ -220,6 +226,13 @@ jobs:
           command -v delta
           command -v zoxide
           command -v fzf
+
+      # Runs test/dotbot.bats on Linux, whose link branches the macOS
+      # unit-test job can't reach.
+      - name: Install dotbot
+        run: |
+          pipx install dotbot
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Install bats and run unit tests
         run: |
