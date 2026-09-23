@@ -55,6 +55,7 @@ dotfiles_files_common:
   - .config/git/attributes
   - .config/mise/config.toml
   - .config/starship.toml
+  - .config/zed/settings.json
 
 # Dotfiles symlinked into $HOME on macOS only
 dotfiles_files_macos:

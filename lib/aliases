@@ -16,9 +16,15 @@ alias gr="gh repo view"
 alias reset="git reset HEAD --hard; git clean -f -d"
 alias clean="git branch --merged | grep -v '\*' | xargs -n 1 git branch -d"
 alias ggb="git commit -m ':gem: bump'"
+# Clone a repo and cd into it; if it's already cloned, cd in and pull instead
 gccd() {
-	gh repo clone "$1"
-	cd "$(basename "$1")" || exit
+	if [ -d "$(basename "$1" .git)" ]; then
+		cd "$(basename "$1" .git)" || return
+		git pull
+	else
+		gh repo clone "$1" || return
+		cd "$(basename "$1" .git)" || return
+	fi
 }
 alias branches="git branch -v"
 
@@ -50,6 +56,15 @@ fi
 # find -> fd is intentionally NOT aliased: their syntaxes are incompatible
 # (`find . -name "*.txt"` isn't valid fd), which would break muscle memory.
 # Use `fd` directly for the modern experience.
+
+# Zed: open the given paths, or the current directory (like oh-my-zsh's vsc)
+zd() {
+	if [ $# -gt 0 ]; then
+		zed "$@"
+	else
+		zed .
+	fi
+}
 
 # Script/*
 alias sb="script/bootstrap"

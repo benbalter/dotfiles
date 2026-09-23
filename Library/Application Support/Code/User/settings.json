@@ -149,6 +149,7 @@
   "rubyLsp.rubyExecutablePath": "/workspaces/benbalter.github.com/.devcontainer/Dockerfile",
   "chat.agent.maxRequests": 100,
   "terminal.integrated.suggest.enabled": true,
+  "terminal.integrated.macOptionIsMeta": true,
   "claudeCode.preferredLocation": "sidebar",
   "dotfiles.repository": "https://github.com/benbalter/dotfiles",
   "dotfiles.installCommand": "install.sh",

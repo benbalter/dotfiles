@@ -1,0 +1,97 @@
+// Zed settings
+//
+// For information on how to configure Zed, see the Zed
+// documentation: https://zed.dev/docs/configuring-zed
+//
+// To see all of Zed's default settings without changing your
+// custom settings, run `zed: open default settings` from the
+// command palette (cmd-shift-p / ctrl-shift-p)
+{
+  "cli_default_open_behavior": "new_window",
+  "base_keymap": "VSCode",
+  "edit_predictions": {
+    "provider": "copilot"
+  },
+  "show_edit_predictions": true,
+  "agent_servers": {
+    "claude-acp": {
+      "type": "registry"
+    }
+  },
+  "telemetry": {
+    "diagnostics": false,
+    "metrics": false
+  },
+  // App is installed & updated via Homebrew cask (see Brewfile). The bundle is
+  // owned by the workbrew user, so Zed's self-updater can't write in place.
+  "auto_update": false,
+  "minimap": {
+    "show": "never"
+  },
+  "tab_size": 2,
+  "ui_font_size": 16,
+  "buffer_font_size": 15,
+  "buffer_font_family": "Hack Nerd Font",
+  "terminal": {
+    "font_family": "Hack Nerd Font",
+    // Match Ghostty's macos-option-as-alt so zsh alt-bindings work
+    "option_as_meta": true
+  },
+  "tabs": {
+    "file_icons": true,
+    "git_status": true
+  },
+  "diagnostics": {
+    "inline": {
+      "enabled": true
+    }
+  },
+  "sticky_scroll": {
+    "enabled": true
+  },
+  "languages": {
+    "Markdown": {
+      "soft_wrap": "editor_width"
+    },
+    // The Ruby extension defaults to solargraph (not installed); use ruby-lsp
+    // from mise, same as VS Code's shopify.ruby-lsp
+    "Ruby": {
+      "language_servers": ["ruby-lsp", "rubocop", "!solargraph", "..."]
+    }
+  },
+  "lsp": {
+    "yaml-language-server": {
+      "settings": {
+        "yaml": {
+          // Ansible vault tags, ported from VS Code's yaml.customTags
+          "customTags": ["!encrypted/pkcs1-oaep scalar", "!vault scalar"]
+        }
+      }
+    }
+  },
+  "theme": {
+    "mode": "system",
+    "light": "One Light",
+    "dark": "One Dark"
+  },
+  "auto_install_extensions": {
+    "basher": true,
+    "biome": true,
+    "codebook": true,
+    "csv": true,
+    "docker-compose": true,
+    "dockerfile": true,
+    "emmet": true,
+    "env": true,
+    "git-firefly": true,
+    "github-actions": true,
+    "harper": true,
+    "liquid": true,
+    "make": true,
+    "ruby": true,
+    "ssh-config": true,
+    "terraform": true,
+    "toml": true,
+    "vale": true
+  }
+}

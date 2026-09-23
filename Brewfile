@@ -372,7 +372,7 @@ cask 'whatcable'
 # Full-featured companion app to the YubiKey
 cask 'yubico-authenticator'
 # Multiplayer code editor
-# cask 'zed' # PROPOSED REMOVAL: never opened (using visual-studio-code)
+cask 'zed'
 # Video communication and virtual meeting platform
 cask 'zoom'
 mas '1Password for Safari', id: 1_569_813_296
@@ -451,6 +451,7 @@ vscode 'streetsidesoftware.code-spell-checker'
 vscode 'tlahmann.alex-linter'
 vscode 'tomoki1207.pdf'
 vscode 'travisthetechie.write-good-linter'
+vscode 'usernamehw.errorlens'
 vscode 'visualstudiotoolsforunity.vstuc'
 vscode 'yzhang.markdown-all-in-one'
 cargo 'just'
