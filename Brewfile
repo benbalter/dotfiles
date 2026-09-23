@@ -34,6 +34,8 @@ brew 'ansible'
 brew 'ansible-lint'
 # Interpreted, interactive, object-oriented programming language
 brew 'python@3.13'
+# Simple, modern, secure file encryption
+brew 'age'
 # Microsoft Azure CLI 2.0
 brew 'azure-cli'
 # Bash Automated Testing System
@@ -46,12 +48,16 @@ brew 'caddy', restart_service: :changed
 brew 'cloc'
 # Cross-platform make
 brew 'cmake'
+# Container runtimes on MacOS (and Linux) with minimal setup
+brew 'colima'
 # GNU File, Shell, and Text utilities
 brew 'coreutils'
 # C library implementing the SSH2 protocol
 brew 'libssh2'
 # Get a file from an HTTP, HTTPS or FTP server
 brew 'curl'
+# Pack, ship and run any application as a lightweight container
+brew 'docker'
 # Tool for managing dock items
 brew 'dockutil'
 # Disk Usage/Free Utility - a better 'df' alternative
@@ -62,6 +68,10 @@ brew 'dust'
 brew 'openjdk'
 # Validate EPUB files, version 2.0 and later
 brew 'epubcheck'
+# Speech synthesizer that supports more than hundred languages and accents
+brew 'espeak-ng'
+# Make creating custom firmwares for ESP32/ESP8266 super easy
+brew 'esphome'
 # Read, write, modify, and display EXIF data on the command-line
 brew 'exif'
 # Perl lib for reading and writing EXIF metadata
@@ -122,6 +132,8 @@ brew 'grep'
 brew 'hackrf'
 # Smarter Dockerfile linter to validate best practices
 brew 'hadolint'
+# Grammar Checker for Developers
+brew 'harper'
 # Process manager for Procfile-based applications
 brew 'hivemind'
 # User-friendly cURL replacement (command-line HTTP client)
@@ -164,6 +176,8 @@ brew 'mas'
 brew 'maven'
 # Polyglot runtime manager (asdf rust clone)
 brew 'mise'
+# Program for MPEG audio stream validation
+brew 'mp3val'
 # 'traceroute' and 'ping' in a single tool
 brew 'mtr'
 # Port scanning utility for large networks
@@ -186,6 +200,8 @@ brew 'pdftk-java'
 brew 'pinentry-mac'
 # Execute binaries from Python packages in isolated environments
 brew 'pipx'
+# Fast, disk space efficient package manager
+brew 'pnpm'
 # Code formatter for JavaScript, CSS, JSON, GraphQL, Markdown, YAML
 brew 'prettier'
 # Protocol buffers (Google's data interchange format)
@@ -375,7 +391,7 @@ cask 'zed'
 cask 'zoom'
 mas '1Password for Safari', id: 1_569_813_296
 mas '24 Hour Wallpaper', id: 1_226_087_575
-mas '2FAS Auth - Two Factor Authentication Extension', id: 6_443_941_139
+mas '2FAS - Two Factor Authentication', id: 6_443_941_139
 mas 'AdGuard Mini', id: 1_440_147_259
 mas 'Dark Reader for Safari', id: 1_438_243_180
 mas 'GhostText', id: 1_552_641_506
@@ -408,6 +424,7 @@ vscode 'csholmq.excel-to-markdown-table'
 vscode 'darkriszty.markdown-table-prettify'
 vscode 'davidanson.vscode-markdownlint'
 vscode 'ltex-plus.vscode-ltex-plus'
+vscode 'davidlday.languagetool-linter'
 vscode 'docker.docker'
 vscode 'eamodio.gitlens'
 vscode 'elijah-potter.harper'

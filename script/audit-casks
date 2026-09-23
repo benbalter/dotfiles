@@ -14,9 +14,9 @@
 #
 # Workflow: run --comment (or let `up` do it), eyeball the `git diff` in your
 # dotfiles, delete anything you want to keep, then run `clean` to uninstall the
-# casks still commented out. Never run `update-brewfile` in between: its
-# `brew bundle dump` rewrites the Brewfile from what's installed and silently
-# erases these proposals.
+# casks still commented out. `update-brewfile` refuses to run in between: its
+# `brew bundle dump` rewrites the Brewfile from what's installed, which would
+# silently erase these proposals.
 
 set -eu
 # shellcheck disable=SC3040
