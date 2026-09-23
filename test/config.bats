@@ -13,10 +13,12 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 	done
 }
 
-@test "config.yml linux_dotfile_links sources all exist in the repo" {
-	while IFS= read -r file; do
-		[ -e "$REPO_ROOT/$file" ] || fail "linux_dotfile_links src '$file' does not exist in repo"
-	done < <(yq -r '.linux_dotfile_links[].src' "$REPO_ROOT/config.yml")
+@test "config.yml dotfile link sources all exist in the repo" {
+	for list in dotfile_links_common linux_dotfile_links; do
+		while IFS= read -r file; do
+			[ -e "$REPO_ROOT/$file" ] || fail "$list src '$file' does not exist in repo"
+		done < <(yq -r ".${list}[].src" "$REPO_ROOT/config.yml")
+	done
 }
 
 @test "install.sh dotfiles all exist in the repo" {
@@ -42,7 +44,7 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 
 @test "config.yml has required top-level keys" {
 	for key in dotfiles_files dotfiles_files_common dotfiles_files_macos \
-		dotfiles_files_linux linux_dotfile_links fedora_packages \
+		dotfiles_files_linux dotfile_links_common linux_dotfile_links fedora_packages \
 		homebrew_brewfile_dir directories_to_create macos_defaults; do
 		grep -q "^${key}:" "$REPO_ROOT/config.yml" || fail "config.yml missing required key '$key'"
 	done
@@ -84,4 +86,18 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 		grep -qF "$file" "$REPO_ROOT/install.sh" ||
 			fail "install.sh does not handle dotfiles_files_common entry '$file'"
 	done < <(yq -r '.dotfiles_files_common[]' "$REPO_ROOT/config.yml")
+}
+
+@test "install.sh links every dotfile_links_common entry" {
+	while IFS=$'\t' read -r src dest; do
+		grep -qF "\"\$DOTFILES_DIR/$src\" \"\$HOME/$dest\"" "$REPO_ROOT/install.sh" ||
+			fail "install.sh does not link '$src' to '$dest'"
+	done < <(yq -r '.dotfile_links_common[] | [.src, .dest] | @tsv' "$REPO_ROOT/config.yml")
+}
+
+@test "claude/settings.json is valid JSON without machine-only keys" {
+	# Merged into ~/.claude/settings.json by the playbook. This repo is public,
+	# so autoMode (which names private hosts) and permissions must stay local.
+	jq -e 'has("autoMode") or has("permissions") | not' "$REPO_ROOT/claude/settings.json" >/dev/null ||
+		fail "claude/settings.json must not contain autoMode or permissions"
 }

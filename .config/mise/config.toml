@@ -31,3 +31,10 @@ ruby = "3.4"
 "npm:@antfu/ni" = "latest"
 "npm:degit" = "latest"
 "npm:taze" = "latest"
+# Language server for Claude Code's typescript-lsp plugin (falls back to the
+# global typescript when a project doesn't have its own; 7.x dropped tsserver)
+"npm:typescript-language-server" = "latest"
+"npm:typescript" = "6"
+# Claude Code's chrome-devtools MCP server; installed here rather than run via
+# `npx chrome-devtools-mcp@latest`, which re-resolves on every session start
+"npm:chrome-devtools-mcp" = "latest"

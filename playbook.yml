@@ -97,9 +97,8 @@
             force: true
           loop: "{{ dotfiles_files }}"
 
-    - name: Setup Linux dotfile links (XDG destinations)
+    - name: Setup dotfile links (destination differs from repo path)
       tags: [dotfiles]
-      when: not is_macos
       block:
         # Create each link's parent under user_dir before symlinking. These
         # parents (e.g. ~/.ssh, ~/.config/ghostty) are otherwise only made by
@@ -107,41 +106,41 @@
         # the GitHub Actions Fedora container $HOME (/github/home) differs from
         # user_dir (/root), so those dirs land in the wrong place and the
         # symlink fails with ENOENT. user_dir matches the symlink dest below.
-        - name: Ensure parent directories of Linux dotfile links exist
+        - name: Ensure parent directories of dotfile links exist
           ansible.builtin.file:
             path: "{{ ansible_facts['user_dir'] }}/{{ item.dest | dirname }}"
             state: directory
             mode: "0755"
-          loop: "{{ linux_dotfile_links }}"
+          loop: "{{ dotfile_links }}"
           loop_control:
             label: "{{ item.dest | dirname }}"
 
-        - name: Stat existing Linux dotfile targets
+        - name: Stat existing dotfile link targets
           ansible.builtin.stat:
             path: "{{ ansible_facts['user_dir'] }}/{{ item.dest }}"
-          loop: "{{ linux_dotfile_links }}"
+          loop: "{{ dotfile_links }}"
           loop_control:
             label: "{{ item.dest }}"
-          register: linux_dotfile_targets
+          register: dotfile_link_targets
 
-        - name: Back up existing non-symlink Linux dotfile targets
+        - name: Back up existing non-symlink dotfile link targets
           ansible.builtin.command:
             cmd: mv "{{ ansible_facts['user_dir'] }}/{{ item.item.dest }}" "{{ ansible_facts['user_dir'] }}/{{ item.item.dest }}.bak"
             creates: "{{ ansible_facts['user_dir'] }}/{{ item.item.dest }}.bak"
-          loop: "{{ linux_dotfile_targets.results }}"
+          loop: "{{ dotfile_link_targets.results }}"
           loop_control:
             label: "{{ item.item.dest }}"
           when:
             - item.stat.exists
             - not item.stat.islnk
 
-        - name: Symlink Linux dotfiles into HOME
+        - name: Symlink dotfile links into HOME
           ansible.builtin.file:
             src: "{{ playbook_dir }}/{{ item.src }}"
             dest: "{{ ansible_facts['user_dir'] }}/{{ item.dest }}"
             state: link
             force: true
-          loop: "{{ linux_dotfile_links }}"
+          loop: "{{ dotfile_links }}"
           loop_control:
             label: "{{ item.dest }}"
 
@@ -376,6 +375,72 @@
       become: false
       when: not is_ci
       tags: [packages]
+
+    # Claude Code rewrites ~/.claude/settings.json by replacing the file, so a
+    # symlink wouldn't survive. Instead merge the shareable keys from
+    # claude/settings.json over whatever is there: the repo wins for keys it
+    # sets, and machine-only keys (autoMode, which names private hosts) stay
+    # local and out of this public repo.
+    - name: Configure Claude Code
+      tags: [claude]
+      when: not is_ci
+      become: false
+      vars:
+        claude_dir: "{{ ansible_facts['env']['HOME'] }}/.claude"
+        claude_settings_repo: "{{ lookup('ansible.builtin.file', playbook_dir + '/claude/settings.json') | from_json }}"
+      block:
+        - name: Read existing Claude Code settings
+          ansible.builtin.slurp:
+            src: "{{ claude_dir }}/settings.json"
+          register: claude_settings_current
+          failed_when: false
+
+        - name: Merge repo Claude Code settings
+          ansible.builtin.copy:
+            content: "{{ ((claude_settings_current.content | default('e30=') | b64decode | from_json) | combine(claude_settings_repo, recursive=true)) | to_nice_json(indent=2, sort_keys=false, ensure_ascii=false) }}\n"
+            dest: "{{ claude_dir }}/settings.json"
+            mode: "0644"
+
+        - name: Add Claude Code plugin marketplaces
+          ansible.builtin.command:
+            cmd: "claude plugin marketplace add {{ item.value.source.repo }}"
+            creates: "{{ claude_dir }}/plugins/marketplaces/{{ item.key }}"
+          loop: "{{ claude_settings_repo.extraKnownMarketplaces | dict2items }}"
+          loop_control:
+            label: "{{ item.key }}"
+
+        - name: Read installed Claude Code plugins
+          ansible.builtin.slurp:
+            src: "{{ claude_dir }}/plugins/installed_plugins.json"
+          register: claude_installed_plugins
+          failed_when: false
+
+        - name: Install Claude Code plugins
+          ansible.builtin.command:
+            cmd: "claude plugin install {{ item }}"
+          loop: "{{ claude_settings_repo.enabledPlugins | dict2items | selectattr('value') | map(attribute='key') | list }}"
+          when: >-
+            item not in (claude_installed_plugins.content | default('e30=')
+            | b64decode | from_json).get('plugins', {})
+          changed_when: true
+
+        - name: Check for the chrome-devtools MCP server
+          ansible.builtin.command:
+            cmd: claude mcp get chrome-devtools
+          register: claude_mcp_chrome_devtools
+          check_mode: false
+          changed_when: false
+          failed_when: false
+
+        # The binary comes from mise (.config/mise/config.toml) rather than
+        # `npx chrome-devtools-mcp@latest`, which re-resolves every session.
+        - name: Add the chrome-devtools MCP server
+          ansible.builtin.command:
+            cmd: >-
+              claude mcp add -s user chrome-devtools --
+              {{ ansible_facts['env']['HOME'] }}/.local/share/mise/shims/chrome-devtools-mcp
+          when: claude_mcp_chrome_devtools.rc != 0
+          changed_when: true
 
     - name: Setup Dock
       ansible.builtin.include_role:

@@ -75,6 +75,12 @@ dotfiles_files_macos:
 dotfiles_files_linux:
   - .gitconfig.linux
 
+# Symlinks on every platform whose destination differs from the repo path
+# (kept out of the repo's own .claude/ so they don't double as project config)
+dotfile_links_common:
+  - src: claude/CLAUDE.md
+    dest: .claude/CLAUDE.md
+
 # Linux symlinks whose destination differs from the repo path
 # (configs shared with macOS but expected at XDG paths on Linux)
 linux_dotfile_links:
@@ -86,6 +92,8 @@ linux_dotfile_links:
     dest: .config/ghostty/config
   - src: Library/Application Support/com.mitchellh.ghostty/shaders/bloom.glsl
     dest: .config/ghostty/shaders/bloom.glsl
+
+dotfile_links: "{{ dotfile_links_common + ([] if is_macos else linux_dotfile_links) }}"
 
 dotfiles_files: "{{ dotfiles_files_common + (dotfiles_files_macos if is_macos else dotfiles_files_linux) }}"
 
