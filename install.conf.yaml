@@ -1,0 +1,74 @@
+# Spike: every dotfile link, for both the playbook and Codespaces, in one
+# list. Evaluation only; nothing runs this yet. Would replace config.yml's
+# dotfiles_files_* / dotfile_links* lists and install.sh's hand-kept copy.
+#
+#   dotbot -d ~/.files -c install.conf.yaml
+#
+# Source paths are relative to the base directory. Links are absolute, which
+# matches what the playbook creates today.
+
+- defaults:
+    link:
+      create: true  # make parent directories
+      relink: true  # replace stale symlinks, but never regular files
+
+# Every platform
+- link:
+    "~/.bundle/config": ".bundle/config"
+    "~/.default-gems": ".default-gems"
+    "~/.digrc": ".digrc"
+    "~/.gemrc": ".gemrc"
+    "~/.gitconfig": ".gitconfig"
+    "~/.gitignore": ".gitignore"
+    "~/.gnupg/gpg.conf": ".gnupg/gpg.conf"
+    "~/.hushlogin": ".hushlogin"
+    "~/.irbrc": ".irbrc"
+    "~/.npmrc": ".npmrc"
+    "~/.pryrc": ".pryrc"
+    "~/.remarkrc": ".remarkrc"
+    "~/.ripgreprc": ".ripgreprc"
+    "~/.yamllint": ".yamllint"
+    "~/.zprofile": ".zprofile"
+    "~/.zshrc": ".zshrc"
+    "~/.config/atuin/config.toml": ".config/atuin/config.toml"
+    "~/.config/bat/config": ".config/bat/config"
+    "~/.config/git/allowed_signers": ".config/git/allowed_signers"
+    "~/.config/git/attributes": ".config/git/attributes"
+    "~/.config/mise/config.toml": ".config/mise/config.toml"
+    "~/.config/starship.toml": ".config/starship.toml"
+    "~/.config/zed/settings.json": ".config/zed/settings.json"
+    "~/.claude/CLAUDE.md": "claude/CLAUDE.md"
+
+# macOS only. `defaults` persists until the next one, so each platform
+# section states its condition once instead of on every link.
+- defaults:
+    link:
+      create: true
+      relink: true
+      if: '[ "$(uname)" = Darwin ]'
+- link:
+    "~/.Brewfile": ".Brewfile"
+    "~/.gitconfig.macos": ".gitconfig.macos"
+    "~/.gnupg/gpg-agent.conf": ".gnupg/gpg-agent.conf"
+    "~/.mackup.cfg": ".mackup.cfg"
+    "~/.ssh/config": ".ssh/config"
+    "~/Library/Application Support/Code/User/settings.json": "Library/Application Support/Code/User/settings.json"
+    "~/Library/Application Support/com.mitchellh.ghostty/config": "Library/Application Support/com.mitchellh.ghostty/config"
+    "~/Library/Application Support/com.mitchellh.ghostty/shaders/bloom.glsl": "Library/Application Support/com.mitchellh.ghostty/shaders/bloom.glsl"
+    "~/Library/Spelling/LocalDictionary": "Library/Spelling/LocalDictionary"
+    "~/Library/LaunchAgents/com.balter.ben.tmpreaper.plist": "Library/LaunchAgents/com.balter.ben.tmpreaper.plist"
+    "~/Library/LaunchAgents/com.balter.ben.update.plist": "Library/LaunchAgents/com.balter.ben.update.plist"
+
+# Linux only, including links whose destination differs from the repo path
+# (configs that live under Library/Application Support on macOS).
+- defaults:
+    link:
+      create: true
+      relink: true
+      if: '[ "$(uname)" != Darwin ]'
+- link:
+    "~/.gitconfig.linux": ".gitconfig.linux"
+    "~/.ssh/config": ".ssh/config.linux"
+    "~/.config/Code/User/settings.json": "Library/Application Support/Code/User/settings.json"
+    "~/.config/ghostty/config": "Library/Application Support/com.mitchellh.ghostty/config"
+    "~/.config/ghostty/shaders/bloom.glsl": "Library/Application Support/com.mitchellh.ghostty/shaders/bloom.glsl"
