@@ -117,8 +117,11 @@ if command -v mise >/dev/null; then
 fi
 
 if command -v npm >/dev/null; then
-	echo "==> Updating npm packages..."
-	npm update || true
+	# `npm ci`, not `npm update`: these are only the repo's lint tools, and
+	# update rewrote the tracked package-lock.json nightly, leaving a dirty tree
+	# to commit by hand. Renovate owns version bumps; this just installs them.
+	echo "==> Installing npm packages..."
+	npm ci || true
 fi
 
 if command -v bundle >/dev/null; then
