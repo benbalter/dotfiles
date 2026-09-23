@@ -279,7 +279,7 @@ cask 'cleanshot'
 # Drivers for DisplayLink docks, adapters and monitors
 cask 'displaylink'
 # App to build and share containerised applications and microservices
-cask 'docker-desktop'
+# cask 'docker-desktop' # PROPOSED REMOVAL: last opened 15 days ago
 # Client for the Dropbox cloud storage service
 cask 'dropbox'
 # Elgato FACECAM configuration tool
