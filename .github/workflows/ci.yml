@@ -178,10 +178,11 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/Library/Caches/Homebrew/downloads
-          key: ${{ runner.os }}-brew-test-bats-core-yq
+          key: ${{ runner.os }}-brew-test-bats-core-yq-chezmoi
 
+      # chezmoi: for the spike's test/chezmoi.bats, which skips without it.
       - name: Install dependencies
-        run: brew install bats-core yq
+        run: brew install bats-core yq chezmoi
 
       # comic-sans.bats parses VS Code's JSONC settings via test/bin/jsonc-get,
       # which needs the jsonc-parser package from package.json.
@@ -220,6 +221,13 @@ jobs:
           command -v delta
           command -v zoxide
           command -v fzf
+
+      # Runs test/chezmoi.bats on Linux; chezmoi reads the OS from its Go
+      # runtime, so the macOS unit-test job can't cover the Linux branches.
+      - name: Install chezmoi
+        run: |
+          sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Install bats and run unit tests
         run: |

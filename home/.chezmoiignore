@@ -1,0 +1,13 @@
+# Targets, not source names. Per-platform entries replace config.yml's
+# dotfiles_files_macos / _linux split and linux_dotfile_links.
+{{ if ne .chezmoi.os "darwin" }}
+.Brewfile
+.gitconfig.macos
+.gnupg/gpg-agent.conf
+.mackup.cfg
+Library
+{{ else }}
+.gitconfig.linux
+.config/Code
+.config/ghostty
+{{ end }}
