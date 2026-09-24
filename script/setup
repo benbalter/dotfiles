@@ -4,6 +4,10 @@ set -eu
 # shellcheck disable=SC3040
 (set -o pipefail) 2>/dev/null && set -o pipefail || true
 
+# bootstrap and ansible are called by relative path, and install.sh and the
+# `setup` alias both exec this from wherever the caller happens to be.
+cd "$(dirname "$0")/.."
+
 echo "==> Bootstrapping environment..."
 script/bootstrap
 
