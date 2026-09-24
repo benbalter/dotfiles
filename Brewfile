@@ -336,7 +336,7 @@ cask 'microsoft-auto-update'
 # Multi-platform web browser
 # cask 'microsoft-edge' # PROPOSED REMOVAL: never opened
 # Meet, chat, call, and collaborate in just one place
-cask 'microsoft-teams'
+# cask 'microsoft-teams' # PROPOSED REMOVAL: last opened 31 days ago
 # Intercept, modify, replay, save HTTP/S traffic
 cask 'mitmproxy'
 # Cross-platform MQTT 5.0 Desktop Client
