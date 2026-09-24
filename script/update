@@ -26,11 +26,77 @@ cd "${DOTFILES_ROOT:-$HOME/.files}"
 [ -d "$HOME/.local/share/mise/shims" ] && PATH="$HOME/.local/share/mise/shims:$PATH"
 export PATH
 
+# Steps end in `|| true`-style tolerance so one failure doesn't skip the rest,
+# but that used to make the script always exit 0: the nightly job looked
+# healthy to launchctl and script/doctor no matter what broke. step records
+# each failed command instead, and the summary at the bottom exits 1.
+failed=""
+step() {
+	"$@" || failed="$failed
+    $*"
+}
+
+# Headless, stdout is launchd's append-only log, which nothing else rotates.
+# Keep the tail. `cat >` rewrites the same inode, and launchd opened it with
+# O_APPEND, so this run's output still lands at the (new) end.
+UPDATE_LOG="${DOTFILES_UPDATE_LOG:-$HOME/Library/Logs/dotfiles-update.log}"
+if ! [ -t 1 ] && [ -f "$UPDATE_LOG" ] && [ "$(wc -l <"$UPDATE_LOG")" -gt 10000 ]; then
+	tail -n 5000 "$UPDATE_LOG" >"$UPDATE_LOG.tmp" && cat "$UPDATE_LOG.tmp" >"$UPDATE_LOG"
+	rm -f "$UPDATE_LOG.tmp"
+fi
+
+echo "==> Started $(date)"
+
+# From a terminal, fast-forward the dotfiles first so new Brewfile entries and
+# requirement pins apply this run. Skipped headless (a pull that needs auth or
+# conflicts has no one to see it) and on a dirty tree (an in-progress Brewfile
+# edit must never be merged into unattended). If it moved HEAD, re-exec so the
+# rest runs the freshly pulled copy of this script, not the one sh already
+# half-read.
+if [ -t 1 ] && [ -z "${DOTFILES_UPDATE_PULLED:-}" ] && command -v git >/dev/null &&
+	git diff --quiet && git diff --cached --quiet; then
+	echo "==> Pulling dotfiles..."
+	before=$(git rev-parse HEAD)
+	step git pull --ff-only
+	if [ "$(git rev-parse HEAD)" != "$before" ]; then
+		DOTFILES_UPDATE_PULLED=1 exec "$0" "$@"
+	fi
+fi
+
+# launchd runs a missed midnight job when the Mac wakes, which can land on top
+# of a manual `up`; two brews at once fail on each other's locks. mkdir is
+# atomic. A lock left by a killed run is reclaimed once its PID is gone. Not
+# under $TMPDIR: launchd doesn't set it, so the nightly job and a terminal
+# would each lock a different directory and never see each other.
+LOCK="${XDG_CACHE_HOME:-$HOME/.cache}/dotfiles-update.lock"
+mkdir -p "${LOCK%/*}"
+if ! mkdir "$LOCK" 2>/dev/null; then
+	pid=$(cat "$LOCK/pid" 2>/dev/null || true)
+	if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+		echo "==> Another update (PID $pid) is running; skipping." >&2
+		exit 0
+	fi
+	rm -rf "$LOCK"
+	mkdir "$LOCK"
+fi
+echo "$$" >"$LOCK/pid"
+trap 'rm -rf "$LOCK"' EXIT
+# dash skips the EXIT trap on a signal; exiting from these traps runs it.
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+# What script/doctor reads to report the last run. Not the launchd log: mole
+# and other cleaners sweep ~/Library/Logs, and Linux has no launchd log at all.
+STATUS="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/update-status"
+mkdir -p "${STATUS%/*}"
+echo "started=$(date '+%Y-%m-%d %H:%M')" >"$STATUS"
+
 if command -v brew >/dev/null; then
 	echo "==> Updating Homebrew packages..."
-	# Keep errors visible but don't let `set -e` abort here: a single wedged
-	# cask must not skip every step below (dnf, mas, mise, npm, gems, pip).
-	brew update || true
+	# step keeps errors visible but doesn't let `set -e` abort here: a single
+	# wedged cask must not skip every step below (dnf, mas, mise, npm, gems, pip).
+	step brew update
+	# Informational only, so not a step: nothing to count as failed.
 	brew outdated || true
 
 	# Never upgrade casks that update themselves. Homebrew used to skip these
@@ -50,17 +116,17 @@ if command -v brew >/dev/null; then
 	# upgrade only formulae so self-updating casks don't fail (and re-orphan a
 	# stale Caskroom stage) on every run.
 	if [ -t 1 ]; then
-		brew upgrade || true
+		step brew upgrade
 	else
-		brew upgrade --formula || true
+		step brew upgrade --formula
 	fi
 
 	# --no-upgrade: install missing entries only. bundle does its own cask
 	# upgrades, which the variable above does not cover — that is how spotify
-	# got wedged the same way. Upgrades are line 42's job. Mirrors the
-	# playbook's macOS bundle task.
+	# got wedged the same way. Upgrades are the `brew upgrade` block's job.
+	# Mirrors the playbook's macOS bundle task.
 	echo "==> Installing any new Brewfile entries..."
-	brew bundle --global --no-upgrade || true
+	step brew bundle --global --no-upgrade
 
 	# Prune orphaned dependencies and clear stale downloads/old versions. Both
 	# are non-interactive and safe headless, so they run every invocation
@@ -68,8 +134,8 @@ if command -v brew >/dev/null; then
 	# asked for. To prune unused casks, see script/audit-casks, which needs a
 	# human to judge what's actually unused.
 	echo "==> Removing unused dependencies and old versions..."
-	brew autoremove || true
-	brew cleanup || true
+	step brew autoremove
+	step brew cleanup
 
 	# Re-staging the microsoft-auto-update cask (above) resets MAU to
 	# AutomaticCheck and re-registers its launch agent, so it starts popping
@@ -77,7 +143,7 @@ if command -v brew >/dev/null; then
 	# after every bundle so the nightly run stops clobbering the setting. macOS
 	# only; the domain is absent elsewhere, so guard on `defaults`.
 	if command -v defaults >/dev/null; then
-		defaults write com.microsoft.autoupdate2 HowToCheck Manual || true
+		step defaults write com.microsoft.autoupdate2 HowToCheck Manual
 	fi
 
 	# Propose pruning casks whose app hasn't been opened in a while by
@@ -89,7 +155,7 @@ if command -v brew >/dev/null; then
 	AUDIT="${DOTFILES_ROOT:-$HOME/.files}/script/audit-casks"
 	if [ -t 1 ] && [ -x "$AUDIT" ]; then
 		echo "==> Auditing casks for disuse..."
-		"$AUDIT" --comment || true
+		step "$AUDIT" --comment
 	fi
 fi
 
@@ -97,23 +163,23 @@ if command -v dnf >/dev/null; then
 	echo "==> Updating dnf packages..."
 	# dnf needs root. From a terminal, allow an interactive sudo prompt. Headless
 	# (the nightly launchd/cron job) there's no one to answer it, so use `sudo -n`
-	# to fail fast instead of hanging on a password prompt, and `|| true` so a
+	# to fail fast instead of hanging on a password prompt, and step so a
 	# skipped upgrade doesn't abort the steps below (mas, mise, npm, gems, pip).
 	if [ -t 1 ]; then
-		sudo dnf upgrade --refresh -y || true
+		step sudo dnf upgrade --refresh -y
 	else
-		sudo -n dnf upgrade --refresh -y || true
+		step sudo -n dnf upgrade --refresh -y
 	fi
 fi
 
 if command -v mas >/dev/null; then
 	echo "==> Updating Mac App Store apps..."
-	mas upgrade || true
+	step mas upgrade
 fi
 
 if command -v mise >/dev/null; then
 	echo "==> Updating mise tools..."
-	mise upgrade 2>/dev/null || true
+	step mise upgrade
 fi
 
 if command -v npm >/dev/null; then
@@ -121,12 +187,12 @@ if command -v npm >/dev/null; then
 	# update rewrote the tracked package-lock.json nightly, leaving a dirty tree
 	# to commit by hand. Renovate owns version bumps; this just installs them.
 	echo "==> Installing npm packages..."
-	npm ci || true
+	step npm ci
 fi
 
 if command -v bundle >/dev/null; then
 	echo "==> Updating Ruby gems..."
-	bundle update || true
+	step bundle update
 fi
 
 echo "==> Updating Python packages..."
@@ -134,9 +200,9 @@ if [ -d env ]; then
 	# shellcheck disable=SC1091
 	. env/bin/activate
 	if command -v uv >/dev/null; then
-		uv pip install --upgrade -r requirements.txt || true
+		step uv pip install --upgrade -r requirements.txt
 	else
-		pip install --upgrade -r requirements.txt || true
+		step pip install --upgrade -r requirements.txt
 	fi
 
 	# Split the role and collection halves; the old combined `install --force`
@@ -148,9 +214,33 @@ if [ -d env ]; then
 	# ("use --force to change version to 2.4.0"), so a pin bump would silently
 	# never apply. One small role, so the re-download is cheap.
 	echo "==> Updating Ansible roles and collections..."
-	ansible-galaxy role install -r requirements.yml --force || true
-	ansible-galaxy collection install -r requirements.yml || true
+	step ansible-galaxy role install -r requirements.yml --force
+	step ansible-galaxy collection install -r requirements.yml
 	deactivate
+fi
+
+# oh-my-zsh only updates itself when a new shell prompts for it, so a machine
+# that lives in long-running terminals drifts for weeks. Its upgrade script is
+# non-interactive unless passed -i. It's zsh, not sh.
+export ZSH="${ZSH:-$HOME/.oh-my-zsh}"
+if [ -f "$ZSH/tools/upgrade.sh" ] && command -v zsh >/dev/null; then
+	echo "==> Updating oh-my-zsh..."
+	step zsh "$ZSH/tools/upgrade.sh" -v minimal
+fi
+
+# tealdeer's page cache is otherwise refreshed only when it notices it's stale,
+# mid-lookup.
+if command -v tldr >/dev/null; then
+	echo "==> Updating tldr pages..."
+	step tldr --update
+fi
+
+# Report pending macOS updates without installing them: installs can restart
+# the machine, which is never OK unattended. Listing is read-only.
+if command -v softwareupdate >/dev/null; then
+	echo "==> Checking for macOS updates..."
+	# Informational, like `brew outdated`, and needs the network: not a step.
+	softwareupdate --list || true
 fi
 
 # Mole deep-cleans and optimizes macOS. It's interactive (may prompt for sudo)
@@ -158,6 +248,14 @@ fi
 # nightly launchd job, which mirrors the cask-upgrade guard above.
 if command -v mole >/dev/null && [ -t 1 ]; then
 	echo "==> Cleaning up and optimizing with mole..."
-	mole clean || true
-	mole optimize || true
+	step mole clean
+	step mole optimize
+fi
+
+echo "==> Finished $(date)"
+echo "finished=$(date '+%Y-%m-%d %H:%M')" >>"$STATUS"
+if [ -n "$failed" ]; then
+	echo "$failed" | sed -n 's/^    /failed=/p' >>"$STATUS"
+	echo "==> Failed steps:$failed" >&2
+	exit 1
 fi

@@ -39,7 +39,7 @@ script/doctor      # read-only health check: symlinks, stale .bak files, brew wr
 - On this Mac, Homebrew is wrapped by **Workbrew**: `brew` runs as the `workbrew` user through `/opt/workbrew/bin/brew`. The playbook detects the wrapper and skips the `geerlingguy.mac.homebrew` role, whose chown tasks break Workbrew. Brew errors about ownership or locks usually trace back to Workbrew.
 - Global npm CLIs belong in `.config/mise/config.toml` as `npm:` entries, not in the Brewfile, which conflicts with Workbrew's node prefix.
 
-**`script/update` runs headless** from a nightly launchd job with a minimal `PATH` and no TTY. Anything interactive (sudo prompts, cask upgrades, `script/audit-casks`, mole) must be guarded with `[ -t 1 ]`. Each step ends with `|| true` so one failure doesn't stop the rest.
+**`script/update` runs headless** from a nightly launchd job with a minimal `PATH` and no TTY. Anything interactive (sudo prompts, cask upgrades, `script/audit-casks`, mole) must be guarded with `[ -t 1 ]`. Wrap each step in `step`, which records a failure without stopping the rest; the run exits 1 with a list of failed steps, and records the run in `~/.local/state/dotfiles/update-status` for `script/doctor`.
 
 **macOS defaults.** `macos_defaults.system` entries run with `become: true`, so they must use an absolute domain path like `/Library/Preferences/com.apple.foo`. A bare domain writes to root's preferences and has no effect, yet the task still reports success. The playbook reads back each value it writes to catch this. Firewall settings go through `socketfilterfw`, not `defaults`.
 
