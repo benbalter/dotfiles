@@ -7,9 +7,23 @@
 		<key>ProgramArguments</key>
 		<array>
 			<string>/opt/homebrew/sbin/tmpreaper</string>
+			<!-- Age by mtime, not tmpreaper's default atime: macOS (Finder,
+			     QuickLook thumbnails) keeps bumping atime on everything in
+			     Downloads, so almost nothing ever looked 5 days old. mtime-dir
+			     does the same for directories, which walking into otherwise
+			     keeps fresh forever. -->
+			<string>--mtime</string>
+			<string>--mtime-dir</string>
+			<string>--showdeleted</string>
 			<string>5d</string>
 			<string>/Users/benbalter/Downloads</string>
 		</array>
+		<!-- Without these, launchd discards the output, so there was no way to
+		     see that it deleted almost nothing. launchd doesn't expand ~. -->
+		<key>StandardOutPath</key>
+		<string>/Users/benbalter/Library/Logs/tmpreaper.log</string>
+		<key>StandardErrorPath</key>
+		<string>/Users/benbalter/Library/Logs/tmpreaper.log</string>
 		<key>StartCalendarInterval</key>
 		<dict>
 			<key>Hour</key>
