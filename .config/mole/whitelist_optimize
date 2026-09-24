@@ -1,0 +1,9 @@
+# Mole optimize tasks to skip, by task id (`mo optimize --whitelist` lists them).
+# `up` runs `mo optimize` every time; these two are repairs, not upkeep, so run
+# them by hand when something is actually broken.
+
+# Rebuilds QuickLook thumbnails and the icon cache; Finder is sluggish after.
+cache_refresh
+# Rebuilds the "Open with" / file-association database, which can reset
+# default-app choices.
+launch_services_rebuild

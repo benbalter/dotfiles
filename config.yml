@@ -60,6 +60,10 @@ dotfiles_files_common:
 # Dotfiles symlinked into $HOME on macOS only
 dotfiles_files_macos:
   - .Brewfile
+  # Just these files: mole writes generated reports (clean-list.txt) beside them
+  - .config/mole/purge_paths
+  - .config/mole/whitelist
+  - .config/mole/whitelist_optimize
   - .gitconfig.macos
   - .gnupg/gpg-agent.conf
   - .mackup.cfg
@@ -278,6 +282,18 @@ macos_defaults:
     - name: Secure keyboard entry in Terminal
       domain: com.apple.Terminal
       key: SecureKeyboardEntry
+      type: bool
+      value: true
+    # `mo optimize` sets these too, but a fresh machine shouldn't depend on
+    # mole having run to stop Finder littering shared and USB drives.
+    - name: No .DS_Store on network volumes
+      domain: com.apple.desktopservices
+      key: DSDontWriteNetworkStores
+      type: bool
+      value: true
+    - name: No .DS_Store on USB volumes
+      domain: com.apple.desktopservices
+      key: DSDontWriteUSBStores
       type: bool
       value: true
   # Keys that were written to the wrong domain for years. Removing them keeps a
