@@ -1,7 +1,10 @@
 #!/bin/sh
 # Check that this machine matches the dotfiles: every configured symlink
 # points into the repo, no stale .bak files are left from setup, Homebrew
-# resolves to the right binary, and the nightly update job last succeeded.
+# resolves to the right binary, every launch agent is loaded and healthy, the
+# last update run succeeded and isn't hung, nothing in the Brewfile or mise
+# config is missing, macOS security settings are still on, and the repo is
+# ready for `up` (venv present, tree clean).
 # Read-only; exits non-zero if anything needs attention.
 # Usage: script/doctor
 
@@ -88,18 +91,148 @@ else
 	bad "brew not found on PATH"
 fi
 
-if [ "$(uname)" = "Darwin" ] && command -v launchctl >/dev/null; then
-	echo "==> Nightly update job"
-	job="gui/$(id -u)/com.balter.ben.update"
-	if info=$(launchctl print "$job" 2>/dev/null); then
-		code=$(echo "$info" | sed -n 's/^[[:space:]]*last exit code = //p' | head -1)
-		case "$code" in
-			0 | "(never exited)") ok "loaded, last exit code ${code:-unknown}" ;;
-			*) bad "last exit code $code; see ~/Library/Logs/dotfiles-update.log" ;;
-		esac
+# plist_string <plist> <key>: a top-level <string> value. sed, not plutil, so
+# this also runs (and is tested) where plutil doesn't exist.
+plist_string() {
+	sed -n "/<key>$2<\/key>/{n;s/.*<string>\(.*\)<\/string>.*/\1/p;}" "$1"
+}
+
+if command -v launchctl >/dev/null; then
+	echo "==> Launch agents"
+	# Every agent the repo ships, not just the update job: tmpreaper once ran
+	# nightly for months deleting almost nothing, and nobody could tell, because
+	# it exited 0 and logged nowhere.
+	for plist in "$DOTFILES_ROOT"/Library/LaunchAgents/*.plist; do
+		[ -f "$plist" ] || continue
+		label=$(plist_string "$plist" Label)
+		log=$(plist_string "$plist" StandardOutPath)
+		job="gui/$(id -u)/$label"
+		if info=$(launchctl print "$job" 2>/dev/null); then
+			code=$(echo "$info" | sed -n 's/^[[:space:]]*last exit code = //p' | head -1)
+			case "$code" in
+				0 | "(never exited)") ok "$label loaded, last exit code ${code:-unknown}" ;;
+				*) bad "$label last exit code $code${log:+; see $log}" ;;
+			esac
+		else
+			bad "$label is not loaded (launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/${plist##*/})"
+		fi
+		[ -n "$log" ] || warn "$label has no StandardOutPath; its output is discarded"
+	done
+fi
+
+echo "==> Last update run"
+# script/update records each run here. The exit code above says only that the
+# last nightly run failed; this says which steps, covers terminal runs and
+# Linux, and its age catches a job that is loaded but no longer running.
+STATUS="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/update-status"
+if [ -f "$STATUS" ]; then
+	started=$(sed -n 's/^started=//p' "$STATUS")
+	if grep -q '^failed=' "$STATUS"; then
+		failed_steps=$(sed -n 's/^failed=//p' "$STATUS")
+		while IFS= read -r failed_step; do
+			bad "run started $started failed: $failed_step"
+		done <<EOF
+$failed_steps
+EOF
+	elif grep -q '^finished=' "$STATUS"; then
+		ok "run started $started finished cleanly"
 	else
-		bad "$job is not loaded (launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.balter.ben.update.plist)"
+		warn "run started $started never finished (killed, or still running)"
 	fi
+	# find -mtime is the portable way to ask a file's age (stat's flags differ
+	# between BSD and GNU). +1 means at least two whole days.
+	if [ -n "$(find "$STATUS" -mtime +1)" ]; then
+		bad "no update has run in 2+ days (last started $started); is the job loaded?"
+	fi
+else
+	warn "no update has run yet (no $STATUS)"
+fi
+
+# A hung step (mas waiting on an App Store sign-in, say) holds script/update's
+# lock, and every later run then skips itself without failing.
+LOCK="${XDG_CACHE_HOME:-$HOME/.cache}/dotfiles-update.lock"
+if [ -d "$LOCK" ]; then
+	pid=$(cat "$LOCK/pid" 2>/dev/null || true)
+	if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+		if [ -n "$(find "$LOCK" -maxdepth 0 -mmin +120)" ]; then
+			bad "update PID $pid has held $LOCK for 2+ hours; likely hung (kill $pid)"
+		else
+			ok "update running now (PID $pid)"
+		fi
+	else
+		warn "stale lock $LOCK from dead PID ${pid:-unknown}; the next run reclaims it"
+	fi
+fi
+
+echo "==> Packages"
+# A failed install is skipped quietly (brew bundle and mise carry on), so
+# ask what's still missing. --no-upgrade: outdated isn't missing; `up` handles
+# that.
+if command -v brew >/dev/null; then
+	if missing=$(brew bundle check --global --no-upgrade --verbose 2>&1); then
+		ok "every Brewfile entry installed"
+	else
+		bad "Brewfile entries not installed (brew bundle install --global --no-upgrade):"
+		echo "$missing" | sed -nE 's/^(→|->) */        /p'
+	fi
+fi
+if command -v mise >/dev/null; then
+	# From $HOME, so mise reads the symlinked global config.
+	missing=$(cd "$HOME" && mise ls --missing 2>/dev/null || true)
+	if [ -z "$missing" ]; then
+		ok "every mise tool installed"
+	else
+		bad "mise tools not installed (mise install):"
+		echo "$missing" | sed 's/^/        /'
+	fi
+fi
+
+if [ "$(uname)" = "Darwin" ]; then
+	echo "==> Security"
+	# Read back what the playbook's security block set. It only runs with
+	# script/setup, so nothing else would notice an OS update or an app
+	# turning one of these off.
+	fw=/usr/libexec/ApplicationFirewall/socketfilterfw
+	check_security() { # <description> <expected substring> <command>...
+		desc=$1 want=$2
+		shift 2
+		if "$@" 2>/dev/null | grep -q "$want"; then
+			ok "$desc"
+		else
+			bad "$desc is off (re-run: script/ansible --tags security)"
+		fi
+	}
+	check_security "firewall" "State = 1" "$fw" --getglobalstate
+	check_security "firewall stealth mode" "stealth mode is on" "$fw" --getstealthmode
+	check_security "Gatekeeper" "assessments enabled" spctl --status
+	check_security "FileVault" "FileVault is On" fdesetup status
+	check_security "TouchID for sudo" "pam_tid.so" cat /etc/pam.d/sudo_local
+	if pmset -g | grep -Eq 'womp[[:space:]]+1'; then
+		bad "wake for network access is on (re-run: script/ansible --tags security)"
+	else
+		ok "wake for network access off"
+	fi
+	if defaults read /Library/Preferences/com.apple.loginwindow autoLoginUser >/dev/null 2>&1; then
+		bad "automatic login is on (re-run: script/ansible --tags security)"
+	else
+		ok "automatic login off"
+	fi
+fi
+
+echo "==> Dotfiles repo"
+# script/update runs the Python/Ansible steps only when the venv exists, and
+# skips them silently otherwise.
+if [ -f "$DOTFILES_ROOT/env/bin/activate" ]; then
+	ok "Python venv present"
+else
+	bad "no Python venv at $DOTFILES_ROOT/env (run script/bootstrap)"
+fi
+# `up` pulls only onto a clean tree, so uncommitted changes quietly stop it
+# picking up new commits.
+if git -C "$DOTFILES_ROOT" diff --quiet 2>/dev/null && git -C "$DOTFILES_ROOT" diff --cached --quiet 2>/dev/null; then
+	ok "working tree clean"
+else
+	warn "uncommitted changes in $DOTFILES_ROOT; \`up\` won't pull until they're committed"
 fi
 
 echo
