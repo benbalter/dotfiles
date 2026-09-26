@@ -1,8 +1,12 @@
-if [[ -d "/workspaces/.codespaces/.persistedshare/dotfiles/" ]]; then
-  export DOTFILES_ROOT="/workspaces/.codespaces/.persistedshare/dotfiles"
-else 
-  export DOTFILES_ROOT="$HOME/.files"
-fi 
+# The repo is wherever this file's symlink points (~/.files, Codespaces'
+# persisted share, or any other checkout install.sh was run from).
+export DOTFILES_ROOT="${${(%):-%x}:A:h}"
+
+# Keep PATH and fpath free of duplicates: lib/globals prepends and this file
+# appends on every start, so each nested shell used to add another copy. -U
+# only dedupes assignments to the arrays, not to the PATH scalar that
+# lib/globals and mise write, so the arrays are re-assigned at the end too.
+typeset -U path fpath
 
 # shellcheck source=lib/globals
 source "$DOTFILES_ROOT/lib/globals"
@@ -20,20 +24,16 @@ plugins=(
   zoxide
   gem
   git
-  git-extras
   golang
-  history-substring-search
   node
   npm
   safe-paste
   sudo
   vscode
-  zsh-interactive-cd
 )
 
 if [[ "$(uname)" == "Darwin" ]]; then
   plugins+=(
-    battery
     brew
     bundler
     macos
@@ -56,18 +56,19 @@ source "$DOTFILES_ROOT/lib/auto-complete"
 # shellcheck source=lib/aliases
 source "$DOTFILES_ROOT/lib/aliases"
 
+# Before the mise check: install-tools puts mise itself in ~/.local/bin.
+export PATH="$PATH:$HOME/.local/bin"
+
 if command -v mise >/dev/null; then
   eval "$(mise activate zsh)"
 fi
-
-export PATH="$PATH:$HOME/.local/bin"
 
 # 1Password SSH agent
 if [[ "$(uname)" == "Darwin" ]]; then
   export SSH_AUTH_SOCK="$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
 
   # Added by LM Studio CLI (lms)
-  export PATH="$PATH:$HOME/.lmstudio/bin"
+  [[ -d "$HOME/.lmstudio/bin" ]] && export PATH="$PATH:$HOME/.lmstudio/bin"
 elif [[ -S "$HOME/.1password/agent.sock" ]]; then
   export SSH_AUTH_SOCK="$HOME/.1password/agent.sock"
 fi
@@ -77,12 +78,18 @@ if command -v starship >/dev/null; then
 fi
 
 # fzf: Ctrl-T (files), Alt-C (cd). Sourced BEFORE atuin so atuin keeps Ctrl-R.
+# Each helper only if installed: install-tools (Codespaces) provides fzf but
+# not fd, bat or eza, and fzf's defaults beat a command that doesn't exist.
 if command -v fzf >/dev/null; then
-  export FZF_DEFAULT_COMMAND='fd --type f --hidden --exclude .git'
-  export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
-  export FZF_ALT_C_COMMAND='fd --type d --hidden --exclude .git'
-  export FZF_CTRL_T_OPTS="--preview 'bat --color=always --style=numbers --line-range=:200 {}'"
-  export FZF_ALT_C_OPTS="--preview 'eza --tree --level=2 --color=always {}'"
+  if command -v fd >/dev/null; then
+    export FZF_DEFAULT_COMMAND='fd --type f --hidden --exclude .git'
+    export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+    export FZF_ALT_C_COMMAND='fd --type d --hidden --exclude .git'
+  fi
+  command -v bat >/dev/null &&
+    export FZF_CTRL_T_OPTS="--preview 'bat --color=always --style=numbers --line-range=:200 {}'"
+  command -v eza >/dev/null &&
+    export FZF_ALT_C_OPTS="--preview 'eza --tree --level=2 --color=always {}'"
   source <(fzf --zsh)
 fi
 
@@ -95,9 +102,16 @@ fi
 # Notify when a >Ns command finishes in an unfocused terminal (bgnotify plugin).
 bgnotify_threshold=8
 
-# fzf-tab: fuzzy completion menu. Then autosuggestions, and finally
-# syntax-highlighting (which MUST be sourced last). All from Homebrew formulae.
+# fzf-tab: fuzzy completion menu. Then autosuggestions, then
+# syntax-highlighting (from Homebrew formulae), and finally oh-my-zsh's
+# history-substring-search, whose README says to load it after
+# syntax-highlighting. It was an oh-my-zsh plugin, which loaded it first.
 [[ -f $HOMEBREW_PREFIX/share/fzf-tab/fzf-tab.zsh ]] && source $HOMEBREW_PREFIX/share/fzf-tab/fzf-tab.zsh
 [[ -f $HOMEBREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]] && source $HOMEBREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 [[ -f $HOMEBREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] && source $HOMEBREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+[[ -f $ZSH/plugins/history-substring-search/history-substring-search.plugin.zsh ]] &&
+  source $ZSH/plugins/history-substring-search/history-substring-search.plugin.zsh
 
+# Apply -U to everything added through the PATH/FPATH scalars above.
+path=("${path[@]}")
+fpath=("${fpath[@]}")

@@ -1,7 +1,8 @@
 #!/bin/sh
 # Alias all the things!
 
-# Git
+# Git. Sourced after oh-my-zsh, so gcm, gl, gb and gr deliberately replace the
+# git plugin's versions (checkout main, pull, branch, remote) with these.
 alias gs="git status"
 alias ga="git add"
 alias gad="git add ."
@@ -13,8 +14,11 @@ alias gp="git push"
 alias gd="git diff"
 alias gb="gh repo view --web"
 alias gr="gh repo view"
-alias reset="git reset HEAD --hard; git clean -f -d"
-alias clean="git branch --merged | grep -v '\*' | xargs -n 1 git branch -d"
+# Not `reset` or `clean`: typing `reset` to fix a garbled terminal threw away
+# uncommitted work, and script/audit-casks tells you to run `clean` to
+# uninstall casks, which instead deleted merged branches.
+alias greset="git reset HEAD --hard; git clean -f -d"
+alias gclean="git branch --merged | grep -v '\*' | xargs -n 1 git branch -d"
 alias ggb="git commit -m ':gem: bump'"
 # Clone a repo and cd into it; if it's already cloned, cd in and pull instead
 gccd() {
@@ -32,12 +36,9 @@ alias branches="git branch -v"
 alias j='z'
 
 # Modern CLI replacements (keep old muscle memory, get better tools).
-# Originals remain reachable via a leading backslash, e.g. \grep or `command ls`.
+# Originals remain reachable via a leading backslash, e.g. \cat or `command ls`.
 if command -v bat >/dev/null; then
 	alias cat='bat --paging=never'
-fi
-if command -v rg >/dev/null; then
-	alias grep='rg'
 fi
 if command -v eza >/dev/null; then
 	alias ls='eza --group-directories-first'
@@ -45,17 +46,17 @@ if command -v eza >/dev/null; then
 	alias la='eza -la --git --group-directories-first'
 	alias lc='eza -la --git --group-directories-first'
 	alias lt='eza --tree --level=2'
-fi
-if command -v difft >/dev/null; then
-	alias diff='difft'
+else
+	alias lc='ls -lA'
 fi
 if command -v xh >/dev/null; then
 	alias http='xh'
 	alias https='xhs'
 fi
-# find -> fd is intentionally NOT aliased: their syntaxes are incompatible
-# (`find . -name "*.txt"` isn't valid fd), which would break muscle memory.
-# Use `fd` directly for the modern experience.
+# find -> fd, grep -> rg and diff -> difft are intentionally NOT aliased:
+# their flags are incompatible (`grep -h` suppresses filenames, `rg -h` prints
+# help; `difft -u` is an error), which breaks muscle memory and pasted
+# commands. Use `fd`, `rg` and `difft` directly.
 
 # Zed: open the given paths, or the current directory (like oh-my-zsh's vsc)
 zd() {
@@ -73,27 +74,23 @@ alias sc="script/lint"
 # Simple server
 alias server="python3 -m http.server"
 
-#ip
-alias ip="curl icanhazip.com"
+# Public IP. Not `ip`, which hid iproute2's `ip addr` on Linux.
+alias myip="curl icanhazip.com"
 
 # .files
 # shellcheck disable=SC2139
 alias up="$DOTFILES_ROOT/script/update"
 # shellcheck disable=SC2139
 alias setup="$DOTFILES_ROOT/script/setup"
+# shellcheck disable=SC2139
+alias clean="$DOTFILES_ROOT/script/clean"
 
 # Misc
 alias p="cd ~/projects"
-alias gg="cd ~/github/github"
-
-# GitHub Copilot CLI
-alias ghcs='gh copilot suggest'
-alias ghce='gh copilot explain'
 
 if [ "$(uname)" = "Darwin" ]; then
 	alias flushdns="sudo dscacheutil -flushcache;sudo killall -HUP mDNSResponder; echo 'Flushed DNS, btw here is your hosts file just in case:'; cat /etc/hosts"
-	alias afk="/System/Library/CoreServices/Menu\ Extras/User.menu/Contents/Resources/CGSession -suspend"
+	# Sleep the display, which locks the screen. The old CGSession -suspend
+	# binary no longer exists.
+	alias afk="pmset displaysleepnow"
 fi
-# lc is defined in the "Modern CLI replacements" section above (eza when available).
-# Fall back to plain ls only if eza is not installed.
-command -v eza >/dev/null || alias lc='ls -lA'

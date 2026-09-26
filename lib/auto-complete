@@ -1,6 +1,5 @@
 #!/bin/bash
-# Init ZSH and the shell environment
-# Usage source script/init
+# Shell completions not covered by oh-my-zsh plugins. Sourced by .zshrc.
 
 if command -v gh >/dev/null; then
 	gh_comp="${ZSH_CACHE_DIR:-$HOME/.cache}/gh-completion.zsh"
