@@ -1,7 +1,19 @@
 #!/bin/sh
+# Uninstall everything not in the Brewfile, e.g. casks script/audit-casks
+# commented out as PROPOSED REMOVAL.
+# Usage: script/clean
 
 set -eu
 # shellcheck disable=SC3040
 (set -o pipefail) 2>/dev/null && set -o pipefail || true
 
-brew bundle cleanup --global --force
+cd "$(dirname "$0")/.."
+
+# The repo's Brewfile, not --global: ~/.Brewfile is only linked on macOS. On
+# Linux, skip the formulae with no Linux bottle, as the playbook does.
+if [ "$(uname)" != "Darwin" ]; then
+	HOMEBREW_BUNDLE_BREW_SKIP=$(sed -n 's/^homebrew_linux_brew_skip: *//p' config.yml)
+	export HOMEBREW_BUNDLE_BREW_SKIP
+fi
+
+brew bundle cleanup --file=Brewfile --force

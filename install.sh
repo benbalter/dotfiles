@@ -23,15 +23,27 @@ fi
 
 # --- Linux / Codespaces setup ---
 
+# link <repo path> [<path under $HOME>]: symlink a repo file into $HOME,
+# first moving any real file there aside (to .bak, or .bak.<epoch> if a .bak
+# already exists) so a plain `ln -sf` never silently destroys it.
+link() {
+	src="$DOTFILES_DIR/$1"
+	dest="$HOME/${2:-$1}"
+	[ -e "$src" ] || return 0
+	if [ -e "$dest" ] && [ ! -L "$dest" ]; then
+		bak="$dest.bak"
+		[ ! -e "$bak" ] || bak="$bak.$(date +%s)"
+		echo "Backing up $dest to $bak"
+		mv "$dest" "$bak"
+	fi
+	ln -sf "$src" "$dest"
+}
+
 # Symlink dotfiles
 for file in \
 	.default-gems .digrc .gemrc .gitconfig .gitignore .hushlogin \
 	.irbrc .npmrc .pryrc .remarkrc .ripgreprc .yamllint .zprofile .zshrc; do
-	if [ -e "$HOME/$file" ] && [ ! -L "$HOME/$file" ]; then
-		echo "Backing up $HOME/$file to $HOME/$file.bak"
-		mv "$HOME/$file" "$HOME/$file.bak"
-	fi
-	ln -sf "$DOTFILES_DIR/$file" "$HOME/$file"
+	link "$file"
 done
 
 # Symlink directories that need parent dirs
@@ -41,16 +53,18 @@ mkdir -p "$HOME/.bundle" "$HOME/.gnupg" "$HOME/.config/mise" \
 # gpg warns "unsafe permissions on homedir" unless ~/.gnupg is private
 # (config.yml's private_directories does the same for the playbook).
 chmod 700 "$HOME/.gnupg"
-[ -f "$DOTFILES_DIR/.bundle/config" ] && ln -sf "$DOTFILES_DIR/.bundle/config" "$HOME/.bundle/config"
-[ -f "$DOTFILES_DIR/.gnupg/gpg.conf" ] && ln -sf "$DOTFILES_DIR/.gnupg/gpg.conf" "$HOME/.gnupg/gpg.conf"
-[ -f "$DOTFILES_DIR/.config/mise/config.toml" ] && ln -sf "$DOTFILES_DIR/.config/mise/config.toml" "$HOME/.config/mise/config.toml"
-[ -f "$DOTFILES_DIR/.config/starship.toml" ] && ln -sf "$DOTFILES_DIR/.config/starship.toml" "$HOME/.config/starship.toml"
-[ -f "$DOTFILES_DIR/.config/git/attributes" ] && ln -sf "$DOTFILES_DIR/.config/git/attributes" "$HOME/.config/git/attributes"
-[ -f "$DOTFILES_DIR/.config/git/allowed_signers" ] && ln -sf "$DOTFILES_DIR/.config/git/allowed_signers" "$HOME/.config/git/allowed_signers"
-[ -f "$DOTFILES_DIR/.config/bat/config" ] && ln -sf "$DOTFILES_DIR/.config/bat/config" "$HOME/.config/bat/config"
-[ -f "$DOTFILES_DIR/.config/atuin/config.toml" ] && ln -sf "$DOTFILES_DIR/.config/atuin/config.toml" "$HOME/.config/atuin/config.toml"
-[ -f "$DOTFILES_DIR/.config/zed/settings.json" ] && ln -sf "$DOTFILES_DIR/.config/zed/settings.json" "$HOME/.config/zed/settings.json"
-[ -f "$DOTFILES_DIR/claude/CLAUDE.md" ] && ln -sf "$DOTFILES_DIR/claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
+for file in \
+	.bundle/config .gnupg/gpg.conf .config/mise/config.toml .config/starship.toml \
+	.config/git/attributes .config/git/allowed_signers .config/bat/config \
+	.config/atuin/config.toml .config/zed/settings.json; do
+	link "$file"
+done
+link claude/CLAUDE.md .claude/CLAUDE.md
+
+# Skip .gitconfig.linux and linux_dotfile_links (config.yml) here: this path
+# serves Codespaces and containers, not a Linux desktop. .gitconfig.linux only
+# points commit signing at 1Password's op-ssh-sign, and the Code/ghostty
+# configs are for GUI apps a container doesn't have.
 
 # Skip .gnupg/gpg-agent.conf on Linux: it points pinentry-program at
 # /opt/homebrew/bin/pinentry-mac, so gpg fails the moment it needs a passphrase.

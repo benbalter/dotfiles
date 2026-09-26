@@ -48,10 +48,13 @@ check_link() {
 	fi
 	# The playbook moves a pre-existing file to .bak before linking. Once the
 	# link is in place, a leftover .bak is either obsolete or holds local edits
-	# that never made it into the repo; either way it wants a look.
-	if [ -e "$target.bak" ]; then
-		warn "$target.bak left over from setup; merge or delete it"
-	fi
+	# that never made it into the repo; either way it wants a look. A second
+	# backup gets a timestamp suffix (.bak.<epoch>) rather than replacing it.
+	for bak in "$target.bak" "$target".bak.*; do
+		if [ -e "$bak" ]; then
+			warn "$bak left over from setup; merge or delete it"
+		fi
+	done
 }
 
 echo "==> Dotfile symlinks"
@@ -141,8 +144,14 @@ EOF
 	fi
 	# find -mtime is the portable way to ask a file's age (stat's flags differ
 	# between BSD and GNU). +1 means at least two whole days.
+	# Only macOS schedules script/update (the launch agent); on Linux it runs
+	# when you run `up`, so a quiet week isn't a fault there.
 	if [ -n "$(find "$STATUS" -mtime +1)" ]; then
-		bad "no update has run in 2+ days (last started $started); is the job loaded?"
+		if [ "$(uname)" = "Darwin" ]; then
+			bad "no update has run in 2+ days (last started $started); is the job loaded?"
+		else
+			warn "no update has run in 2+ days (last started $started); run up"
+		fi
 	fi
 else
 	warn "no update has run yet (no $STATUS)"
@@ -169,10 +178,17 @@ echo "==> Packages"
 # ask what's still missing. --no-upgrade: outdated isn't missing; `up` handles
 # that.
 if command -v brew >/dev/null; then
-	if missing=$(brew bundle check --global --no-upgrade --verbose 2>&1); then
+	# The repo's Brewfile, not --global: ~/.Brewfile is only linked on macOS.
+	# On Linux, skip the formulae with no Linux bottle, as the playbook does.
+	export HOMEBREW_BUNDLE_FILE="$DOTFILES_ROOT/Brewfile"
+	if [ "$(uname)" != "Darwin" ]; then
+		HOMEBREW_BUNDLE_BREW_SKIP=$(sed -n 's/^homebrew_linux_brew_skip: *//p' "$CONFIG" 2>/dev/null || true)
+		export HOMEBREW_BUNDLE_BREW_SKIP
+	fi
+	if missing=$(brew bundle check --no-upgrade --verbose 2>&1); then
 		ok "every Brewfile entry installed"
 	else
-		bad "Brewfile entries not installed (brew bundle install --global --no-upgrade):"
+		bad "Brewfile entries not installed (brew bundle install --file=$HOMEBREW_BUNDLE_FILE --no-upgrade):"
 		echo "$missing" | sed -nE 's/^(→|->) */        /p'
 	fi
 fi

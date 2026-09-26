@@ -78,10 +78,16 @@
           loop: "{{ dotfiles_files }}"
           register: dotfile_targets
 
+        # Never skip the move when a .bak already exists (the old `creates:`
+        # guard did): the force-link below would then replace the file with no
+        # copy kept. A second backup gets a timestamp suffix instead.
         - name: Back up existing non-symlink dotfile targets
-          ansible.builtin.command:
-            cmd: mv "{{ ansible_facts['user_dir'] }}/{{ item.item }}" "{{ ansible_facts['user_dir'] }}/{{ item.item }}.bak"
-            creates: "{{ ansible_facts['user_dir'] }}/{{ item.item }}.bak"
+          ansible.builtin.shell:
+            cmd: >-
+              f="{{ ansible_facts['user_dir'] }}/{{ item.item }}";
+              bak="$f.bak"; [ ! -e "$bak" ] || bak="$bak.$(date +%s)";
+              mv "$f" "$bak"
+          changed_when: true
           loop: "{{ dotfile_targets.results }}"
           loop_control:
             label: "{{ item.item }}"
@@ -124,9 +130,12 @@
           register: dotfile_link_targets
 
         - name: Back up existing non-symlink dotfile link targets
-          ansible.builtin.command:
-            cmd: mv "{{ ansible_facts['user_dir'] }}/{{ item.item.dest }}" "{{ ansible_facts['user_dir'] }}/{{ item.item.dest }}.bak"
-            creates: "{{ ansible_facts['user_dir'] }}/{{ item.item.dest }}.bak"
+          ansible.builtin.shell:
+            cmd: >-
+              f="{{ ansible_facts['user_dir'] }}/{{ item.item.dest }}";
+              bak="$f.bak"; [ ! -e "$bak" ] || bak="$bak.$(date +%s)";
+              mv "$f" "$bak"
+          changed_when: true
           loop: "{{ dotfile_link_targets.results }}"
           loop_control:
             label: "{{ item.item.dest }}"
@@ -229,6 +238,9 @@
         group: "{{ ansible_facts['user_gid'] }}"
         mode: "0644"
       when: is_macos and not is_ci
+      # The Brewfile's restart_service only fires when the formula changes, so
+      # a config edit otherwise waited for the next upgrade or reboot.
+      notify: Restart LanguageTool
       tags: [languagetool]
 
     - name: Setup Fedora packages
@@ -375,20 +387,14 @@
       when: is_fedora and not is_ci
       tags: [homebrew, packages]
       block:
-        - name: Check for an existing Homebrew install
-          ansible.builtin.stat:
-            path: "{{ homebrew_linux_prefix }}/bin/brew"
-          register: brew_bin
-
         - name: Install Homebrew
           ansible.builtin.shell:
             cmd: >-
               /bin/bash -c
               "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+            creates: "{{ homebrew_linux_prefix }}/bin/brew"
           environment:
             NONINTERACTIVE: "1"
-          when: not brew_bin.stat.exists
-          changed_when: true
 
         - name: Install Brewfile packages
           ansible.builtin.command:
@@ -427,7 +433,8 @@
         chdir: "{{ ansible_facts['env']['HOME'] }}"
       become: false
       register: mise_install
-      changed_when: "'✓' in mise_install.stdout"
+      # mise reports progress on stderr, so stdout alone never showed a change.
+      changed_when: "'✓' in (mise_install.stdout + mise_install.stderr)"
       when: not is_ci
       tags: [packages, mise]
 
@@ -533,6 +540,8 @@
         value: "{{ item.value }}"
       become: true
       loop: "{{ macos_defaults.system }}"
+      loop_control:
+        label: "{{ item.name }}"
       when: is_macos
       tags: [macos, defaults]
 
@@ -594,13 +603,6 @@
       when: is_macos and not ansible_check_mode
       tags: [macos, defaults]
 
-    - name: Disable Comic Sans globally
-      ansible.builtin.command: "{{ playbook_dir }}/script/disable-comic-sans"
-      when: is_macos and not is_ci
-      changed_when: false
-      failed_when: false
-      tags: [macos, fonts]
-
     - name: Configure security settings
       tags: [macos, security]
       when: is_macos
@@ -613,11 +615,13 @@
           changed_when: false
           failed_when: false
 
+        # The setters in this block skip CI: a runner's security settings
+        # aren't ours to change, and they mean nothing on a throwaway VM.
         - name: Enable Gatekeeper
           ansible.builtin.command:
             cmd: spctl --master-enable
           become: true
-          when: "'assessments enabled' not in gatekeeper_status.stdout"
+          when: not is_ci and 'assessments enabled' not in gatekeeper_status.stdout
           changed_when: true
 
         - name: Verify Gatekeeper is enabled
@@ -627,7 +631,7 @@
           check_mode: false
           changed_when: false
           failed_when: "'assessments enabled' not in gatekeeper_verify.stdout"
-          when: not ansible_check_mode
+          when: not is_ci and not ansible_check_mode
 
         # The firewall can only be driven through socketfilterfw. Writing
         # globalstate/stealthenabled to com.apple.alf silently does nothing on
@@ -831,6 +835,7 @@
             key: autoLoginUser
             state: absent
           become: true
+          when: not is_ci
 
         # Wake for network access lets the machine be woken by unsolicited
         # traffic. On a laptop that buys nothing and keeps a sleeping machine
@@ -858,12 +863,19 @@
           changed_when: false
           check_mode: false
 
+        # Once enabling is deferred, status still says "FileVault is Off." until
+        # the next logout, so also skip while a deferral is pending; otherwise
+        # every run re-deferred and reported changed. The recovery key is
+        # written at logout, so keep it out of /tmp, which a reboot clears.
         - name: Enable FileVault
           ansible.builtin.command:
-            cmd: fdesetup enable -defer /tmp/filevault-setup.plist
+            cmd: fdesetup enable -defer /var/root/filevault-recovery.plist
           become: true
           register: filevault_enable
-          when: "'FileVault is On' not in filevault_status.stdout"
+          when:
+            - not is_ci
+            - "'FileVault is On' not in filevault_status.stdout"
+            - "'Deferred enablement' not in filevault_status.stdout"
           changed_when: filevault_enable.rc == 0
           notify: FileVault restart reminder
 
@@ -888,7 +900,7 @@
             group: wheel
             mode: "0444"
           become: true
-          when: pam_tid.matched > 0
+          when: not is_ci and pam_tid.matched > 0
 
         # sudo_local is the file macOS preserves across updates, but it only
         # works while /etc/pam.d/sudo (which updates do replace) includes it.
@@ -899,9 +911,17 @@
             cmd: grep -Eq '^auth[[:space:]]+include[[:space:]]+sudo_local' /etc/pam.d/sudo
           check_mode: false
           changed_when: false
-          when: pam_tid.matched > 0
+          when: not is_ci and pam_tid.matched > 0
 
   handlers:
+    - name: Restart LanguageTool
+      ansible.builtin.command:
+        cmd: "{{ homebrew_brew_bin_path }}/brew services restart languagetool"
+      changed_when: true
+
     - name: FileVault restart reminder
       ansible.builtin.debug:
-        msg: "FileVault will activate on next logout. Log out and back in to complete setup and save your recovery key."
+        msg: >-
+          FileVault will activate on next logout. Log out and back in to complete
+          setup, then save the recovery key from /var/root/filevault-recovery.plist
+          (sudo plutil -p it) somewhere safe, such as 1Password, and delete the file.

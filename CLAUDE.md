@@ -31,7 +31,7 @@ script/doctor      # read-only health check: symlinks, stale .bak files, brew wr
 - If it sits at the same path in the repo and in `$HOME`, add it to `dotfiles_files_common`, `_macos` or `_linux`.
 - If the paths differ, add a `src`/`dest` pair to `dotfile_links_common` or `linux_dotfile_links`. For example, configs under `Library/Application Support/...` on macOS go to `~/.config/...` on Linux.
 - Every common entry must also be linked in `install.sh`.
-- The playbook moves any existing non-symlink target to `.bak` before linking.
+- The playbook and `install.sh` move any existing non-symlink target to `.bak` (or `.bak.<epoch>` if a `.bak` already exists) before linking.
 
 **Homebrew.** One `Brewfile` serves both platforms, and `.Brewfile` is a symlink to it so `brew bundle --global` finds it.
 

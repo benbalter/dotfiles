@@ -9,8 +9,9 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 setup() {
 	TEST_HOME="$(mktemp -d)"
 	STUB_BIN="$(mktemp -d)"
-	# Force the Linux lists (and skip launchctl) wherever the suite runs.
-	printf '#!/bin/sh\necho Linux\n' >"$STUB_BIN/uname"
+	# Force the Linux lists (and skip launchctl) wherever the suite runs, unless
+	# a test sets UNAME=Darwin.
+	printf '#!/bin/sh\necho "${UNAME:-Linux}"\n' >"$STUB_BIN/uname"
 	chmod +x "$STUB_BIN/uname"
 
 	# Host-independent launchd, brew and mise. Each prints $<NAME>_OUT and
@@ -107,12 +108,25 @@ write_status() {
 	echo "$update_output" | grep -q "warn  run started Tue never finished" || fail "$update_output"
 }
 
-@test "doctor flags an update that hasn't run in days" {
+@test "doctor flags an update that hasn't run in days on macOS" {
+	write_status "started=Tue" "finished=Tue"
+	touch -t 202001010000 "$STATUS"
+	UNAME=Darwin run_doctor
+	[ "$status" -ne 0 ] || fail "doctor should exit non-zero"
+	echo "$update_output" | grep -q "FAIL  no update has run in 2+ days" || fail "$update_output"
+}
+
+@test "doctor only warns about a stale update on Linux, which has no nightly job" {
 	write_status "started=Tue" "finished=Tue"
 	touch -t 202001010000 "$STATUS"
 	run_doctor
-	[ "$status" -ne 0 ] || fail "doctor should exit non-zero"
-	echo "$update_output" | grep -q "FAIL  no update has run in 2+ days" || fail "$update_output"
+	echo "$update_output" | grep -q "warn  no update has run in 2+ days" || fail "$update_output"
+}
+
+@test "doctor warns about timestamped .bak files too" {
+	echo old >"$TEST_HOME/.npmrc.bak.1700000000"
+	run_doctor
+	echo "$links_output" | grep -q "warn  $TEST_HOME/.npmrc.bak.1700000000" || fail "$links_output"
 }
 
 @test "doctor reports a launch agent's failed exit code and its log" {

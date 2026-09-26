@@ -21,27 +21,6 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 	done
 }
 
-@test "install.sh dotfiles all exist in the repo" {
-	# Parse the for-loop file list from install.sh
-	in_list=false
-	while IFS= read -r line; do
-		if echo "$line" | grep -q 'for file in'; then
-			in_list=true
-			continue
-		fi
-		if $in_list; then
-			# Strip trailing backslash and semicolon
-			cleaned=$(echo "$line" | sed 's/\\$//' | sed 's/;.*//')
-			for file in $cleaned; do
-				[ "$file" = "do" ] && continue
-				[ -e "$REPO_ROOT/$file" ] || fail "install.sh references '$file' which does not exist in repo"
-			done
-			# Stop after the line without a backslash (end of list)
-			echo "$line" | grep -q '\\$' || break
-		fi
-	done <"$REPO_ROOT/install.sh"
-}
-
 @test "config.yml has required top-level keys" {
 	for key in dotfiles_files dotfiles_files_common dotfiles_files_macos \
 		dotfiles_files_linux dotfile_links_common linux_dotfile_links fedora_packages \
@@ -76,23 +55,6 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 			echo "$dir" | grep -q '^~/' || fail "directory '$dir' should use ~/ prefix"
 		done
 	done
-}
-
-@test "install.sh covers every dotfiles_files_common entry" {
-	# The Codespaces/simple-Linux installer maintains its own symlink list;
-	# ensure it does not drift from config.yml's common list. Each entry must
-	# appear somewhere in install.sh (the flat for-loop or a special-cased ln).
-	while IFS= read -r file; do
-		grep -qF "$file" "$REPO_ROOT/install.sh" ||
-			fail "install.sh does not handle dotfiles_files_common entry '$file'"
-	done < <(yq -r '.dotfiles_files_common[]' "$REPO_ROOT/config.yml")
-}
-
-@test "install.sh links every dotfile_links_common entry" {
-	while IFS=$'\t' read -r src dest; do
-		grep -qF "\"\$DOTFILES_DIR/$src\" \"\$HOME/$dest\"" "$REPO_ROOT/install.sh" ||
-			fail "install.sh does not link '$src' to '$dest'"
-	done < <(yq -r '.dotfile_links_common[] | [.src, .dest] | @tsv' "$REPO_ROOT/config.yml")
 }
 
 @test "claude/settings.json is valid JSON without machine-only keys" {

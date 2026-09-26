@@ -6,7 +6,19 @@ set -eu
 # shellcheck disable=SC3040
 (set -o pipefail) 2>/dev/null && set -o pipefail || true
 
+# Absolute, so the re-exec after a pull still finds this script when it was
+# started by a relative path from outside the repo.
+SELF="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
 cd "${DOTFILES_ROOT:-$HOME/.files}"
+
+# The repo's Brewfile, not --global: ~/.Brewfile is only linked on macOS, so
+# on Linux every bundle step failed for want of a file. There, also skip the
+# formulae with no Linux bottle, as the playbook does.
+export HOMEBREW_BUNDLE_FILE="$PWD/Brewfile"
+if [ "$(uname)" != "Darwin" ]; then
+	HOMEBREW_BUNDLE_BREW_SKIP=$(sed -n 's/^homebrew_linux_brew_skip: *//p' config.yml 2>/dev/null || true)
+	export HOMEBREW_BUNDLE_BREW_SKIP
+fi
 
 # This script may run from a minimal environment (e.g. the nightly launchd job,
 # whose PATH is only /usr/bin:/bin:/usr/sbin:/sbin), so make Homebrew
@@ -59,7 +71,7 @@ if [ -t 1 ] && [ -z "${DOTFILES_UPDATE_PULLED:-}" ] && command -v git >/dev/null
 	before=$(git rev-parse HEAD)
 	step git pull --ff-only
 	if [ "$(git rev-parse HEAD)" != "$before" ]; then
-		DOTFILES_UPDATE_PULLED=1 exec "$0" "$@"
+		DOTFILES_UPDATE_PULLED=1 exec "$SELF" "$@"
 	fi
 fi
 
@@ -125,8 +137,22 @@ if command -v brew >/dev/null; then
 	# upgrades, which the variable above does not cover — that is how spotify
 	# got wedged the same way. Upgrades are the `brew upgrade` block's job.
 	# Mirrors the playbook's macOS bundle task.
+	# Headless, skip casks and App Store apps for the same reasons as their
+	# upgrades: a new cask can want sudo, and mas can wait forever on an App
+	# Store sign-in while holding the update lock. The next `up` from a
+	# terminal installs them.
 	echo "==> Installing any new Brewfile entries..."
-	step brew bundle --global --no-upgrade
+	if [ -t 1 ]; then
+		step brew bundle install --no-upgrade
+	else
+		# Exported, not prefixed: an assignment before a function call (step)
+		# isn't reliably passed on in POSIX sh.
+		HOMEBREW_BUNDLE_CASK_SKIP=$(sed -n "s/^cask '\([^']*\)'.*/\1/p" Brewfile 2>/dev/null | tr '\n' ' ' || true)
+		HOMEBREW_BUNDLE_MAS_SKIP=$(sed -n 's/^mas .*id: *\([0-9_]*\).*/\1/p' Brewfile 2>/dev/null | tr -d _ | tr '\n' ' ' || true)
+		export HOMEBREW_BUNDLE_CASK_SKIP HOMEBREW_BUNDLE_MAS_SKIP
+		step brew bundle install --no-upgrade
+		unset HOMEBREW_BUNDLE_CASK_SKIP HOMEBREW_BUNDLE_MAS_SKIP
+	fi
 
 	# Prune orphaned dependencies and clear stale downloads/old versions. Both
 	# are non-interactive and safe headless, so they run every invocation
@@ -172,7 +198,9 @@ if command -v dnf >/dev/null; then
 	fi
 fi
 
-if command -v mas >/dev/null; then
+# Terminal only: headless, mas can hang on an App Store sign-in prompt and
+# hold the update lock until someone kills it.
+if command -v mas >/dev/null && [ -t 1 ]; then
 	echo "==> Updating Mac App Store apps..."
 	step mas upgrade
 fi

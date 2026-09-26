@@ -70,12 +70,11 @@ refute_called() {
 	[ "$status" -eq 1 ] || fail "update exited $status: $output"
 	assert_called "brew update"
 	assert_called "brew upgrade --formula"
-	assert_called "brew bundle --global --no-upgrade"
+	assert_called "brew bundle install --no-upgrade"
 	assert_called "brew autoremove"
 	assert_called "brew cleanup"
 	assert_called "defaults write com.microsoft.autoupdate2 HowToCheck Manual"
 	assert_called "sudo -n dnf upgrade --refresh -y"
-	assert_called "mas upgrade"
 	assert_called "mise upgrade"
 	assert_called "npm ci"
 	assert_called "bundle update"
@@ -93,12 +92,12 @@ refute_called() {
 	run_update 1
 	[ "$status" -eq 1 ] || fail "update exited $status: $output"
 	case "$output" in
-		*"Failed steps:"*"mas upgrade"*"tldr --update"*) ;;
+		*"Failed steps:"*"brew update"*"tldr --update"*) ;;
 		*) fail "expected a failed-step summary; got: $output" ;;
 	esac
 	# script/doctor reads failures from here, not the log.
 	status_file="$FAKE_ROOT/.local/state/dotfiles/update-status"
-	grep -qx "failed=mas upgrade" "$status_file" || fail "$(cat "$status_file")"
+	grep -qx "failed=brew update" "$status_file" || fail "$(cat "$status_file")"
 	grep -q "^finished=" "$status_file" || fail "$(cat "$status_file")"
 }
 
@@ -172,6 +171,8 @@ refute_called() {
 	refute_called '^mole'
 	# A pull that needs auth or conflicts has no one to see it.
 	refute_called '^git'
+	# Can hang on an App Store sign-in and hold the lock.
+	refute_called '^mas'
 }
 
 @test "update never rewrites package-lock.json" {

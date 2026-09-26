@@ -157,7 +157,12 @@ while [ -L "$real" ]; do
 done
 
 tmp="$real.audit-tmp.$$"
-trap 'rm -f "$tmp"' EXIT INT TERM
+# Exit from the signal traps: a handler that only removes $tmp lets the loop
+# resume, rebuild $tmp from the remaining lines and then write that tail over
+# the Brewfile. dash skips the EXIT trap on a signal, so exiting runs it.
+trap 'rm -f "$tmp"' EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 : >"$tmp"
 changed=0
 

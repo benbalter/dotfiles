@@ -4,13 +4,18 @@ set -eu
 # shellcheck disable=SC3040
 (set -o pipefail) 2>/dev/null && set -o pipefail || true
 
+# Run the playbook, passing any arguments through to ansible-playbook.
+# Usage: script/ansible [--tags security] [--check --diff] ...
+
+cd "$(dirname "$0")/.."
+
 # shellcheck disable=SC1091
 . env/bin/activate
 
 if [ "${CI:-}" = "true" ]; then
-	ansible-playbook playbook.yml
+	ansible-playbook playbook.yml "$@"
 else
-	ansible-playbook playbook.yml --ask-become-pass
+	ansible-playbook playbook.yml --ask-become-pass "$@"
 fi
 
 deactivate
