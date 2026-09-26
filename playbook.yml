@@ -284,8 +284,8 @@
             creates: /usr/lib64/python3.*/site-packages/libdnf5
 
         # Homebrew provides the CLI toolchain (gh, mise, starship, etc.) on
-        # Asahi, so the only third-party RPM repo we still need is 1Password's
-        # for the desktop GUI app (Homebrew Cask is macOS-only).
+        # Asahi. Desktop apps use their supported Linux packages or installers
+        # because most Homebrew Casks are macOS-only.
         - name: Import 1Password RPM signing key
           ansible.builtin.rpm_key:
             key: https://downloads.1password.com/linux/keys/1password.asc
@@ -338,10 +338,34 @@
             name: "{{ fedora_packages }}"
             state: present
 
-        - name: Enable Ghostty Fedora COPR
-          community.general.copr:
-            name: scottames/ghostty
-            state: enabled
+        - name: Enforce targeted SELinux policy
+          ansible.posix.selinux:
+            policy: targeted
+            state: enforcing
+          when: not is_ci
+
+        # Terra's bootstrap requires an unsigned transaction because the Terra
+        # signing keys are distributed by terra-gpg-keys itself. Keep this
+        # repository disabled except for that one transaction; terra-release
+        # then installs Terra's normal GPG-checked repository configuration.
+        - name: Configure disabled Terra bootstrap repository
+          ansible.builtin.yum_repository:
+            name: terra-bootstrap
+            description: Terra bootstrap
+            baseurl: https://repos.fyralabs.com/terra$releasever
+            enabled: false
+            gpgcheck: false
+            repo_gpgcheck: false
+          when: not is_ci
+
+        - name: Install Terra repository and signing keys
+          ansible.builtin.dnf5:
+            name:
+              - terra-release
+              - terra-gpg-keys
+            state: present
+            enablerepo: terra-bootstrap
+            disable_gpg_check: true
           when: not is_ci
 
         - name: Install Ghostty
@@ -430,6 +454,72 @@
             enabled: true
             state: started
           when: not is_ci
+
+        - name: Check firewalld default zone
+          ansible.builtin.command:
+            cmd: firewall-cmd --get-default-zone
+          register: firewalld_default_zone
+          changed_when: false
+          check_mode: false
+          when: not is_ci
+
+        - name: Set firewalld default zone
+          ansible.builtin.command:
+            cmd: "firewall-cmd --set-default-zone={{ fedora_firewall_default_zone }}"
+          when:
+            - not is_ci
+            - not ansible_check_mode
+            - firewalld_default_zone.stdout | trim != fedora_firewall_default_zone
+          changed_when: true
+
+        - name: Allow configured Fedora firewall services
+          ansible.posix.firewalld:
+            zone: "{{ fedora_firewall_default_zone }}"
+            service: "{{ item }}"
+            state: enabled
+            permanent: true
+            immediate: true
+          loop: "{{ fedora_firewall_services + (['ssh'] if fedora_sshd_enabled else []) }}"
+          when: not is_ci
+
+        - name: Block SSH through firewalld when the SSH server is disabled
+          ansible.posix.firewalld:
+            zone: "{{ fedora_firewall_default_zone }}"
+            service: ssh
+            state: disabled
+            permanent: true
+            immediate: true
+          when:
+            - not is_ci
+            - not fedora_sshd_enabled
+
+        - name: Set SSH server package state
+          ansible.builtin.dnf5:
+            name: openssh-server
+            state: "{{ 'present' if fedora_sshd_enabled else 'absent' }}"
+          when: not is_ci
+
+        - name: Gather Fedora service facts
+          ansible.builtin.service_facts:
+          when: not is_ci
+
+        - name: Disable SSH socket activation
+          ansible.builtin.systemd_service:
+            name: sshd.socket
+            enabled: false
+            state: stopped
+          when:
+            - not is_ci
+            - "'sshd.socket' in (ansible_facts.services | default({}))"
+
+        - name: Set SSH server service state
+          ansible.builtin.systemd_service:
+            name: sshd.service
+            enabled: "{{ fedora_sshd_enabled }}"
+            state: "{{ 'started' if fedora_sshd_enabled else 'stopped' }}"
+          when:
+            - not is_ci
+            - "'sshd.service' in (ansible_facts.services | default({}))"
 
         # Host overrides go in /etc/dnf/automatic.conf; the distro defaults
         # (download only, apply nothing) live in

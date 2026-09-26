@@ -124,8 +124,8 @@ fedora_packages:
   - curl
   - file
   - git
-  # Required by community.general.copr to configure Ghostty's Fedora repo.
-  - dnf-plugins-core
+  # Required by ansible.posix.selinux on Fedora.
+  - python3-libselinux
   # Sandboxing backend for Homebrew 6+ on Linux
   - bubblewrap
   # Login shell, set as the default before Homebrew runs
@@ -150,6 +150,13 @@ homebrew_linux_cask_skip: >-
   mitmproxy mutedeck pdfsam-basic qlmarkdown signal slack@beta spotify
   suspicious-package syntax-highlight thaw unclack visual-studio-code whatcable
   yubico-authenticator zed zoom
+
+# Fedora workstation ingress policy. SSH stays off to match macOS Remote Login;
+# set fedora_sshd_enabled to true when this host should accept SSH connections.
+fedora_firewall_default_zone: drop
+fedora_firewall_services:
+  - dhcpv6-client
+fedora_sshd_enabled: false
 
 # KDE Plasma color scheme applied on Fedora. `plasma-apply-colorscheme --list-schemes`
 # shows what's installed; stock Plasma ships BreezeClassic, BreezeDark, BreezeLight.

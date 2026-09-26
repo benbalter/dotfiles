@@ -32,6 +32,15 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 	done < <(sed -n "s/^cask '\([^']*\)'.*/\1/p" "$REPO_ROOT/Brewfile")
 }
 
+@test "Fedora firewall defaults to drop and SSH is disabled" {
+	[ "$(yq -r '.fedora_firewall_default_zone' "$REPO_ROOT/config.yml")" = "drop" ] ||
+		fail "Fedora firewall default zone must be drop"
+	[ "$(yq -r '.fedora_sshd_enabled' "$REPO_ROOT/config.yml")" = "false" ] ||
+		fail "Fedora SSH server must be disabled by default"
+	yq -e '.fedora_firewall_services == ["dhcpv6-client"]' "$REPO_ROOT/config.yml" >/dev/null ||
+		fail "Fedora firewall services must explicitly allow DHCPv6 only by default"
+}
+
 @test "config.yml has required top-level keys" {
 	for key in dotfiles_files dotfiles_files_common dotfiles_files_macos \
 		dotfiles_files_linux dotfile_links_common linux_dotfile_links fedora_packages \
