@@ -42,7 +42,8 @@ lint "Linting GitHub Actions workflows" actionlint
 lint "Linting Ruby files" bundle exec rubocop --force-exclusion .irbrc .pryrc Gemfile
 # --frail: fail on warnings too, or a broken link only warns and CI stays green.
 lint "Linting Markdown files" npx remark --no-stdout --silently-ignore --frail \
-	--ignore-pattern node_modules/ --ignore-pattern .ansible/ --ignore-pattern env/ .
+	--ignore-pattern node_modules/ --ignore-pattern .ansible/ --ignore-pattern env/ \
+	--ignore-pattern vendor/ .
 
 if [ -n "$failed" ]; then
 	echo "==> Failed:$failed" >&2

@@ -206,6 +206,12 @@
           loop_control:
             label: "{{ item.0.item | basename }}"
           when: item.0.rc != 0 or item.1.changed
+          register: launch_agent_bootstrap
+          # Right after a bootout, launchd can still be tearing the job down
+          # and bootstrap fails with "Input/output error" (5) for a moment.
+          retries: 3
+          delay: 2
+          until: launch_agent_bootstrap.rc == 0
           changed_when: true
 
     # Skipped under Workbrew, which installs and owns Homebrew itself. The role

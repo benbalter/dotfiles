@@ -156,12 +156,21 @@ jobs:
       - name: Bootstrap
         run: script/bootstrap
 
-      # shfmt and actionlint at the versions Homebrew has locally; apt's are
-      # older and format or check differently.
+      # shellcheck, shfmt and actionlint at the versions Homebrew has locally;
+      # apt's are older and check or format differently.
       - name: Install lint tools
+        env:
+          SHELLCHECK_VERSION: v0.11.0
+          SHELLCHECK_SHA256: 8c3be12b05d5c177a04c29e3c78ce89ac86f1595681cab149b65b97c4e227198
         run: |
-          sudo apt-get update -q
-          sudo apt-get install -y -q shellcheck
+          # In RUNNER_TEMP, so the unpacked files stay out of the lint run.
+          cd "$RUNNER_TEMP"
+          tarball="shellcheck-$SHELLCHECK_VERSION.linux.x86_64.tar.xz"
+          curl -fsSLO "https://github.com/koalaman/shellcheck/releases/download/$SHELLCHECK_VERSION/$tarball"
+          echo "$SHELLCHECK_SHA256  $tarball" | sha256sum -c -
+          tar -xJf "$tarball"
+          sudo install "shellcheck-$SHELLCHECK_VERSION/shellcheck" /usr/local/bin/
+          cd "$GITHUB_WORKSPACE"
           go install mvdan.cc/sh/v3/cmd/shfmt@v3.14.1
           go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
           echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
