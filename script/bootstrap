@@ -18,7 +18,6 @@ else
 	pip install --upgrade -r requirements.txt
 fi
 
-# Split as in script/update: roles need --force to apply a pin bump, but a
-# forced collection install re-downloads every collection on every run.
-ansible-galaxy role install -r requirements.yml --force
+# Not --force, which re-downloads every collection on every run. The pins are
+# exact, so a plain install already converges on them.
 ansible-galaxy collection install -r requirements.yml

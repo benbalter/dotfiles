@@ -1,39 +1,13 @@
 # frozen_string_literal: true
 
-tap 'darrylmorley/whatcable'
-
 # Run your GitHub Actions locally
 brew 'act'
 # Improved shell history for zsh, bash, fish and nushell
 brew 'atuin'
-# GNU multiple precision arithmetic library
-brew 'gmp'
 # Static analysis and lint tool, for (ba)sh scripts
 brew 'shellcheck'
 # Static checker for GitHub Actions workflow files
 brew 'actionlint'
-# Software library to render fonts
-brew 'freetype'
-# JPEG image codec that aids compression and decompression
-brew 'jpeg-turbo'
-# TIFF library and utilities
-brew 'libtiff'
-# OpenType text shaping engine
-brew 'harfbuzz'
-# Library to render SVG files using Cairo
-brew 'librsvg'
-# Cryptography and SSL/TLS Toolkit
-brew 'openssl@3'
-# C library SSHv1/SSHv2 client and server protocols
-brew 'libssh'
-# YAML Parser
-brew 'libyaml'
-# Automate deployment, configuration, and upgrading
-brew 'ansible'
-# Checks ansible playbooks for practices and behaviour
-brew 'ansible-lint'
-# Interpreted, interactive, object-oriented programming language
-brew 'python@3.13'
 # Simple, modern, secure file encryption
 brew 'age'
 # Microsoft Azure CLI 2.0
@@ -52,8 +26,6 @@ brew 'cmake'
 brew 'colima'
 # GNU File, Shell, and Text utilities
 brew 'coreutils'
-# C library implementing the SSH2 protocol
-brew 'libssh2'
 # Get a file from an HTTP, HTTPS or FTP server
 brew 'curl'
 # Pack, ship and run any application as a lightweight container
@@ -78,8 +50,6 @@ brew 'exif'
 brew 'exiftool'
 # Modern, maintained replacement for ls
 brew 'eza'
-# SDL2 compatibility layer that uses SDL3 behind the scenes
-brew 'sdl2-compat'
 # Play, record, convert, and stream select audio and video codecs
 brew 'ffmpeg'
 # Clone of cat(1) with syntax highlighting and Git integration
@@ -110,14 +80,10 @@ brew 'gitleaks'
 brew 'gmailctl'
 # GNU implementation of the famous stream editor
 brew 'gnu-sed'
-# GNU Transport Layer Security (TLS) Library
-brew 'gnutls'
 # Passphrase entry dialog utilizing the Assuan protocol
 brew 'pinentry'
 # GNU Privacy Guard (OpenPGP)
 brew 'gnupg'
-# Package compiler and linker metadata toolkit
-brew 'pkgconf'
 # Use Realtek DVB-T dongles as a cheap SDR
 brew 'librtlsdr'
 # Open source programming language to build simple/reliable/efficient software
@@ -138,10 +104,6 @@ brew 'harper'
 brew 'hivemind'
 # User-friendly cURL replacement (command-line HTTP client)
 brew 'httpie'
-# ISO/IEC 23008-12:2017 HEIF file format decoder and encoder
-brew 'libheif'
-# Generic library support script
-brew 'libtool'
 # Tools and libraries to manipulate images in select formats
 brew 'imagemagick'
 # Convert images to PDF via direct JPEG inclusion
@@ -150,8 +112,6 @@ brew 'img2pdf'
 brew 'iperf'
 # JSON diff and patch
 brew 'jd'
-# Implementation of malloc emphasizing fragmentation avoidance
-brew 'jemalloc'
 # Command-line pager for JSON data
 brew 'jless'
 # Lightweight and flexible command-line JSON processor
@@ -160,8 +120,6 @@ brew 'jq'
 brew 'jsonnet'
 # Handy way to save and run project-specific commands
 brew 'just'
-# Development kit for the Java programming language
-brew 'openjdk@17'
 # Style and grammar checker
 brew 'languagetool', restart_service: :changed
 # Fast, async, resource-friendly link checker
@@ -184,14 +142,8 @@ brew 'mtr'
 brew 'nmap'
 # Open-source, cross-platform JavaScript runtime environment
 brew 'node'
-# Install NodeJS versions
-brew 'node-build'
-# Libraries for security-enabled client and server applications
-brew 'nss'
 # Adds an OCR text layer to scanned PDF files
 brew 'ocrmypdf'
-# Open source suite of directory software
-brew 'openldap'
 # Swiss-army knife of markup format conversion
 brew 'pandoc'
 # Port of pdftk in java
@@ -210,8 +162,6 @@ brew 'protobuf'
 brew 'ripgrep'
 # Powerful, clean, object-oriented scripting language
 brew 'ruby'
-# Install various Ruby versions and implementations
-brew 'ruby-build'
 # Safe, concurrent, practical language
 brew 'rust'
 # SDL2 graphics drawing primitives and other support functions
@@ -250,8 +200,6 @@ brew 'tfsec'
 brew 'tmpreaper'
 # Very fast implementation of tldr in Rust
 brew 'tealdeer'
-# Language for application scale JavaScript development
-brew 'typescript'
 # Extremely fast Python package installer and resolver, written in Rust
 brew 'uv'
 # GNU diction and style
@@ -448,7 +396,6 @@ vscode 'ms-dotnettools.vscode-dotnet-runtime'
 vscode 'ms-vscode-remote.remote-containers'
 vscode 'ms-vscode-remote.remote-ssh'
 vscode 'ms-vscode-remote.remote-ssh-edit'
-vscode 'ms-vscode-remote.remote-wsl'
 vscode 'ms-vscode-remote.vscode-remote-extensionpack'
 vscode 'ms-vscode.makefile-tools'
 vscode 'ms-vscode.remote-explorer'
@@ -469,8 +416,5 @@ vscode 'tlahmann.alex-linter'
 vscode 'tomoki1207.pdf'
 vscode 'travisthetechie.write-good-linter'
 vscode 'usernamehw.errorlens'
-vscode 'visualstudiotoolsforunity.vstuc'
 vscode 'yzhang.markdown-all-in-one'
-cargo 'just'
-cargo 'lychee'
 # Global npm CLIs are managed by mise (see .config/mise/config.toml)

@@ -7,7 +7,7 @@ Personal dotfiles (public repo `benbalter/dotfiles`, checked out at `~/.files`) 
 ## Commands
 
 ```sh
-script/bootstrap   # create the Python venv (env/) and install Ansible roles/collections
+script/bootstrap   # create the Python venv (env/) and install Ansible collections
 script/setup       # bootstrap + run the full playbook (prompts for sudo)
 script/update      # update everything; aliased to `up`, also runs nightly headless
 script/lint        # ansible-lint, yamllint, shellcheck, shfmt, actionlint, rubocop, remark

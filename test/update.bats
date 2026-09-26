@@ -79,7 +79,6 @@ refute_called() {
 	assert_called "npm ci"
 	assert_called "bundle update"
 	assert_called "uv pip install --upgrade -r requirements.txt"
-	assert_called "ansible-galaxy role install -r requirements.yml --force"
 	assert_called "ansible-galaxy collection install -r requirements.yml"
 	assert_called "zsh $FAKE_ROOT/.oh-my-zsh/tools/upgrade.sh -v minimal"
 	assert_called "tldr --update"
