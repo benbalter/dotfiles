@@ -2,7 +2,7 @@
 # https://ghostty.org/docs/config/reference
 
 # ── Theme ──────────────────────────────────────────────────────────
-theme = light:Catppuccin Latte,dark:Catppuccin Mocha
+theme = light:catppuccin-latte.conf,dark:catppuccin-mocha.conf
 minimum-contrast = 1.1
 
 # ── Font ───────────────────────────────────────────────────────────

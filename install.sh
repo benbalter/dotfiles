@@ -49,7 +49,7 @@ done
 # Symlink directories that need parent dirs
 mkdir -p "$HOME/.bundle" "$HOME/.gnupg" "$HOME/.config/mise" \
 	"$HOME/.config/git" "$HOME/.config/bat" "$HOME/.config/atuin" "$HOME/.config/zed" \
-	"$HOME/.claude"
+	"$HOME/.config/ghostty/themes" "$HOME/.claude"
 # gpg warns "unsafe permissions on homedir" unless ~/.gnupg is private
 # (config.yml's private_directories does the same for the playbook).
 chmod 700 "$HOME/.gnupg"
@@ -60,6 +60,10 @@ for file in \
 	link "$file"
 done
 link claude/CLAUDE.md .claude/CLAUDE.md
+link "Library/Application Support/com.mitchellh.ghostty/themes/catppuccin-latte.conf" \
+	.config/ghostty/themes/catppuccin-latte.conf
+link "Library/Application Support/com.mitchellh.ghostty/themes/catppuccin-mocha.conf" \
+	.config/ghostty/themes/catppuccin-mocha.conf
 
 # Skip .gitconfig.linux and linux_dotfile_links (config.yml) here: this path
 # serves Codespaces and containers, not a Linux desktop. .gitconfig.linux only

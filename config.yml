@@ -84,6 +84,10 @@ dotfiles_files_linux:
 dotfile_links_common:
   - src: claude/CLAUDE.md
     dest: .claude/CLAUDE.md
+  - src: Library/Application Support/com.mitchellh.ghostty/themes/catppuccin-latte.conf
+    dest: .config/ghostty/themes/catppuccin-latte.conf
+  - src: Library/Application Support/com.mitchellh.ghostty/themes/catppuccin-mocha.conf
+    dest: .config/ghostty/themes/catppuccin-mocha.conf
 
 # Linux symlinks whose destination differs from the repo path
 # (configs shared with macOS but expected at XDG paths on Linux)
@@ -120,6 +124,8 @@ fedora_packages:
   - curl
   - file
   - git
+  # Required by community.general.copr to configure Ghostty's Fedora repo.
+  - dnf-plugins-core
   # Sandboxing backend for Homebrew 6+ on Linux
   - bubblewrap
   # Login shell, set as the default before Homebrew runs
@@ -133,10 +139,17 @@ homebrew_linux_prefix: /home/linuxbrew/.linuxbrew
 # automatically by `brew bundle` on Linux.
 homebrew_linux_brew_skip: dockutil mas mole pinentry-mac terminal-notifier
 
-# Casks themselves DO work on Linux (1password-cli and font-hack-nerd-font
-# install fine on Asahi), so only the ones gated to Intel hardware with
-# `depends_on arch: :x86_64` need skipping via HOMEBREW_BUNDLE_CASK_SKIP.
-homebrew_linux_cask_skip: signal zoom
+# Homebrew Cask is macOS-only for most desktop apps. Fedora installs supported
+# Linux apps through native packages or their upstream installer; only the
+# portable Nerd Font cask remains in the Linux Brewfile run.
+homebrew_linux_cask_skip: >-
+  1password 1password-cli adguard apparency caffeine cleanshot displaylink
+  dropbox elgato-camera-hub elgato-control-center elgato-stream-deck ghostty
+  gifox github@beta google-chrome google-drive gpg-suite harper-desktop
+  karabiner-elements kindle-previewer languagetool-desktop microsoft-auto-update
+  mitmproxy mutedeck pdfsam-basic qlmarkdown signal slack@beta spotify
+  suspicious-package syntax-highlight thaw unclack visual-studio-code whatcable
+  yubico-authenticator zed zoom
 
 # KDE Plasma color scheme applied on Fedora. `plasma-apply-colorscheme --list-schemes`
 # shows what's installed; stock Plasma ships BreezeClassic, BreezeDark, BreezeLight.

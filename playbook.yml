@@ -317,14 +317,48 @@
             gpgcheck: true
             gpgkey: https://packages.microsoft.com/keys/microsoft.asc
 
+        - name: Import Google Chrome RPM signing key
+          ansible.builtin.rpm_key:
+            key: https://dl.google.com/linux/linux_signing_key.pub
+            state: present
+          when: not is_ci
+
+        - name: Add Google Chrome repository
+          ansible.builtin.yum_repository:
+            name: google-chrome
+            description: Google Chrome
+            baseurl: https://dl.google.com/linux/chrome/rpm/stable/$basearch
+            enabled: true
+            gpgcheck: true
+            gpgkey: https://dl.google.com/linux/linux_signing_key.pub
+          when: not is_ci
+
         - name: Install packages
           ansible.builtin.dnf5:
             name: "{{ fedora_packages }}"
             state: present
 
+        - name: Enable Ghostty Fedora COPR
+          community.general.copr:
+            name: scottames/ghostty
+            state: enabled
+          when: not is_ci
+
+        - name: Install Ghostty
+          ansible.builtin.dnf5:
+            name: ghostty
+            state: present
+          when: not is_ci
+
         - name: Install VS Code
           ansible.builtin.dnf5:
             name: code
+            state: present
+          when: not is_ci
+
+        - name: Install Google Chrome
+          ansible.builtin.dnf5:
+            name: google-chrome-stable
             state: present
           when: not is_ci
 
@@ -333,6 +367,21 @@
             name: 1password-cli
             state: present
           when: not is_ci
+
+        # Zed's official installer supports Linux x86_64 and aarch64, installs
+        # into the user's ~/.local tree, and configures its desktop entry.
+        # Zed self-updates after the initial install, so only run it when absent.
+        - name: Install Zed
+          become: false
+          ansible.builtin.shell:
+            cmd: set -o pipefail && curl -f https://zed.dev/install.sh | sh
+            executable: /bin/bash
+            creates: "{{ ansible_facts['user_dir'] }}/.local/bin/zed"
+          environment:
+            HOME: "{{ ansible_facts['user_dir'] }}"
+          when:
+            - not is_ci
+            - ansible_facts['architecture'] in ['aarch64', 'x86_64']
 
         # The RPM repo only ships the desktop app for x86_64
         - name: Install 1Password desktop (RPM)

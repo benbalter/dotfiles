@@ -3,6 +3,8 @@
 # Usage: script/blocking-io
 
 set -eu
+# shellcheck disable=SC3040
+(set -o pipefail) 2>/dev/null && set -o pipefail || true
 
 # Ansible's CLIs refuse to start when any of the three standard file handles is
 # non-blocking ("ERROR: Ansible requires blocking IO on stdin/stdout/stderr"),

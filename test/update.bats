@@ -35,6 +35,8 @@ setup() {
 	# Interactive-only steps must never run headless; log it if they do.
 	printf '#!/bin/sh\necho "audit-casks $*" >>"$LOG"\n' >"$FAKE_ROOT/script/audit-casks"
 	chmod +x "$FAKE_ROOT/script/audit-casks"
+	printf '#!/bin/sh\n' >"$FAKE_ROOT/script/blocking-io"
+	chmod +x "$FAKE_ROOT/script/blocking-io"
 
 	# HOME points into the sandbox so the lock, the log and
 	# oh-my-zsh resolve there and never touch the real ones.

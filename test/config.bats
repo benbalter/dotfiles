@@ -21,6 +21,17 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 	done
 }
 
+@test "Linux Brewfile casks have explicit platform handling" {
+	linux_cask_skip=$(yq -r '.homebrew_linux_cask_skip' "$REPO_ROOT/config.yml")
+	while IFS= read -r cask_token; do
+		[ "$cask_token" = "font-hack-nerd-font" ] && continue
+		case " $linux_cask_skip " in
+			*" $cask_token "*) ;;
+			*) fail "Brewfile cask '$cask_token' needs a Linux skip or native install" ;;
+		esac
+	done < <(sed -n "s/^cask '\([^']*\)'.*/\1/p" "$REPO_ROOT/Brewfile")
+}
+
 @test "config.yml has required top-level keys" {
 	for key in dotfiles_files dotfiles_files_common dotfiles_files_macos \
 		dotfiles_files_linux dotfile_links_common linux_dotfile_links fedora_packages \
