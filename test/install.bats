@@ -45,6 +45,8 @@ teardown() {
 	for dir in .bundle .gnupg; do
 		[ -d "$TEST_HOME/$dir" ] || fail "$dir directory was not created"
 	done
+	perms=$(stat -c %a "$TEST_HOME/.gnupg" 2>/dev/null || stat -f %Lp "$TEST_HOME/.gnupg")
+	[ "$perms" = "700" ] || fail ".gnupg should be 0700, got $perms"
 }
 
 @test "install.sh does not link macOS-only dotfiles" {

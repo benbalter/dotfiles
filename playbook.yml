@@ -57,7 +57,7 @@
       ansible.builtin.file:
         path: "{{ item }}"
         state: directory
-        mode: "0755"
+        mode: "{{ '0700' if (item | regex_replace('^~/', '')) in private_directories else '0755' }}"
       loop: "{{ directories_to_create }}"
       tags: [directories]
 
@@ -68,7 +68,7 @@
           ansible.builtin.file:
             path: "{{ ansible_facts['user_dir'] }}/{{ item | dirname }}"
             state: directory
-            mode: "0755"
+            mode: "{{ '0700' if (item | dirname) in private_directories else '0755' }}"
           loop: "{{ dotfiles_files }}"
           when: item | dirname not in dotfile_root_dirs
 
@@ -110,7 +110,7 @@
           ansible.builtin.file:
             path: "{{ ansible_facts['user_dir'] }}/{{ item.dest | dirname }}"
             state: directory
-            mode: "0755"
+            mode: "{{ '0700' if (item.dest | dirname) in private_directories else '0755' }}"
           loop: "{{ dotfile_links }}"
           loop_control:
             label: "{{ item.dest | dirname }}"
@@ -143,6 +143,37 @@
           loop: "{{ dotfile_links }}"
           loop_control:
             label: "{{ item.dest }}"
+
+    # Symlinking a plist into ~/Library/LaunchAgents doesn't load it until the
+    # next login, so on a fresh machine the nightly update never ran until
+    # script/doctor flagged it. Bootstrap only jobs that aren't loaded:
+    # bootstrapping a loaded job fails with "Input/output error" (5). The
+    # label is the filename stem; test/config.bats keeps that true.
+    - name: Load launch agents
+      when: is_macos and not is_ci
+      tags: [dotfiles, launchagents]
+      vars:
+        launch_agents: "{{ dotfiles_files_macos | select('match', '^Library/LaunchAgents/') | list }}"
+      block:
+        - name: Check launch agent status
+          ansible.builtin.command:
+            cmd: "launchctl print gui/{{ ansible_facts['user_uid'] }}/{{ item | basename | splitext | first }}"
+          loop: "{{ launch_agents }}"
+          register: launch_agent_status
+          check_mode: false
+          changed_when: false
+          failed_when: false
+
+        - name: Bootstrap launch agents that aren't loaded
+          ansible.builtin.command:
+            cmd: >-
+              launchctl bootstrap gui/{{ ansible_facts['user_uid'] }}
+              "{{ ansible_facts['user_dir'] }}/{{ item.item }}"
+          loop: "{{ launch_agent_status.results }}"
+          loop_control:
+            label: "{{ item.item | basename }}"
+          when: item.rc != 0
+          changed_when: true
 
     # Skipped under Workbrew, which installs and owns Homebrew itself. The role
     # would contribute nothing there -- brew is already installed, the tap/
@@ -292,6 +323,44 @@
               when: not op_desktop.stat.exists
               changed_when: true
 
+        # Parity with the macOS firewall and SoftwareUpdate settings. Packages
+        # install in CI too (a cheap check the names are right), but the
+        # container has no systemd, so the services are only enabled for real.
+        - name: Install firewalld and the dnf5 automatic plugin
+          ansible.builtin.dnf5:
+            name:
+              - firewalld
+              - dnf5-plugin-automatic
+            state: present
+
+        - name: Enable firewalld
+          ansible.builtin.systemd_service:
+            name: firewalld
+            enabled: true
+            state: started
+          when: not is_ci
+
+        # Host overrides go in /etc/dnf/automatic.conf; the distro defaults
+        # (download only, apply nothing) live in
+        # /usr/share/dnf5/dnf5-plugins/automatic.conf.
+        - name: Configure automatic updates
+          community.general.ini_file:
+            path: /etc/dnf/automatic.conf
+            section: commands
+            option: "{{ item.option }}"
+            value: "{{ item.value }}"
+            mode: "0644"
+          loop:
+            - { option: upgrade_type, value: "{{ fedora_automatic_upgrade_type }}" }
+            - { option: apply_updates, value: "yes" }
+
+        - name: Enable automatic updates timer
+          ansible.builtin.systemd_service:
+            name: dnf5-automatic.timer
+            enabled: true
+            state: started
+          when: not is_ci
+
         - name: Set zsh as default shell
           ansible.builtin.user:
             name: "{{ ansible_facts['user_id'] }}"
@@ -374,7 +443,7 @@
         - { repo: hardikpandya/stop-slop, name: stop-slop }
       become: false
       when: not is_ci
-      tags: [packages]
+      tags: [packages, claude]
 
     # Claude Code rewrites ~/.claude/settings.json by replacing the file, so a
     # symlink wouldn't survive. Instead merge the shareable keys from
@@ -503,22 +572,31 @@
         key: "{{ item.key }}"
         type: "{{ item.type }}"
         value: "{{ item.value }}"
+        host: "{{ item.host | default(omit) }}"
       loop: "{{ macos_defaults.user }}"
+      loop_control:
+        label: "{{ item.name }}"
       when: is_macos
       tags: [macos, defaults]
 
-    - name: Set screensaver idle time
-      community.general.osx_defaults:
-        domain: com.apple.screensaver
-        key: idleTime
-        type: integer
-        value: 300
-      when: is_macos and not is_ci
+    # Read per-host values back from the ByHost domain, as the system defaults
+    # are verified above. Skipped in check mode, where nothing was written.
+    - name: Verify MacOS per-host user defaults applied
+      ansible.builtin.command:
+        cmd: "defaults -currentHost read {{ item.domain }} {{ item.key }}"
+      loop: "{{ macos_defaults.user | selectattr('host', 'defined') | list }}"
+      loop_control:
+        label: "{{ item.name }}"
+      register: host_defaults_check
+      check_mode: false
+      changed_when: false
+      failed_when: host_defaults_check.rc != 0
+      when: is_macos and not ansible_check_mode
       tags: [macos, defaults]
 
     - name: Disable Comic Sans globally
       ansible.builtin.command: "{{ playbook_dir }}/script/disable-comic-sans"
-      when: not is_ci
+      when: is_macos and not is_ci
       changed_when: false
       failed_when: false
       tags: [macos, fonts]
@@ -527,11 +605,29 @@
       tags: [macos, security]
       when: is_macos
       block:
+        - name: Check Gatekeeper status
+          ansible.builtin.command:
+            cmd: spctl --status
+          register: gatekeeper_status
+          check_mode: false
+          changed_when: false
+          failed_when: false
+
         - name: Enable Gatekeeper
           ansible.builtin.command:
             cmd: spctl --master-enable
           become: true
+          when: "'assessments enabled' not in gatekeeper_status.stdout"
+          changed_when: true
+
+        - name: Verify Gatekeeper is enabled
+          ansible.builtin.command:
+            cmd: spctl --status
+          register: gatekeeper_verify
+          check_mode: false
           changed_when: false
+          failed_when: "'assessments enabled' not in gatekeeper_verify.stdout"
+          when: not ansible_check_mode
 
         # The firewall can only be driven through socketfilterfw. Writing
         # globalstate/stealthenabled to com.apple.alf silently does nothing on
@@ -549,6 +645,7 @@
                 cmd: /usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate
               register: firewall_state
               changed_when: false
+              check_mode: false
 
             - name: Enable firewall
               ansible.builtin.command:
@@ -569,6 +666,7 @@
                 cmd: /usr/libexec/ApplicationFirewall/socketfilterfw --getstealthmode
               register: stealth_state
               changed_when: false
+              check_mode: false
 
             - name: Enable firewall stealth mode
               ansible.builtin.command:
@@ -584,6 +682,9 @@
               changed_when: false
               failed_when: "'stealth mode is on' not in stealth_verify.stdout"
 
+            # The reads in this block set check_mode: false so --check still
+            # sees real values; skipped in check mode they return no output,
+            # and stdout_lines[0] below fails.
             # --getallowsigned prints built-in policy on line 1 and downloaded
             # (notarized) policy on line 2. "ENABLED" is not a substring of
             # "DISABLED", so a plain containment test is unambiguous here.
@@ -592,6 +693,7 @@
                 cmd: /usr/libexec/ApplicationFirewall/socketfilterfw --getallowsigned
               register: allowsigned_state
               changed_when: false
+              check_mode: false
 
             - name: Set firewall policy for built-in signed software
               ansible.builtin.command:
@@ -631,6 +733,98 @@
         # no --setloggingmode), so it is deliberately not managed here. The old
         # com.apple.alf loggingenabled write was a no-op.
 
+        # Remote Login (sshd) and Screen Sharing are launchd daemons that are
+        # merely "off" until someone flips them in System Settings. Disabling
+        # them in launchd's override database keeps them from starting even if
+        # toggled by accident. systemsetup is not used: it needs admin just to
+        # read, and on recent macOS setting remote login demands Full Disk
+        # Access for the terminal.
+        - name: Disable remote access services
+          when: not is_ci
+          block:
+            - name: Read launchd disabled services
+              ansible.builtin.command:
+                cmd: launchctl print-disabled system
+              register: launchd_disabled
+              check_mode: false
+              changed_when: false
+
+            - name: Disable remote access daemons
+              ansible.builtin.command:
+                cmd: "launchctl disable system/{{ item }}"
+              become: true
+              loop: "{{ macos_disabled_daemons }}"
+              when: ('"' ~ item ~ '" => disabled') not in launchd_disabled.stdout
+              changed_when: true
+
+            # disable only stops future launches, so boot out a running copy.
+            # `launchctl print` needs no root and fails for a job not loaded.
+            - name: Check whether remote access daemons are loaded
+              ansible.builtin.command:
+                cmd: "launchctl print system/{{ item }}"
+              loop: "{{ macos_disabled_daemons }}"
+              register: daemon_loaded
+              check_mode: false
+              changed_when: false
+              failed_when: false
+
+            - name: Stop loaded remote access daemons
+              ansible.builtin.command:
+                cmd: "launchctl bootout system/{{ item.item }}"
+              become: true
+              loop: "{{ daemon_loaded.results }}"
+              loop_control:
+                label: "{{ item.item }}"
+              when: item.rc == 0
+              changed_when: true
+
+            - name: Verify remote access daemons are disabled
+              ansible.builtin.command:
+                cmd: launchctl print-disabled system
+              loop: "{{ macos_disabled_daemons }}"
+              register: launchd_disabled_verify
+              check_mode: false
+              changed_when: false
+              failed_when: ('"' ~ item ~ '" => disabled') not in launchd_disabled_verify.stdout
+              when: not ansible_check_mode
+
+        # With `shared` true, one admin unlock of a System Settings pane is
+        # reused by other panes and processes; false asks every time.
+        - name: Require admin for system-wide System Settings
+          when: not is_ci
+          vars:
+            want_shared: "{{ not macos_require_admin_for_system_settings }}"
+            # `security authorizationdb read` prints the rule as an XML plist.
+            shared_pattern: "<key>shared</key>\\s*<{{ want_shared | lower }}/>"
+          block:
+            - name: Read System Settings authorization rule
+              ansible.builtin.command:
+                cmd: security authorizationdb read system.preferences
+              register: sysprefs_rule
+              check_mode: false
+              changed_when: false
+
+            - name: Set System Settings authorization rule
+              ansible.builtin.shell:
+                cmd: >-
+                  set -o pipefail;
+                  security authorizationdb read system.preferences 2>/dev/null
+                  | plutil -replace shared -bool {{ want_shared | lower }} -o - -
+                  | security authorizationdb write system.preferences
+                executable: /bin/bash
+              become: true
+              when: sysprefs_rule.stdout | regex_search(shared_pattern) is none
+              changed_when: true
+
+            - name: Verify System Settings authorization rule
+              ansible.builtin.command:
+                cmd: security authorizationdb read system.preferences
+              register: sysprefs_rule_verify
+              check_mode: false
+              changed_when: false
+              failed_when: sysprefs_rule_verify.stdout | regex_search(shared_pattern) is none
+              when: not ansible_check_mode
+
         - name: Disable automatic login
           community.general.osx_defaults:
             domain: /Library/Preferences/com.apple.loginwindow
@@ -647,6 +841,7 @@
             cmd: pmset -g
           register: pmset_state
           changed_when: false
+          check_mode: false
           when: not is_ci
 
         - name: Disable wake for network access
@@ -661,6 +856,7 @@
             cmd: fdesetup status
           register: filevault_status
           changed_when: false
+          check_mode: false
 
         - name: Enable FileVault
           ansible.builtin.command:
@@ -692,6 +888,17 @@
             group: wheel
             mode: "0444"
           become: true
+          when: pam_tid.matched > 0
+
+        # sudo_local is the file macOS preserves across updates, but it only
+        # works while /etc/pam.d/sudo (which updates do replace) includes it.
+        # Catch a future macOS dropping that include, which would silently
+        # turn TouchID sudo off.
+        - name: Verify sudo includes sudo_local
+          ansible.builtin.command:
+            cmd: grep -Eq '^auth[[:space:]]+include[[:space:]]+sudo_local' /etc/pam.d/sudo
+          check_mode: false
+          changed_when: false
           when: pam_tid.matched > 0
 
   handlers:

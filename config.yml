@@ -105,9 +105,6 @@ dotfile_root_dirs:
   - ""
   - "."
 
-homebrew_upgrade_all_packages: false
-homebrew_brewfile_dir: "{{ ansible_facts['user_dir'] }}/.files"
-
 # Asahi / Fedora uses Homebrew as the source of truth, running the same
 # Brewfile as macOS (Homebrew on Linux aarch64 is Tier 1 as of Homebrew 5.0).
 # dnf only provides what Homebrew on Linux needs to bootstrap, the login shell,
@@ -135,6 +132,15 @@ homebrew_linux_prefix: /home/linuxbrew/.linuxbrew
 # HOMEBREW_BUNDLE_BREW_SKIP. Casks and Mac App Store (`mas`) entries are skipped
 # automatically by `brew bundle` on Linux.
 homebrew_linux_brew_skip: dockutil mas pinentry-mac
+
+# Directories under $HOME (relative paths) that must be 0700 rather than 0755.
+# gpg refuses to trust a group/world-readable homedir ("unsafe permissions on
+# homedir") and ssh expects the same of ~/.ssh. Every task that creates one of
+# these -- directories_to_create and the dotfile parent-dir tasks -- takes its
+# mode from this list, so they don't flip it back and forth on each run.
+private_directories:
+  - .gnupg
+  - .ssh
 
 directories_to_create_common:
   - ~/.bundle
@@ -274,6 +280,16 @@ macos_defaults:
       key: type
       type: string
       value: png
+    # The screensaver reads idleTime from the per-host (ByHost) domain; a plain
+    # `defaults write` puts it in the global user domain, where it was set for
+    # years without the ByHost domain ever existing. Best-effort for the same
+    # reason as the lock-timing keys above.
+    - name: Screensaver idle time
+      domain: com.apple.screensaver
+      key: idleTime
+      type: integer
+      value: 300
+      host: currentHost
     - name: Schedule auto update
       domain: com.apple.SoftwareUpdate
       key: ScheduleFrequency
@@ -296,6 +312,43 @@ macos_defaults:
       key: DSDontWriteUSBStores
       type: bool
       value: true
+    - name: Show all filename extensions
+      domain: NSGlobalDomain
+      key: AppleShowAllExtensions
+      type: bool
+      value: true
+    - name: Finder path bar
+      domain: com.apple.finder
+      key: ShowPathbar
+      type: bool
+      value: true
+    - name: Finder status bar
+      domain: com.apple.finder
+      key: ShowStatusBar
+      type: bool
+      value: true
+    - name: Finder list view
+      domain: com.apple.finder
+      key: FXPreferredViewStyle
+      type: string
+      value: Nlsv
+    - name: Finder folders first
+      domain: com.apple.finder
+      key: _FXSortFoldersFirst
+      type: bool
+      value: true
+    # Pinned at their current (on) values rather than changed: these are typing
+    # habits, and a fresh machine should match this one, not a guess.
+    - name: Auto-capitalization
+      domain: NSGlobalDomain
+      key: NSAutomaticCapitalizationEnabled
+      type: bool
+      value: true
+    - name: Double-space inserts a period
+      domain: NSGlobalDomain
+      key: NSAutomaticPeriodSubstitutionEnabled
+      type: bool
+      value: true
   # Keys that were written to the wrong domain for years. Removing them keeps a
   # stale value from shadowing the correct one if Apple ever starts reading it.
   absent:
@@ -305,6 +358,9 @@ macos_defaults:
     - name: Stale screensaver delay on the dock domain
       domain: com.apple.dock
       key: askForPasswordDelay
+    - name: Screensaver idle time in the global domain (belongs in ByHost)
+      domain: com.apple.screensaver
+      key: idleTime
 
 # Application Firewall policy. macOS defaults to auto-allowing any *downloaded*
 # signed (notarized) app to accept inbound connections, which quietly undoes
@@ -314,3 +370,20 @@ macos_defaults:
 # not worth it to you.
 macos_firewall_allow_signed_builtin: true
 macos_firewall_allow_signed_downloaded: false
+
+# launchd system daemons kept disabled: Remote Login (sshd) and Screen
+# Sharing. Remove an entry here and re-enable it in System Settings if you need
+# to reach this machine remotely.
+macos_disabled_daemons:
+  - com.openssh.sshd
+  - com.apple.screensharing
+
+# Require an administrator password for every system-wide System Settings pane,
+# rather than letting one unlock be shared across panes and processes (CIS
+# macOS benchmark). Set to false if the extra prompts aren't worth it.
+macos_require_admin_for_system_settings: true
+
+# Fedora automatic updates via the dnf5 automatic plugin: apply security
+# advisories only, so a nightly timer can't pull in a disruptive feature
+# update. Set to "default" to apply every available update.
+fedora_automatic_upgrade_type: security

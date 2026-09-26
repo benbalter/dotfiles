@@ -45,7 +45,7 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 @test "config.yml has required top-level keys" {
 	for key in dotfiles_files dotfiles_files_common dotfiles_files_macos \
 		dotfiles_files_linux dotfile_links_common linux_dotfile_links fedora_packages \
-		homebrew_brewfile_dir directories_to_create macos_defaults; do
+		directories_to_create private_directories macos_defaults; do
 		grep -q "^${key}:" "$REPO_ROOT/config.yml" || fail "config.yml missing required key '$key'"
 	done
 }
@@ -100,4 +100,30 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 	# so autoMode (which names private hosts) and permissions must stay local.
 	jq -e 'has("autoMode") or has("permissions") | not' "$REPO_ROOT/claude/settings.json" >/dev/null ||
 		fail "claude/settings.json must not contain autoMode or permissions"
+}
+
+@test "private_directories are all created by directories_to_create" {
+	# The playbook sets these to 0700; a private dir missing from
+	# directories_to_create would only ever be created 0755 by a dotfile task.
+	while IFS= read -r dir; do
+		yq -r '.directories_to_create_common[]' "$REPO_ROOT/config.yml" | grep -qxF "~/$dir" ||
+			fail "private directory '$dir' is not in directories_to_create_common"
+	done < <(yq -r '.private_directories[]' "$REPO_ROOT/config.yml")
+}
+
+@test "launch agent labels match their filenames" {
+	# The playbook derives each agent's launchd label from its filename to
+	# check whether it is loaded before bootstrapping it.
+	while IFS= read -r file; do
+		label=$(sed -n '/<key>Label<\/key>/{n;s/.*<string>\(.*\)<\/string>.*/\1/p;}' "$REPO_ROOT/$file")
+		[ "$label" = "$(basename "$file" .plist)" ] ||
+			fail "$file has Label '$label'; it must match the filename"
+	done < <(yq -r '.dotfiles_files_macos[] | select(test("^Library/LaunchAgents/"))' "$REPO_ROOT/config.yml")
+}
+
+@test "macos_defaults host entries only use currentHost" {
+	# The playbook reads these back with `defaults -currentHost`.
+	while IFS= read -r host; do
+		[ "$host" = "currentHost" ] || fail "unsupported macos_defaults host '$host'"
+	done < <(yq -r '.macos_defaults.user[] | select(has("host")) | .host' "$REPO_ROOT/config.yml")
 }

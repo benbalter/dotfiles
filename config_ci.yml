@@ -1,4 +1,6 @@
 ---
-# Skip the Brewfile install in CI; the macOS jobs install a minimal subset
-# separately (homebrew_upgrade_all_packages is already false in config.yml).
-homebrew_use_brewfile: false
+# Overrides layered over config.yml when CI is set. Currently empty: CI-only
+# behavior lives in `when: not is_ci` guards in playbook.yml. (The former
+# homebrew_use_brewfile override here was dead -- the playbook passes that var
+# to the Homebrew role directly, which takes precedence.)
+{}

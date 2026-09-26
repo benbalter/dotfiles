@@ -38,6 +38,9 @@ done
 mkdir -p "$HOME/.bundle" "$HOME/.gnupg" "$HOME/.config/mise" \
 	"$HOME/.config/git" "$HOME/.config/bat" "$HOME/.config/atuin" "$HOME/.config/zed" \
 	"$HOME/.claude"
+# gpg warns "unsafe permissions on homedir" unless ~/.gnupg is private
+# (config.yml's private_directories does the same for the playbook).
+chmod 700 "$HOME/.gnupg"
 [ -f "$DOTFILES_DIR/.bundle/config" ] && ln -sf "$DOTFILES_DIR/.bundle/config" "$HOME/.bundle/config"
 [ -f "$DOTFILES_DIR/.gnupg/gpg.conf" ] && ln -sf "$DOTFILES_DIR/.gnupg/gpg.conf" "$HOME/.gnupg/gpg.conf"
 [ -f "$DOTFILES_DIR/.config/mise/config.toml" ] && ln -sf "$DOTFILES_DIR/.config/mise/config.toml" "$HOME/.config/mise/config.toml"
