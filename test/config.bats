@@ -37,7 +37,7 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 		fail "Fedora firewall default zone must be drop"
 	[ "$(yq -r '.fedora_sshd_enabled' "$REPO_ROOT/config.yml")" = "false" ] ||
 		fail "Fedora SSH server must be disabled by default"
-	yq -e '.fedora_firewall_services == ["dhcpv6-client"]' "$REPO_ROOT/config.yml" >/dev/null ||
+	[ "$(yq -r '.fedora_firewall_services | join(" ")' "$REPO_ROOT/config.yml")" = "dhcpv6-client" ] ||
 		fail "Fedora firewall services must explicitly allow DHCPv6 only by default"
 }
 
