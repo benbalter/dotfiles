@@ -10,12 +10,13 @@
 
 - `script/setup` — Set up all the things (bootstrap + Ansible playbook)
 - `script/update` — Update all the things (see [Updating](#updating)); aliased to `up`
-- `script/doctor` — Read-only health check: symlinks, leftover `.bak` files, the brew wrapper, and the last update run
+- `script/doctor` — Read-only health check: symlinks and leftover `.bak` files, the brew wrapper, launch agents, the last update run, missing Brewfile and mise packages, macOS security settings, and whether the repo is ready for `up`
 - `script/bootstrap` — Install Python venv and Ansible dependencies
 - `script/ansible` — Run the playbook (prompts for sudo)
 - `script/audit-casks` — Report casks whose apps haven't been opened lately; `--comment` proposes removals in the `Brewfile`
 - `script/update-brewfile` — Sync the `Brewfile` with what's installed
-- `script/clean` — Uninstall everything not in the `Brewfile` (`brew bundle cleanup --force`; destructive)
+- `script/clean` — Uninstall everything not in the `Brewfile` (`brew bundle cleanup --force`; destructive); aliased to `clean`
+- `script/install-tools` — Install delta, zoxide and fzf on Linux without Homebrew (Codespaces, devcontainer)
 - `script/lint` — Run all linters (see [Linting](#linting))
 - `script/test` — Run the BATS test suite
 - `install.sh` — Codespaces entry point; runs `script/setup` on macOS and Fedora, a symlink-only install elsewhere
@@ -129,7 +130,7 @@ A [BATS](https://github.com/bats-core/bats-core) test suite validates configurat
 script/test
 ```
 
-Tests cover config file validation, script syntax and permissions, shell library sourcing, install script behavior, and `script/update` and `script/doctor` (with every external command stubbed out).
+Tests cover config file validation, script syntax, permissions and strict-mode headers, shell library sourcing, install script behavior (including backups), VS Code font settings, and `script/update`, `script/doctor`, `script/audit-casks` and `script/update-brewfile` (with every external command stubbed out).
 
 ### Linting
 
@@ -138,7 +139,8 @@ script/lint
 ```
 
 Needs `script/bootstrap` (ansible-lint and yamllint run from the venv),
-`npm ci` (remark), and `bundle install` (rubocop). Runs seven linters in sequence:
+`npm ci` (remark), and `bundle install` (rubocop). Runs all seven linters, even
+after one fails, then lists the ones that failed:
 
 | Linter       | What it checks           |
 | ------------ | ------------------------ |
@@ -152,12 +154,11 @@ Needs `script/bootstrap` (ansible-lint and yamllint run from the venv),
 
 ### CI
 
-GitHub Actions runs seven parallel jobs on pushes to `main` and on pull requests:
+GitHub Actions runs six parallel jobs on pushes to `main`, on pull requests, and weekly (to catch upstream breakage):
 
-1. **Bootstrap** — `script/bootstrap` (venv and Ansible dependencies) on macOS
-2. **Test** — Full Ansible playbook execution on macOS
-3. **Test Fedora** — Full Ansible playbook execution in a Fedora container (dnf bootstrap path)
-4. **Test Asahi Brew** — Runs the `Brewfile` under `brew bundle` on x86_64 and native aarch64 Linux runners as a non-root user, verifying it parses, skips macOS-only entries, and installs Linux bottles (the aarch64 leg matches Asahi)
-5. **Lint** — All linters above
-6. **Unit test** — BATS test suite on macOS
-7. **Install Linux** — Verify `install.sh`, symlinks, and tool installation on Ubuntu
+1. **Test** — Full Ansible playbook execution on macOS
+2. **Test Fedora** — Full Ansible playbook execution in a Fedora container (dnf bootstrap path)
+3. **Test Asahi Brew** — Runs the `Brewfile` under `brew bundle` on x86_64 and native aarch64 Linux runners as a non-root user, verifying it parses, skips macOS-only entries, and installs Linux bottles (the aarch64 leg matches Asahi)
+4. **Lint** — All linters above, on Ubuntu
+5. **Unit test** — BATS test suite on macOS
+6. **Install Linux** — Runs `install.sh` and installs the tools on Ubuntu, then runs the BATS suite there too

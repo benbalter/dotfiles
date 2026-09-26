@@ -18,11 +18,6 @@
       ansible.builtin.include_vars: "{{ playbook_dir }}/config.yml"
       tags: always
 
-    - name: Include CI config
-      ansible.builtin.include_vars: "{{ playbook_dir }}/config_ci.yml"
-      when: is_ci
-      tags: always
-
     # Workbrew wraps Homebrew and forces every `brew` invocation through
     # /opt/workbrew/bin/brew (HOMEBREW_FORCE_BREW_WRAPPER). Calling
     # /opt/homebrew/bin/brew directly then fails with a wrapper-conflict error,

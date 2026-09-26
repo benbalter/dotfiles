@@ -12,7 +12,7 @@ script/setup       # bootstrap + run the full playbook (prompts for sudo)
 script/update      # update everything; aliased to `up`, also runs nightly headless
 script/lint        # ansible-lint, yamllint, shellcheck, shfmt, actionlint, rubocop, remark
 script/test        # the whole BATS suite (bats test/)
-script/doctor      # read-only health check: symlinks, stale .bak files, brew wrapper, nightly job
+script/doctor      # read-only health check: symlinks, .bak files, brew wrapper, launch agents, last update, packages, security
 ```
 
 - Run one test file: `bats test/config.bats`. Run one test by name: `bats test/config.bats -f 'install.sh links'`.
@@ -24,7 +24,7 @@ script/doctor      # read-only health check: symlinks, stale .bak files, brew wr
 
 **Entry points.** `install.sh` is the Codespaces entry point. On macOS, and on Fedora unless `DOTFILES_SIMPLE_INSTALL=1` or in Codespaces, it just `exec`s `script/setup`, which runs `playbook.yml`. Otherwise it runs its own symlink-only path. That makes `install.sh` a second, hand-maintained copy of the dotfile list.
 
-**`config.yml` drives the playbook.** It holds the dotfile lists, macOS defaults, Fedora packages and directories. Lists are split `*_common` / `*_macos` / `*_linux` and combined using `is_macos`, which the playbook sets in `pre_tasks`. `config_ci.yml` is layered on top when `CI` is set. Tasks that shouldn't run in CI are guarded with `when: not is_ci`.
+**`config.yml` drives the playbook.** It holds the dotfile lists, macOS defaults, Fedora packages and directories. Lists are split `*_common` / `*_macos` / `*_linux` and combined using `is_macos`, which the playbook sets in `pre_tasks`. Tasks that shouldn't run in CI (anything that changes the runner's system or security settings) are guarded with `when: not is_ci`.
 
 **Adding a dotfile** touches several places, and `test/config.bats` fails if they drift apart:
 
@@ -58,4 +58,7 @@ script/doctor      # read-only health check: symlinks, stale .bak files, brew wr
 - Ansible uses fully qualified module names (`ansible.builtin.*`), and tasks must be idempotent: use `creates:`, `changed_when`, or a stat/check task before a command.
 - BATS tests use the `fail()` from `test/test_helper.bash`. bats-support/bats-assert are deliberately not vendored, so the suite runs the same under brew bats-core and apt bats.
 - Comments explain *why*, often citing the specific breakage that motivated a workaround. Keep that when editing nearby code.
-- CI (`.github/workflows/ci.yml`) runs the full playbook on macOS and in a Fedora container, runs `brew bundle` on x86_64 and aarch64 Linux, and runs lint, BATS, and an `install.sh` check on Ubuntu.
+- CI (`.github/workflows/ci.yml`) runs the full playbook on macOS and in a Fedora container, runs `brew bundle` on x86_64 and aarch64 Linux, runs lint on Ubuntu, BATS on macOS and Ubuntu, and an `install.sh` check on Ubuntu. It also runs weekly.
+- `script/lint` runs every linter and lists all failures; add new linters with its `lint` helper rather than a bare command, so one failure can't hide the rest.
+- `script/update`, `script/doctor` and `script/clean` read the repo's `Brewfile` directly (not `--global`: `~/.Brewfile` is only linked on macOS). Headless, `update` skips casks and `mas` apps.
+- In `lib/aliases`, `clean` runs `script/clean`; the git merged-branch cleanup is `gclean`, and `git reset --hard` + `git clean` is `greset`.

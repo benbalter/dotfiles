@@ -55,10 +55,8 @@ must exist before `script/setup` runs.
       ```sh
       xcode-select --install
       ```
-- [ ] Install Homebrew:
-      ```sh
-      /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-      ```
+- [ ] Nothing to do for Homebrew: the playbook installs it (or, on a
+      Workbrew-managed Mac, leaves it to Workbrew).
 - [ ] Install **1Password** (App Store or `brew install --cask 1password`),
       sign in, then enable:
       - Settings → Developer → **Use the SSH agent** ✓
@@ -104,9 +102,10 @@ What to expect:
       ```sh
       code --list-extensions | wc -l
       ```
-- [ ] **LaunchAgents loaded** (tmpreaper for Downloads, auto-update):
+- [ ] **Everything else checks out** (symlinks, launch agents for tmpreaper
+      and auto-update, packages, security settings):
       ```sh
-      launchctl list | grep balter
+      script/doctor
       ```
 - [ ] **Dock** matches `config.yml` (Chrome, Spotify, VS Code, Slack pinned;
       Mail / Calendar / Maps / etc. removed).

@@ -42,10 +42,6 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 	done
 }
 
-@test "config_ci.yml is valid YAML" {
-	yq '.' "$REPO_ROOT/config_ci.yml" >/dev/null
-}
-
 @test "directories_to_create entries use tilde paths" {
 	for list in directories_to_create_common directories_to_create_macos \
 		directories_to_create_linux; do
