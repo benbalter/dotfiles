@@ -1,4 +1,8 @@
 #!/bin/sh
+# Run every linter, then list the ones that failed. Stopping at the first
+# failure hid the rest: CI was once red for five pushes in a row as each fix
+# uncovered the next linter's error.
+# Usage: script/lint
 
 set -eu
 # shellcheck disable=SC3040
@@ -6,31 +10,42 @@ set -eu
 
 cd "$(dirname "$0")/.."
 
+failed=""
+# lint <description> <command>...: run one linter, recording a failure.
+lint() {
+	desc=$1
+	shift
+	echo "==> $desc..."
+	"$@" || failed="$failed
+    $desc"
+}
+
+# Shell files: scripts, the libs sourced by .zshrc, and the BATS suite.
+SHELL_FILES="script/* install.sh lib/* test/*.bats test/test_helper.bash .devcontainer/post-create.sh"
+
 # shellcheck disable=SC1091
 . env/bin/activate
 
-echo "==> Linting Ansible playbook..."
-ansible-lint playbook.yml
-
-echo "==> Linting YAML files..."
-yamllint ./*.yml .github/workflows/*.yml
+lint "Linting Ansible playbook" ansible-lint playbook.yml
+lint "Linting YAML files" yamllint ./*.yml .ansible-lint .yamllint .github/workflows/*.yml
 
 deactivate
 
-echo "==> Linting shell scripts..."
-shellcheck script/* install.sh lib/*
+# SHELL_FILES is split into words and globs on purpose.
+# shellcheck disable=SC2086
+lint "Linting shell scripts" shellcheck $SHELL_FILES
+# shellcheck disable=SC2086
+lint "Checking shell formatting" shfmt -d -i 0 -ci $SHELL_FILES
+lint "Linting GitHub Actions workflows" actionlint
+# bundle exec, so the Gemfile's rubocop pin applies rather than whatever
+# version happens to be installed.
+lint "Linting Ruby files" bundle exec rubocop --force-exclusion .irbrc .pryrc Gemfile
+# --frail: fail on warnings too, or a broken link only warns and CI stays green.
+lint "Linting Markdown files" npx remark --no-stdout --silently-ignore --frail \
+	--ignore-pattern node_modules/ --ignore-pattern .ansible/ --ignore-pattern env/ .
 
-echo "==> Checking shell formatting..."
-shfmt -d -i 0 -ci script/* install.sh lib/*
-
-echo "==> Linting GitHub Actions workflows..."
-actionlint
-
-echo "==> Linting Ruby files..."
-rubocop --force-exclusion .irbrc .pryrc Gemfile
-
-echo "==> Linting Markdown files..."
-npx remark --no-stdout --silently-ignore --ignore-pattern node_modules/ \
-	--ignore-pattern .ansible/ --ignore-pattern env/ .
-
+if [ -n "$failed" ]; then
+	echo "==> Failed:$failed" >&2
+	exit 1
+fi
 echo "==> All linters passed!"

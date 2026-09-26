@@ -3,6 +3,11 @@ on:
   push:
     branches: [main]
   pull_request:
+  # Weekly, to catch upstream breakage (Homebrew bottles, runner images, Fedora
+  # updates) that otherwise only shows up on the next push.
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
 permissions:
   contents: read
 
@@ -14,53 +19,32 @@ env:
   HOMEBREW_NO_AUTO_UPDATE: 1
 
 jobs:
-  bootstrap:
+  test:
     runs-on: macos-latest
+    timeout-minutes: 60
+
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Nothing here pushes, so don't leave the token in .git/config.
+          persist-credentials: false
 
-      - name: Pip Cache
+      - name: Ansible cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.ansible
+          key: ${{ runner.os }}-ansible-${{ hashFiles('requirements.yml') }}
+
+      # Cache pip's wheels, not the venv: a cached venv points at the runner
+      # image's Python, and breaks once the image moves to a new one.
+      - name: Pip cache
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/Library/Caches/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-
-      - name: Venv cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ./env
-          key: ${{ runner.os }}-env-${{ hashFiles('requirements.txt') }}
-
-      - name: Ansible cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.ansible
-          key: ${{ runner.os }}-ansible-${{ hashFiles('requirements.yml') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
 
       - name: Bootstrap
-        run: script/bootstrap
-
-  test:
-    runs-on: macos-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Ansible cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.ansible
-          key: ${{ runner.os }}-ansible-${{ hashFiles('requirements.yml') }}
-
-      - name: Venv cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ./env
-          key: ${{ runner.os }}-env-${{ hashFiles('requirements.txt') }}
-
-      - name: Bootstrap (if cache miss)
         run: script/bootstrap
 
       - name: Run playbook
@@ -130,12 +114,38 @@ jobs:
           [ "$failed" = "0" ] || { echo "FAIL: re-run reported failed=$failed (expected 0)"; exit 1; }
           echo "Playbook re-run completed without failures"
 
+  # Nothing in lint needs macOS, and an Ubuntu runner starts faster.
   lint:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Nothing here pushes, so don't leave the token in .git/config.
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+
+      # bundler-cache runs `bundle install`, so script/lint's `bundle exec
+      # rubocop` gets the Gemfile's pinned version.
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
 
       - name: Ansible cache
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -143,42 +153,33 @@ jobs:
           path: ~/.ansible
           key: ${{ runner.os }}-ansible-${{ hashFiles('requirements.yml') }}
 
-      - name: Venv cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ./env
-          key: ${{ runner.os }}-env-${{ hashFiles('requirements.txt') }}
-
-      - name: Homebrew cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/Library/Caches/Homebrew/downloads
-          key: ${{ runner.os }}-brew-lint-shellcheck-shfmt-actionlint
-
-      - name: Bootstrap (if cache miss)
+      - name: Bootstrap
         run: script/bootstrap
 
+      # shfmt and actionlint at the versions Homebrew has locally; apt's are
+      # older and format or check differently.
       - name: Install lint tools
         run: |
-          brew install shellcheck shfmt actionlint
-          gem install rubocop
-          npm install
+          sudo apt-get update -q
+          sudo apt-get install -y -q shellcheck
+          go install mvdan.cc/sh/v3/cmd/shfmt@v3.14.1
+          go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+          npm ci
 
       - name: Lint
         run: script/lint
 
   unit-test:
     runs-on: macos-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Homebrew cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: ~/Library/Caches/Homebrew/downloads
-          key: ${{ runner.os }}-brew-test-bats-core-yq
+          # Nothing here pushes, so don't leave the token in .git/config.
+          persist-credentials: false
 
       - name: Install dependencies
         run: brew install bats-core yq
@@ -193,27 +194,20 @@ jobs:
 
   install-linux:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Nothing here pushes, so don't leave the token in .git/config.
+          persist-credentials: false
 
+      # No chmod first: that would hide the missing exec bit test/scripts.bats
+      # exists to catch. test/install.bats checks the links it makes against
+      # config.yml.
       - name: Run install.sh
-        run: |
-          chmod +x install.sh script/install-tools
-          ./install.sh
-
-      - name: Verify dotfile symlinks
-        run: |
-          for file in .default-gems .digrc .gemrc .gitconfig .gitignore \
-            .hushlogin .irbrc .npmrc .pryrc .remarkrc .ripgreprc .yamllint \
-            .zprofile .zshrc \
-            .config/git/attributes .config/git/allowed_signers \
-            .config/bat/config .config/atuin/config.toml; do
-            test -L "$HOME/$file" || { echo "FAIL: $file not symlinked"; exit 1; }
-            test -e "$HOME/$file" || { echo "FAIL: $file is a broken symlink"; exit 1; }
-          done
-          echo "All dotfile symlinks verified"
+        run: ./install.sh
 
       - name: Verify tools installed
         run: |
@@ -230,7 +224,10 @@ jobs:
 
   test-fedora:
     runs-on: ubuntu-latest
-    container: fedora:latest
+    timeout-minutes: 45
+    # A fixed release, so a new Fedora lands as a reviewable bump rather than
+    # a surprise red build.
+    container: fedora:44
     # GitHub sets HOME=/github/home for container jobs, but Ansible's user_dir
     # (and the shell verify steps below) resolve to root's real home, /root.
     # Pin HOME=/root so ~ expansion, ansible_facts.user_dir, and $HOME all agree
@@ -244,6 +241,9 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Nothing here pushes, so don't leave the token in .git/config.
+          persist-credentials: false
 
       - name: Bootstrap
         run: script/bootstrap
@@ -306,13 +306,21 @@ jobs:
       matrix:
         os: [ubuntu-24.04, ubuntu-24.04-arm]
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     env:
-      # Formulae with no Linux bottle (mirrors homebrew_linux_brew_skip).
-      HOMEBREW_BUNDLE_BREW_SKIP: dockutil mas pinentry-mac
       HOMEBREW_NO_AUTO_UPDATE: 1
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Nothing here pushes, so don't leave the token in .git/config.
+          persist-credentials: false
+
+      # Formulae with no Linux bottle, read from config.yml rather than copied
+      # here, as script/update does.
+      - name: Read the Linux brew skip list
+        run: |
+          echo "HOMEBREW_BUNDLE_BREW_SKIP=$(sed -n 's/^homebrew_linux_brew_skip: *//p' config.yml)" >> "$GITHUB_ENV"
 
       # ARM64 runner images don't ship Homebrew preinstalled like x86_64 ones do.
       - name: Ensure Homebrew is installed

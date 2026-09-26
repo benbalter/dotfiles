@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/benbalter/dotfiles/actions/workflows/ci.yml/badge.svg)](https://github.com/benbalter/dotfiles/actions/workflows/ci.yml)
 
-@BenBalter's development environment and the scripts to initialize it and keep it up to date. Uses [Ansible](https://www.ansible.com/) for configuration management, with [Homebrew](https://brew.sh/) for package management on both macOS and Fedora Asahi Remix (Apple Silicon). The same `Brewfile` drives both; `dnf` is used only to bootstrap Homebrew and install the GUI apps Homebrew Cask can't provide on Linux.
+@BenBalter's development environment and the scripts to initialize it and keep it up to date. Uses [Ansible](https://www.ansible.com) for configuration management, with [Homebrew](https://brew.sh) for package management on both macOS and Fedora Asahi Remix (Apple Silicon). The same `Brewfile` drives both; `dnf` is used only to bootstrap Homebrew and install the GUI apps Homebrew Cask can't provide on Linux.
 
 ## What's here
 

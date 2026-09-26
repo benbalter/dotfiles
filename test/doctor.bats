@@ -11,6 +11,7 @@ setup() {
 	STUB_BIN="$(mktemp -d)"
 	# Force the Linux lists (and skip launchctl) wherever the suite runs, unless
 	# a test sets UNAME=Darwin.
+	# shellcheck disable=SC2016 # expands when the stub runs
 	printf '#!/bin/sh\necho "${UNAME:-Linux}"\n' >"$STUB_BIN/uname"
 	chmod +x "$STUB_BIN/uname"
 

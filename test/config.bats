@@ -68,6 +68,7 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 	# The playbook sets these to 0700; a private dir missing from
 	# directories_to_create would only ever be created 0755 by a dotfile task.
 	while IFS= read -r dir; do
+		# shellcheck disable=SC2088 # a literal ~/ path, as config.yml spells it
 		yq -r '.directories_to_create_common[]' "$REPO_ROOT/config.yml" | grep -qxF "~/$dir" ||
 			fail "private directory '$dir' is not in directories_to_create_common"
 	done < <(yq -r '.private_directories[]' "$REPO_ROOT/config.yml")
@@ -88,4 +89,35 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 	while IFS= read -r host; do
 		[ "$host" = "currentHost" ] || fail "unsupported macos_defaults host '$host'"
 	done < <(yq -r '.macos_defaults.user[] | select(has("host")) | .host' "$REPO_ROOT/config.yml")
+}
+
+@test "macos_defaults system entries use absolute domain paths" {
+	# These run with become: true, so a bare domain (com.apple.foo) writes to
+	# root's preferences and does nothing while the task reports success.
+	while IFS=$'\t' read -r name domain; do
+		case "$domain" in
+			/*) ;;
+			*) fail "macos_defaults.system '$name' uses bare domain '$domain'; use /Library/Preferences/$domain" ;;
+		esac
+	done < <(yq -r '.macos_defaults.system[] | [.name, .domain] | @tsv' "$REPO_ROOT/config.yml")
+}
+
+@test "claude/settings.json plugins come from a known marketplace" {
+	# The playbook runs `claude plugin install` for each enabled plugin, which
+	# fails unless its marketplace is the official one or declared here. The
+	# playbook skips this in CI, so check it statically.
+	while IFS= read -r plugin; do
+		marketplace=${plugin#*@}
+		[ "$marketplace" = claude-plugins-official ] && continue
+		jq -e --arg m "$marketplace" '.extraKnownMarketplaces | has($m)' \
+			"$REPO_ROOT/claude/settings.json" >/dev/null ||
+			fail "$plugin: marketplace '$marketplace' is not in extraKnownMarketplaces"
+	done < <(jq -r '.enabledPlugins | keys[]' "$REPO_ROOT/claude/settings.json")
+}
+
+@test "launch agent plists are valid" {
+	command -v plutil >/dev/null || skip "plutil is macOS-only"
+	for plist in "$REPO_ROOT"/Library/LaunchAgents/*.plist; do
+		plutil -lint "$plist" >/dev/null || fail "$(basename "$plist") is not a valid plist"
+	done
 }

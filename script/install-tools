@@ -3,7 +3,9 @@
 # Called by install.sh (dotfiles integration) and post-create.sh (devcontainer).
 # On macOS these tools are installed via Homebrew/Brewfile instead.
 
-set -e
+set -eu
+# shellcheck disable=SC3040
+(set -o pipefail) 2>/dev/null && set -o pipefail || true
 
 if [ "$(uname)" = "Darwin" ]; then
 	echo "Skipping install-tools on macOS (use Homebrew instead)"

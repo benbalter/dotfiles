@@ -158,11 +158,16 @@
     # script/doctor flagged it. Bootstrap only jobs that aren't loaded:
     # bootstrapping a loaded job fails with "Input/output error" (5). The
     # label is the filename stem; test/config.bats keeps that true.
+    #
+    # A loaded job also keeps running its old definition after the plist
+    # changes (tmpreaper's new flags didn't apply until a logout), so record
+    # each plist's checksum and reload the job when it differs.
     - name: Load launch agents
       when: is_macos and not is_ci
       tags: [dotfiles, launchagents]
       vars:
         launch_agents: "{{ dotfiles_files_macos | select('match', '^Library/LaunchAgents/') | list }}"
+        launch_agent_stamp_dir: "{{ ansible_facts['user_dir'] }}/.local/state/dotfiles/launchagents"
       block:
         - name: Check launch agent status
           ansible.builtin.command:
@@ -173,15 +178,39 @@
           changed_when: false
           failed_when: false
 
-        - name: Bootstrap launch agents that aren't loaded
+        - name: Create the launch agent checksum directory
+          ansible.builtin.file:
+            path: "{{ launch_agent_stamp_dir }}"
+            state: directory
+            mode: "0755"
+
+        - name: Record launch agent plist checksums
+          ansible.builtin.copy:
+            content: "{{ lookup('ansible.builtin.file', playbook_dir + '/' + item) | hash('sha1') }}\n"
+            dest: "{{ launch_agent_stamp_dir }}/{{ item | basename }}.sha1"
+            mode: "0644"
+          loop: "{{ launch_agents }}"
+          register: launch_agent_stamps
+
+        # Pairs each agent's status with its checksum result (same loop order).
+        - name: Unload launch agents whose plist changed
+          ansible.builtin.command:
+            cmd: "launchctl bootout gui/{{ ansible_facts['user_uid'] }}/{{ item.0.item | basename | splitext | first }}"
+          loop: "{{ launch_agent_status.results | zip(launch_agent_stamps.results) | list }}"
+          loop_control:
+            label: "{{ item.0.item | basename }}"
+          when: item.0.rc == 0 and item.1.changed
+          changed_when: true
+
+        - name: Bootstrap launch agents that aren't loaded or changed
           ansible.builtin.command:
             cmd: >-
               launchctl bootstrap gui/{{ ansible_facts['user_uid'] }}
-              "{{ ansible_facts['user_dir'] }}/{{ item.item }}"
-          loop: "{{ launch_agent_status.results }}"
+              "{{ ansible_facts['user_dir'] }}/{{ item.0.item }}"
+          loop: "{{ launch_agent_status.results | zip(launch_agent_stamps.results) | list }}"
           loop_control:
-            label: "{{ item.item | basename }}"
-          when: item.rc != 0
+            label: "{{ item.0.item | basename }}"
+          when: item.0.rc != 0 or item.1.changed
           changed_when: true
 
     # Skipped under Workbrew, which installs and owns Homebrew itself. The role

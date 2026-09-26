@@ -29,3 +29,13 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 @test "install.sh is executable" {
 	[ -x "$REPO_ROOT/install.sh" ]
 }
+
+@test "scripts use set -eu and pipefail" {
+	# The repo's convention (CLAUDE.md): POSIX sh that stops on errors and
+	# unset variables, including failures inside pipelines.
+	for script in "$REPO_ROOT"/script/* "$REPO_ROOT/install.sh" "$REPO_ROOT/.devcontainer/post-create.sh"; do
+		grep -qx 'set -eu' "$script" || fail "$script lacks 'set -eu'"
+		grep -qxF '(set -o pipefail) 2>/dev/null && set -o pipefail || true' "$script" ||
+			fail "$script lacks the pipefail idiom"
+	done
+}

@@ -1,8 +1,11 @@
 skip_list:
   - role-name
-  - git-latest
 
+# Installed roles and collections: the repo-local .ansible/ plus ~/.ansible,
+# reached relative to wherever the checkout lives.
 exclude_paths:
+  - .ansible/
+  - env/
   - ../.ansible/
   - ../../.ansible/
   - ../../../.ansible
