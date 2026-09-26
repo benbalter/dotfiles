@@ -23,13 +23,10 @@ bad() {
 }
 warn() { echo "  warn  $1"; }
 
-if [ "$(uname)" = "Darwin" ]; then
-	files_query='.dotfiles_files_common[], .dotfiles_files_macos[]'
-	links_query='.dotfile_links_common[] | [.src, .dest] | @tsv'
-else
-	files_query='.dotfiles_files_common[], .dotfiles_files_linux[]'
-	links_query='(.dotfile_links_common[], .linux_dotfile_links[]) | [.src, .dest] | @tsv'
-fi
+# Linux gets only the common lists: those are what install.sh links there.
+files_query='.dotfiles_files_common[]'
+[ "$(uname)" != "Darwin" ] || files_query="$files_query, .dotfiles_files_macos[]"
+links_query='.dotfile_links_common[] | [.src, .dest] | @tsv'
 
 # check_link <repo path> <path under $HOME>
 check_link() {
@@ -78,20 +75,23 @@ else
 	bad "yq not found; can't read config.yml (brew install yq)"
 fi
 
-echo "==> Homebrew"
-# Workbrew's wrapper must win over /opt/homebrew/bin/brew, or brew aborts with
-# a wrapper-conflict error (see lib/globals).
-if [ -x /opt/workbrew/bin/brew ]; then
-	brew_path=$(command -v brew || true)
-	if [ "$brew_path" = /opt/workbrew/bin/brew ]; then
-		ok "brew resolves to the Workbrew wrapper"
+# install.sh doesn't install Homebrew on Linux, so it is only checked on macOS.
+if [ "$(uname)" = "Darwin" ]; then
+	echo "==> Homebrew"
+	# Workbrew's wrapper must win over /opt/homebrew/bin/brew, or brew aborts with
+	# a wrapper-conflict error (see lib/globals).
+	if [ -x /opt/workbrew/bin/brew ]; then
+		brew_path=$(command -v brew || true)
+		if [ "$brew_path" = /opt/workbrew/bin/brew ]; then
+			ok "brew resolves to the Workbrew wrapper"
+		else
+			bad "brew resolves to ${brew_path:-nothing}, expected /opt/workbrew/bin/brew"
+		fi
+	elif command -v brew >/dev/null; then
+		ok "brew at $(command -v brew)"
 	else
-		bad "brew resolves to ${brew_path:-nothing}, expected /opt/workbrew/bin/brew"
+		bad "brew not found on PATH"
 	fi
-elif command -v brew >/dev/null; then
-	ok "brew at $(command -v brew)"
-else
-	bad "brew not found on PATH"
 fi
 
 # plist_string <plist> <key>: a top-level <string> value. sed, not plutil, so
@@ -177,14 +177,10 @@ echo "==> Packages"
 # A failed install is skipped quietly (brew bundle and mise carry on), so
 # ask what's still missing. --no-upgrade: outdated isn't missing; `up` handles
 # that.
-if command -v brew >/dev/null; then
-	# The repo's Brewfile, not --global: ~/.Brewfile is only linked on macOS.
-	# On Linux, skip the formulae with no Linux bottle, as the playbook does.
+if [ "$(uname)" = "Darwin" ] && command -v brew >/dev/null; then
+	# The repo's Brewfile, not --global, so this still works before setup links
+	# ~/.Brewfile.
 	export HOMEBREW_BUNDLE_FILE="$DOTFILES_ROOT/Brewfile"
-	if [ "$(uname)" != "Darwin" ]; then
-		HOMEBREW_BUNDLE_BREW_SKIP=$(sed -n 's/^homebrew_linux_brew_skip: *//p' "$CONFIG" 2>/dev/null || true)
-		export HOMEBREW_BUNDLE_BREW_SKIP
-	fi
 	if missing=$(brew bundle check --no-upgrade --verbose 2>&1); then
 		ok "every Brewfile entry installed"
 	else

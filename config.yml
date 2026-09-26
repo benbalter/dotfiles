@@ -31,7 +31,8 @@ dockitems_remove:
   - "App Store"
   - "System Settings"
 
-# Dotfiles symlinked into $HOME on every platform
+# Dotfiles symlinked into $HOME everywhere: by the playbook on macOS and by
+# install.sh on Linux (Codespaces), which must list the same files
 dotfiles_files_common:
   - .bundle/config
   - .default-gems
@@ -57,7 +58,7 @@ dotfiles_files_common:
   - .config/starship.toml
   - .config/zed/settings.json
 
-# Dotfiles symlinked into $HOME on macOS only
+# Dotfiles symlinked into $HOME on macOS only; install.sh skips them
 dotfiles_files_macos:
   - .Brewfile
   # Just these files: mole writes generated reports (clean-list.txt) beside them
@@ -75,11 +76,7 @@ dotfiles_files_macos:
   - Library/LaunchAgents/com.balter.ben.tmpreaper.plist
   - Library/LaunchAgents/com.balter.ben.update.plist
 
-# Dotfiles symlinked into $HOME on Linux only
-dotfiles_files_linux:
-  - .gitconfig.linux
-
-# Symlinks on every platform whose destination differs from the repo path
+# Symlinks, everywhere, whose destination differs from the repo path
 # (kept out of the repo's own .claude/ so they don't double as project config)
 dotfile_links_common:
   - src: claude/CLAUDE.md
@@ -89,78 +86,13 @@ dotfile_links_common:
   - src: Library/Application Support/com.mitchellh.ghostty/themes/catppuccin-mocha.conf
     dest: .config/ghostty/themes/catppuccin-mocha.conf
 
-# Linux symlinks whose destination differs from the repo path
-# (configs shared with macOS but expected at XDG paths on Linux)
-linux_dotfile_links:
-  - src: .ssh/config.linux
-    dest: .ssh/config
-  - src: Library/Application Support/Code/User/settings.json
-    dest: .config/Code/User/settings.json
-  - src: Library/Application Support/com.mitchellh.ghostty/config
-    dest: .config/ghostty/config
-  - src: Library/Application Support/com.mitchellh.ghostty/shaders/bloom.glsl
-    dest: .config/ghostty/shaders/bloom.glsl
+dotfile_links: "{{ dotfile_links_common }}"
 
-dotfile_links: "{{ dotfile_links_common + ([] if is_macos else linux_dotfile_links) }}"
-
-dotfiles_files: "{{ dotfiles_files_common + (dotfiles_files_macos if is_macos else dotfiles_files_linux) }}"
+dotfiles_files: "{{ dotfiles_files_common + dotfiles_files_macos }}"
 
 dotfile_root_dirs:
   - ""
   - "."
-
-# Asahi / Fedora uses Homebrew as the source of truth, running the same
-# Brewfile as macOS (Homebrew on Linux aarch64 is Tier 1 as of Homebrew 5.0).
-# dnf only provides what Homebrew on Linux needs to bootstrap, the login shell,
-# and the GUI apps Homebrew Cask cannot install on Linux (handled separately
-# in the playbook, e.g. 1Password desktop).
-fedora_packages:
-  # Homebrew on Linux build/runtime prerequisites
-  # (https://docs.brew.sh/Homebrew-on-Linux#requirements)
-  - gcc
-  - gcc-c++
-  - make
-  - procps-ng
-  - curl
-  - file
-  - git
-  # Required by ansible.posix.selinux on Fedora.
-  - python3-libselinux
-  # Sandboxing backend for Homebrew 6+ on Linux
-  - bubblewrap
-  # Login shell, set as the default before Homebrew runs
-  - zsh
-
-# Homebrew on Linux install prefix (used to locate `brew` in the playbook).
-homebrew_linux_prefix: /home/linuxbrew/.linuxbrew
-
-# Brewfile formulae with no Linux bottle (macOS-only); skipped on Asahi via
-# HOMEBREW_BUNDLE_BREW_SKIP. Mac App Store (`mas`) entries are skipped
-# automatically by `brew bundle` on Linux.
-homebrew_linux_brew_skip: dockutil mas mole pinentry-mac terminal-notifier
-
-# Homebrew Cask is macOS-only for most desktop apps. Fedora installs supported
-# Linux apps through native packages or their upstream installer; only the
-# portable Nerd Font cask remains in the Linux Brewfile run.
-homebrew_linux_cask_skip: >-
-  1password 1password-cli adguard apparency caffeine cleanshot displaylink
-  dropbox elgato-camera-hub elgato-control-center elgato-stream-deck ghostty
-  gifox github@beta google-chrome google-drive gpg-suite harper-desktop
-  karabiner-elements kindle-previewer languagetool-desktop microsoft-auto-update
-  mitmproxy mutedeck pdfsam-basic qlmarkdown signal slack@beta spotify
-  suspicious-package syntax-highlight thaw unclack visual-studio-code whatcable
-  yubico-authenticator zed zoom
-
-# Fedora workstation ingress policy. SSH stays off to match macOS Remote Login;
-# set fedora_sshd_enabled to true when this host should accept SSH connections.
-fedora_firewall_default_zone: drop
-fedora_firewall_services:
-  - dhcpv6-client
-fedora_sshd_enabled: false
-
-# KDE Plasma color scheme applied on Fedora. `plasma-apply-colorscheme --list-schemes`
-# shows what's installed; stock Plasma ships BreezeClassic, BreezeDark, BreezeLight.
-kde_color_scheme: BreezeDark
 
 # Directories under $HOME (relative paths) that must be 0700 rather than 0755.
 # gpg refuses to trust a group/world-readable homedir ("unsafe permissions on
@@ -185,11 +117,7 @@ directories_to_create_macos:
   - ~/Library/LaunchAgents
   - ~/Library/Spelling
 
-directories_to_create_linux:
-  - ~/.config/Code/User
-  - ~/.config/ghostty
-
-directories_to_create: "{{ directories_to_create_common + (directories_to_create_macos if is_macos else directories_to_create_linux) }}"
+directories_to_create: "{{ directories_to_create_common + directories_to_create_macos }}"
 
 macos_defaults:
   # Every entry here is applied with `become: true`. A BARE domain in that
@@ -411,8 +339,3 @@ macos_disabled_daemons:
 # rather than letting one unlock be shared across panes and processes (CIS
 # macOS benchmark). Set to false if the extra prompts aren't worth it.
 macos_require_admin_for_system_settings: true
-
-# Fedora automatic updates via the dnf5 automatic plugin: apply security
-# advisories only, so a nightly timer can't pull in a disruptive feature
-# update. Set to "default" to apply every available update.
-fedora_automatic_upgrade_type: security

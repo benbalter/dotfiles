@@ -9,11 +9,12 @@ set -eu
 
 cd "$(dirname "$0")/.."
 
-# The repo's Brewfile, not --global: ~/.Brewfile is only linked on macOS. On
-# Linux, skip the formulae with no Linux bottle, as the playbook does.
+# The Brewfile only describes macOS. On Linux, cleanup would uninstall
+# everything brew has installed.
 if [ "$(uname)" != "Darwin" ]; then
-	HOMEBREW_BUNDLE_BREW_SKIP=$(sed -n 's/^homebrew_linux_brew_skip: *//p' config.yml)
-	export HOMEBREW_BUNDLE_BREW_SKIP
+	echo "script/clean is macOS-only" >&2
+	exit 1
 fi
 
+# The repo's Brewfile, not --global, so this works before setup links ~/.Brewfile.
 brew bundle cleanup --file=Brewfile --force

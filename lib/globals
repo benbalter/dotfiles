@@ -15,7 +15,7 @@ export DOTFILES_ROOT
 # keeps the shell fully loaded even when brew itself is broken, and skips two
 # subprocesses per shell start. Exporting it also short-circuits the identical
 # `brew --prefix` call in oh-my-zsh's brew plugin.
-for _brew_prefix in /opt/homebrew /home/linuxbrew/.linuxbrew "$HOME/.linuxbrew" /usr/local; do
+for _brew_prefix in /opt/homebrew /usr/local; do
 	if [ -x "$_brew_prefix/bin/brew" ]; then
 		HOMEBREW_PREFIX="$_brew_prefix"
 		export HOMEBREW_PREFIX
@@ -37,9 +37,8 @@ fi
 GOPATH=$HOME/go
 export GOPATH
 
-# From the probed prefix, so non-login Linux shells get Linuxbrew's binaries
-# too (.zprofile's `brew shellenv` only runs for login shells), and macOS
-# doesn't get a nonexistent /opt/homebrew on Linux.
+# From the probed prefix, so Linux (Codespaces, where there is no Homebrew)
+# doesn't get a nonexistent /opt/homebrew on PATH.
 PATH="/usr/local/bin:/usr/local/sbin:$GOPATH/bin:$PATH"
 if [ -n "${HOMEBREW_PREFIX:-}" ] && [ "$HOMEBREW_PREFIX" != /usr/local ]; then
 	PATH="$HOMEBREW_PREFIX/bin:$HOMEBREW_PREFIX/sbin:$PATH"

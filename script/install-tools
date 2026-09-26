@@ -12,18 +12,11 @@ if [ "$(uname)" = "Darwin" ]; then
 	exit 0
 fi
 
-# On rpm-based systems (Fedora), everything is in the distro repos
-if command -v dnf >/dev/null; then
-	echo "==> Installing tools via dnf..."
-	sudo dnf install -y git-delta zoxide fzf
-	echo "==> Tool installation complete"
-	exit 0
-fi
-
-# Elsewhere (Debian/Ubuntu, Codespaces), install through mise. It verifies each
-# download against the GitHub API's SHA256 digest, which this script used to do
-# by hand across ~100 lines of release-JSON parsing, and the mise.run installer
-# checks mise itself against a checksum baked into the script.
+# Install through mise on any distro (Codespaces images are Ubuntu). It
+# verifies each download against the GitHub API's SHA256 digest, which this
+# script used to do by hand across ~100 lines of release-JSON parsing, and the
+# mise.run installer checks mise itself against a checksum baked into the
+# script.
 missing=""
 for tool in delta zoxide fzf; do
 	command -v "$tool" >/dev/null || missing="$missing $tool"

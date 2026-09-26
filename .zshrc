@@ -38,8 +38,6 @@ if [[ "$(uname)" == "Darwin" ]]; then
     bundler
     macos
   )
-elif command -v dnf >/dev/null; then
-  plugins+=(dnf)
 fi
 
 # Workbrew installs apps (e.g. Docker.app) as the `workbrew` user, so their
@@ -69,8 +67,6 @@ if [[ "$(uname)" == "Darwin" ]]; then
 
   # Added by LM Studio CLI (lms)
   [[ -d "$HOME/.lmstudio/bin" ]] && export PATH="$PATH:$HOME/.lmstudio/bin"
-elif [[ -S "$HOME/.1password/agent.sock" ]]; then
-  export SSH_AUTH_SOCK="$HOME/.1password/agent.sock"
 fi
 
 if command -v starship >/dev/null; then

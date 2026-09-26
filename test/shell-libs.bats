@@ -39,7 +39,9 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 	# `brew --prefix`. Under Workbrew that wrapper can fail outright, leaving
 	# HOMEBREW_PREFIX empty and silently skipping the fzf-tab /
 	# zsh-autosuggestions / zsh-syntax-highlighting source lines in .zshrc.
-	# Sabotage `brew` and assert the prefix still resolves.
+	# Sabotage `brew` and assert the prefix still resolves. macOS only: Linux
+	# (Codespaces) has no Homebrew to find.
+	[ "$(uname)" = Darwin ] || skip "Homebrew is macOS-only"
 	run bash -c "
 		brew() { echo 'Error: brew is broken' >&2; return 1; }
 		export -f brew

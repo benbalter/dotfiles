@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/benbalter/dotfiles/actions/workflows/ci.yml/badge.svg)](https://github.com/benbalter/dotfiles/actions/workflows/ci.yml)
 
-@BenBalter's development environment and the scripts to initialize it and keep it up to date. Uses [Ansible](https://www.ansible.com) for configuration management, with [Homebrew](https://brew.sh) for package management on both macOS and Fedora Asahi Remix (Apple Silicon). The same `Brewfile` drives both; `dnf` is used only to bootstrap Homebrew and install the GUI apps Homebrew Cask can't provide on Linux.
+@BenBalter's development environment and the scripts to initialize it and keep it up to date. Uses [Ansible](https://www.ansible.com) and [Homebrew](https://brew.sh) to set up macOS. On Linux (GitHub Codespaces and devcontainers), `install.sh` symlinks the cross-platform dotfiles and installs a few CLI tools instead.
 
 ## What's here
 
@@ -19,7 +19,7 @@
 - `script/install-tools` — Install delta, zoxide and fzf on Linux without Homebrew (Codespaces, devcontainer)
 - `script/lint` — Run all linters (see [Linting](#linting))
 - `script/test` — Run the BATS test suite
-- `install.sh` — Codespaces entry point; runs `script/setup` on macOS and Fedora, a symlink-only install elsewhere
+- `install.sh` — Codespaces entry point; runs `script/setup` on macOS, a symlink-only install on Linux
 
 ### Configuration
 
@@ -31,7 +31,7 @@
 
 ### What gets installed
 
-The `Brewfile` manages packages on both macOS and Fedora Asahi Remix ([Homebrew on Linux aarch64 is Tier 1](https://brew.sh/2025/11/12/homebrew-5.0.0/) as of Homebrew 5.0). On Asahi, `dnf` installs only Homebrew's build prerequisites, `bubblewrap`, and `zsh` (`fedora_packages` in `config.yml`), plus VS Code and 1Password from their vendor repos (the 1Password desktop app comes from its tarball on aarch64); everything else comes from the Brewfile. Language runtimes and global npm CLIs are pinned in mise (`.config/mise/config.toml`). Three macOS-only formulae (`dockutil`, `mas`, `pinentry-mac`) have no Linux bottle and are skipped via `HOMEBREW_BUNDLE_BREW_SKIP`, and `cask`/`mas` entries are skipped automatically by `brew bundle` on Linux. Highlights:
+The `Brewfile` manages formulae, casks, Mac App Store apps, and VS Code extensions. Language runtimes and global npm CLIs are pinned in mise (`.config/mise/config.toml`). Highlights:
 
 | Category       | Examples                                                  |
 | -------------- | --------------------------------------------------------- |
@@ -48,19 +48,16 @@ machine. The short version:
 
 ### Before you start
 
-- **macOS:** install the Xcode Command Line Tools (`xcode-select --install`).
-  Until then `git` and `python3` are stubs that just prompt for them. Sign in
-  to the App Store too: the `Brewfile` installs Mac App Store apps through
-  `mas`, and a failed `mas` install stops the playbook partway. Homebrew is
-  installed by the playbook (or, on a Workbrew-managed Mac, left to Workbrew).
-- **Fedora Asahi:** `sudo dnf install -y git python3`.
+Install the Xcode Command Line Tools (`xcode-select --install`). Until then
+`git` and `python3` are stubs that just prompt for them. Sign in to the App
+Store too: the `Brewfile` installs Mac App Store apps through `mas`, and a
+failed `mas` install stops the playbook partway. Homebrew is installed by the
+playbook (or, on a Workbrew-managed Mac, left to Workbrew).
 
 ### Install
 
-Works on both macOS and Fedora. Keep an authenticated sudo session open while
-setup runs: on macOS it covers Homebrew and App Store installs; on Fedora
-Asahi the Homebrew installer runs its own `sudo` to create `/home/linuxbrew`,
-which `--ask-become-pass` does not cover.
+Keep an authenticated sudo session open while setup runs; it covers Homebrew
+and App Store installs.
 
 ```sh
 git clone https://github.com/benbalter/dotfiles ~/.files
@@ -68,19 +65,14 @@ sudo -v
 ~/.files/script/setup
 ```
 
-The playbook detects the OS and runs the appropriate tasks. Both get Homebrew
-and the `Brewfile`, dotfile symlinks, oh-my-zsh, mise runtimes and CLIs, and
-Claude Code settings. macOS also gets Mac App Store apps, the Dock, system and
-user defaults, and security settings (firewall, Gatekeeper, TouchID for
-`sudo`, and FileVault). Fedora gets the `dnf` bootstrap packages, the VS Code
-and 1Password repos, and zsh as the login shell. On Fedora, configs that live
-under `~/Library` on macOS (VS Code, Ghostty) are symlinked to their XDG paths
-under `~/.config`, and Linux variants of OS-specific files
-(`.gitconfig.linux`, `.ssh/config.linux`) are used.
+The playbook installs Homebrew and the `Brewfile`, Mac App Store apps, dotfile
+symlinks, oh-my-zsh, mise runtimes and CLIs, Claude Code settings, the Dock,
+system and user defaults, and security settings (firewall, Gatekeeper, TouchID
+for `sudo`, and FileVault). It is macOS-only; on Linux, use `install.sh`.
 
 To run part of the playbook, pass tags (`dotfiles`, `packages`, `homebrew`,
-`mise`, `claude`, `macos`, `defaults`, `dock`, `security`, `fedora`,
-`ohmyzsh`, …), and add `--check --diff` to preview:
+`mise`, `claude`, `macos`, `defaults`, `dock`, `security`, `ohmyzsh`, …),
+and add `--check --diff` to preview:
 
 ```sh
 cd ~/.files && . env/bin/activate
@@ -89,9 +81,8 @@ ansible-playbook playbook.yml --tags dotfiles --ask-become-pass
 
 ### After setup
 
-- **Log out and back in.** FileVault is enabled at logout, the launch agents
-  (nightly `up`, Downloads cleanup) load at login, and on Fedora zsh becomes
-  the login shell.
+- **Log out and back in.** FileVault is enabled at logout, and the launch
+  agents (nightly `up`, Downloads cleanup) load at login.
 - **1Password:** sign in, then turn on Settings → Developer → **Use the SSH
   agent** and **Integrate with 1Password CLI**. Git signs commits with the
   1Password SSH key and SSH uses its agent, so both fail until this is done.
@@ -104,7 +95,9 @@ These dotfiles are automatically applied to new Codespaces when configured in
 your [GitHub settings](https://github.com/settings/codespaces). The `install.sh`
 script symlinks dotfiles, installs essential CLI tools (`delta`, `zoxide`, `fzf`)
 with mise, sets up oh-my-zsh, and sets zsh as the default shell. macOS-specific
-configuration (SSH, GPG agent, Homebrew, etc.) is skipped in Codespaces.
+configuration (SSH, GPG agent, Homebrew, commit signing through 1Password,
+etc.) is skipped, so Codespaces' own commit signing and credentials apply. The
+same path works in any Linux container; it's the only Linux target.
 
 ## Development
 
@@ -112,7 +105,7 @@ configuration (SSH, GPG agent, Homebrew, etc.) is skipped in Codespaces.
 
 Run `up` (alias for `script/update`). It pulls this repo (when the tree is
 clean), upgrades Homebrew and installs any new `Brewfile` entries, upgrades
-`dnf`, Mac App Store apps, mise tools (including global npm CLIs), oh-my-zsh,
+Mac App Store apps, mise tools (including global npm CLIs), oh-my-zsh,
 and tldr pages, refreshes this repo's npm/gem/Python/Ansible dependencies, and
 lists pending macOS updates without installing them.
 
@@ -154,11 +147,9 @@ after one fails, then lists the ones that failed:
 
 ### CI
 
-GitHub Actions runs six parallel jobs on pushes to `main`, on pull requests, and weekly (to catch upstream breakage):
+GitHub Actions runs four parallel jobs on pushes to `main`, on pull requests, and weekly (to catch upstream breakage):
 
 1. **Test** — Full Ansible playbook execution on macOS
-2. **Test Fedora** — Full Ansible playbook execution in a Fedora container (dnf bootstrap path)
-3. **Test Asahi Brew** — Runs the `Brewfile` under `brew bundle` on x86_64 and native aarch64 Linux runners as a non-root user, verifying it parses, skips macOS-only entries, and installs Linux bottles (the aarch64 leg matches Asahi)
-4. **Lint** — All linters above, on Ubuntu
-5. **Unit test** — BATS test suite on macOS
-6. **Install Linux** — Runs `install.sh` and installs the tools on Ubuntu, then runs the BATS suite there too
+2. **Lint** — All linters above, on Ubuntu
+3. **Unit test** — BATS test suite on macOS
+4. **Install Linux** — The Codespaces path: runs `install.sh` on Ubuntu, checks the tools, that zsh loads and that git can commit, then runs the BATS suite there too

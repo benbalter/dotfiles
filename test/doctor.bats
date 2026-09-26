@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 # Test script/doctor's symlink and last-update checks against a fake $HOME
-# (Linux lists).
+# (the Linux lists, which match what install.sh links).
 
 load test_helper
 
@@ -33,15 +33,15 @@ STUB
 STUB
 	chmod +x "$STUB_BIN/launchctl" "$STUB_BIN/brew" "$STUB_BIN/mise"
 
-	# Link everything the Linux playbook would.
+	# Link everything install.sh would.
 	while IFS= read -r file; do
 		mkdir -p "$(dirname "$TEST_HOME/$file")"
 		ln -s "$REPO_ROOT/$file" "$TEST_HOME/$file"
-	done < <(yq -r '.dotfiles_files_common[], .dotfiles_files_linux[]' "$REPO_ROOT/config.yml")
+	done < <(yq -r '.dotfiles_files_common[]' "$REPO_ROOT/config.yml")
 	while IFS=$'\t' read -r src dest; do
 		mkdir -p "$(dirname "$TEST_HOME/$dest")"
 		ln -s "$REPO_ROOT/$src" "$TEST_HOME/$dest"
-	done < <(yq -r '(.dotfile_links_common[], .linux_dotfile_links[]) | [.src, .dest] | @tsv' "$REPO_ROOT/config.yml")
+	done < <(yq -r '.dotfile_links_common[] | [.src, .dest] | @tsv' "$REPO_ROOT/config.yml")
 }
 
 teardown() {
@@ -150,7 +150,7 @@ write_status() {
 }
 
 @test "doctor lists Brewfile entries that aren't installed" {
-	BREW_STATUS=1 BREW_OUT="→ Formula jq needs to be installed or updated." run_doctor
+	UNAME=Darwin BREW_STATUS=1 BREW_OUT="→ Formula jq needs to be installed or updated." run_doctor
 	[ "$status" -ne 0 ] || fail "doctor should exit non-zero"
 	echo "$packages_output" | grep -q "FAIL  Brewfile entries not installed" || fail "$packages_output"
 	echo "$packages_output" | grep -q "^        Formula jq needs" || fail "$packages_output"
@@ -163,9 +163,15 @@ write_status() {
 }
 
 @test "doctor passes when every package is installed" {
-	run_doctor
+	UNAME=Darwin run_doctor
 	echo "$packages_output" | grep -q "ok    every Brewfile entry installed" || fail "$packages_output"
 	echo "$packages_output" | grep -q "ok    every mise tool installed" || fail "$packages_output"
+}
+
+@test "doctor skips Homebrew on Linux, where install.sh doesn't install it" {
+	BREW_STATUS=1 run_doctor
+	! echo "$output" | grep -q '==> Homebrew' || fail "$output"
+	! echo "$packages_output" | grep -q Brewfile || fail "$packages_output"
 }
 
 @test "doctor flags an update that has held its lock for hours" {

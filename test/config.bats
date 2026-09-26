@@ -6,7 +6,7 @@ load test_helper
 REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 
 @test "config.yml dotfiles_files all exist in the repo" {
-	for list in dotfiles_files_common dotfiles_files_macos dotfiles_files_linux; do
+	for list in dotfiles_files_common dotfiles_files_macos; do
 		while IFS= read -r file; do
 			[ -e "$REPO_ROOT/$file" ] || fail "$list entry '$file' does not exist in repo"
 		done < <(yq -r ".${list}[]" "$REPO_ROOT/config.yml")
@@ -14,37 +14,14 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 }
 
 @test "config.yml dotfile link sources all exist in the repo" {
-	for list in dotfile_links_common linux_dotfile_links; do
-		while IFS= read -r file; do
-			[ -e "$REPO_ROOT/$file" ] || fail "$list src '$file' does not exist in repo"
-		done < <(yq -r ".${list}[].src" "$REPO_ROOT/config.yml")
-	done
-}
-
-@test "Linux Brewfile casks have explicit platform handling" {
-	linux_cask_skip=$(yq -r '.homebrew_linux_cask_skip' "$REPO_ROOT/config.yml")
-	while IFS= read -r cask_token; do
-		[ "$cask_token" = "font-hack-nerd-font" ] && continue
-		case " $linux_cask_skip " in
-			*" $cask_token "*) ;;
-			*) fail "Brewfile cask '$cask_token' needs a Linux skip or native install" ;;
-		esac
-	done < <(sed -n "s/^cask '\([^']*\)'.*/\1/p" "$REPO_ROOT/Brewfile")
-}
-
-@test "Fedora firewall defaults to drop and SSH is disabled" {
-	[ "$(yq -r '.fedora_firewall_default_zone' "$REPO_ROOT/config.yml")" = "drop" ] ||
-		fail "Fedora firewall default zone must be drop"
-	[ "$(yq -r '.fedora_sshd_enabled' "$REPO_ROOT/config.yml")" = "false" ] ||
-		fail "Fedora SSH server must be disabled by default"
-	[ "$(yq -r '.fedora_firewall_services | join(" ")' "$REPO_ROOT/config.yml")" = "dhcpv6-client" ] ||
-		fail "Fedora firewall services must explicitly allow DHCPv6 only by default"
+	while IFS= read -r file; do
+		[ -e "$REPO_ROOT/$file" ] || fail "dotfile_links_common src '$file' does not exist in repo"
+	done < <(yq -r '.dotfile_links_common[].src' "$REPO_ROOT/config.yml")
 }
 
 @test "config.yml has required top-level keys" {
 	for key in dotfiles_files dotfiles_files_common dotfiles_files_macos \
-		dotfiles_files_linux dotfile_links_common linux_dotfile_links fedora_packages \
-		directories_to_create private_directories macos_defaults; do
+		dotfile_links_common directories_to_create private_directories macos_defaults; do
 		grep -q "^${key}:" "$REPO_ROOT/config.yml" || fail "config.yml missing required key '$key'"
 	done
 }
@@ -63,8 +40,7 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 }
 
 @test "directories_to_create entries use tilde paths" {
-	for list in directories_to_create_common directories_to_create_macos \
-		directories_to_create_linux; do
+	for list in directories_to_create_common directories_to_create_macos; do
 		count=$(yq ".${list} | length" "$REPO_ROOT/config.yml")
 		for i in $(seq 0 $((count - 1))); do
 			dir=$(yq ".${list}[$i]" "$REPO_ROOT/config.yml")

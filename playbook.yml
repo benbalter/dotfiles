@@ -8,10 +8,13 @@
         is_ci: "{{ ansible_facts['env']['CI'] | default(false) | bool }}"
       tags: always
 
-    - name: Detect operating system
-      ansible.builtin.set_fact:
-        is_macos: "{{ ansible_facts['system'] == 'Darwin' }}"
-        is_fedora: "{{ ansible_facts['distribution'] == 'Fedora' }}"
+    # The playbook is macOS-only. Linux (Codespaces, containers) gets the
+    # symlink-only install.sh instead, so fail here rather than half-apply.
+    - name: Require macOS
+      ansible.builtin.assert:
+        that: ansible_facts['system'] == 'Darwin'
+        fail_msg: This playbook only supports macOS. On Linux, run install.sh.
+        quiet: true
       tags: always
 
     - name: Include config
@@ -34,7 +37,6 @@
     - name: Select the brew executable directory
       ansible.builtin.set_fact:
         homebrew_brew_bin_path: "{{ '/opt/workbrew/bin' if workbrew_bin.stat.exists else '/opt/homebrew/bin' }}"
-      when: is_macos
       tags: always
 
     # Everything Homebrew owns must belong to the user that actually runs brew:
@@ -44,7 +46,6 @@
     - name: Select the Homebrew prefix owner
       ansible.builtin.set_fact:
         homebrew_owner: "{{ 'workbrew' if workbrew_bin.stat.exists else ansible_facts['user_id'] }}"
-      when: is_macos
       tags: always
 
   tasks:
@@ -102,11 +103,10 @@
       tags: [dotfiles]
       block:
         # Create each link's parent under user_dir before symlinking. These
-        # parents (e.g. ~/.ssh, ~/.config/ghostty) are otherwise only made by
-        # the directories_to_create task, which resolves ~ via $HOME — and in
-        # the GitHub Actions Fedora container $HOME (/github/home) differs from
-        # user_dir (/root), so those dirs land in the wrong place and the
-        # symlink fails with ENOENT. user_dir matches the symlink dest below.
+        # parents (e.g. ~/.config/ghostty) are otherwise only made by the
+        # directories_to_create task, which resolves ~ via $HOME, and that can
+        # differ from user_dir (it did in a GitHub Actions container job), so
+        # the symlink failed with ENOENT. user_dir matches the symlink dest below.
         - name: Ensure parent directories of dotfile links exist
           ansible.builtin.file:
             path: "{{ ansible_facts['user_dir'] }}/{{ item.dest | dirname }}"
@@ -158,7 +158,7 @@
     # changes (tmpreaper's new flags didn't apply until a logout), so record
     # each plist's checksum and reload the job when it differs.
     - name: Load launch agents
-      when: is_macos and not is_ci
+      when: not is_ci
       tags: [dotfiles, launchagents]
       vars:
         launch_agents: "{{ dotfiles_files_macos | select('match', '^Library/LaunchAgents/') | list }}"
@@ -238,12 +238,12 @@
         # Run our own `brew bundle` task below instead of the role's, so we can
         # pass --no-upgrade (see the Install Brewfile packages task).
         homebrew_use_brewfile: false
-      when: is_macos and not workbrew_bin.stat.exists
+      when: not workbrew_bin.stat.exists
       tags: [homebrew, packages]
 
-    # Mirrors the Linux Brewfile task: --no-upgrade so already-installed,
-    # self-updating casks (Chrome, Slack, VS Code, …) are treated as satisfied
-    # rather than force-upgraded, which fails on their auto-updated app bundles.
+    # --no-upgrade so already-installed, self-updating casks (Chrome, Slack,
+    # VS Code, …) are treated as satisfied rather than force-upgraded, which
+    # fails on their auto-updated app bundles.
     # Skipped in CI: installing the full app/cask set there is unnecessary, and
     # jobs that need specific tools install them directly.
     - name: Install Brewfile packages
@@ -253,7 +253,7 @@
         HOMEBREW_NO_AUTO_UPDATE: "1"
       register: brew_bundle_macos
       changed_when: "'Installing' in brew_bundle_macos.stdout"
-      when: is_macos and not is_ci
+      when: not is_ci
       tags: [homebrew, packages]
 
     # become: the Homebrew prefix is owned by the user that runs brew, which is
@@ -267,371 +267,11 @@
         owner: "{{ homebrew_owner }}"
         group: "{{ ansible_facts['user_gid'] }}"
         mode: "0644"
-      when: is_macos and not is_ci
+      when: not is_ci
       # The Brewfile's restart_service only fires when the formula changes, so
       # a config edit otherwise waited for the next upgrade or reboot.
       notify: Restart LanguageTool
       tags: [languagetool]
-
-    - name: Setup Fedora packages
-      become: true
-      when: is_fedora
-      tags: [fedora, packages]
-      block:
-        - name: Ensure dnf5 Python bindings are available
-          ansible.builtin.command:
-            cmd: dnf install -y python3-libdnf5
-            creates: /usr/lib64/python3.*/site-packages/libdnf5
-
-        # Homebrew provides the CLI toolchain (gh, mise, starship, etc.) on
-        # Asahi. Desktop apps use their supported Linux packages or installers
-        # because most Homebrew Casks are macOS-only.
-        - name: Import 1Password RPM signing key
-          ansible.builtin.rpm_key:
-            key: https://downloads.1password.com/linux/keys/1password.asc
-            state: present
-
-        - name: Add 1Password repository
-          ansible.builtin.yum_repository:
-            name: 1password
-            description: 1Password Stable Channel
-            baseurl: https://downloads.1password.com/linux/rpm/stable/$basearch
-            gpgcheck: true
-            repo_gpgcheck: true
-            gpgkey: https://downloads.1password.com/linux/keys/1password.asc
-
-        # VS Code (aarch64 RPM) is installed via Microsoft's repo so the `code`
-        # CLI is on PATH; the Brewfile's vscode extension entries then install
-        # through `brew bundle`. (Homebrew Cask, which provides VS Code on
-        # macOS, is unavailable on Linux.)
-        - name: Import Microsoft RPM signing key
-          ansible.builtin.rpm_key:
-            key: https://packages.microsoft.com/keys/microsoft.asc
-            state: present
-
-        - name: Add VS Code repository
-          ansible.builtin.yum_repository:
-            name: code
-            description: Visual Studio Code
-            baseurl: https://packages.microsoft.com/yumrepos/vscode
-            gpgcheck: true
-            gpgkey: https://packages.microsoft.com/keys/microsoft.asc
-
-        - name: Import Google Chrome RPM signing key
-          ansible.builtin.rpm_key:
-            key: https://dl.google.com/linux/linux_signing_key.pub
-            state: present
-          when: not is_ci
-
-        - name: Add Google Chrome repository
-          ansible.builtin.yum_repository:
-            name: google-chrome
-            description: Google Chrome
-            baseurl: https://dl.google.com/linux/chrome/rpm/stable/$basearch
-            enabled: true
-            gpgcheck: true
-            gpgkey: https://dl.google.com/linux/linux_signing_key.pub
-          when: not is_ci
-
-        - name: Install packages
-          ansible.builtin.dnf5:
-            name: "{{ fedora_packages }}"
-            state: present
-
-        - name: Enforce targeted SELinux policy
-          ansible.posix.selinux:
-            policy: targeted
-            state: enforcing
-          when: not is_ci
-
-        # Terra's bootstrap requires an unsigned transaction because the Terra
-        # signing keys are distributed by terra-gpg-keys itself. Keep this
-        # repository disabled except for that one transaction; terra-release
-        # then installs Terra's normal GPG-checked repository configuration.
-        - name: Configure disabled Terra bootstrap repository
-          ansible.builtin.yum_repository:
-            name: terra-bootstrap
-            description: Terra bootstrap
-            baseurl: https://repos.fyralabs.com/terra$releasever
-            enabled: false
-            gpgcheck: false
-            repo_gpgcheck: false
-          when: not is_ci
-
-        - name: Install Terra repository and signing keys
-          ansible.builtin.dnf5:
-            name:
-              - terra-release
-              - terra-gpg-keys
-            state: present
-            enablerepo: terra-bootstrap
-            disable_gpg_check: true
-          when: not is_ci
-
-        - name: Install Ghostty
-          ansible.builtin.dnf5:
-            name: ghostty
-            state: present
-          when: not is_ci
-
-        - name: Install VS Code
-          ansible.builtin.dnf5:
-            name: code
-            state: present
-          when: not is_ci
-
-        - name: Install Google Chrome
-          ansible.builtin.dnf5:
-            name: google-chrome-stable
-            state: present
-          when: not is_ci
-
-        - name: Install 1Password CLI
-          ansible.builtin.dnf5:
-            name: 1password-cli
-            state: present
-          when: not is_ci
-
-        # Zed's official installer supports Linux x86_64 and aarch64, installs
-        # into the user's ~/.local tree, and configures its desktop entry.
-        # Zed self-updates after the initial install, so only run it when absent.
-        - name: Install Zed
-          become: false
-          ansible.builtin.shell:
-            cmd: set -o pipefail && curl -f https://zed.dev/install.sh | sh
-            executable: /bin/bash
-            creates: "{{ ansible_facts['user_dir'] }}/.local/bin/zed"
-          environment:
-            HOME: "{{ ansible_facts['user_dir'] }}"
-          when:
-            - not is_ci
-            - ansible_facts['architecture'] in ['aarch64', 'x86_64']
-
-        # The RPM repo only ships the desktop app for x86_64
-        - name: Install 1Password desktop (RPM)
-          ansible.builtin.dnf5:
-            name: 1password
-            state: present
-          when: not is_ci and ansible_facts['architecture'] == 'x86_64'
-
-        - name: Install 1Password desktop (aarch64 tarball)
-          when: not is_ci and ansible_facts['architecture'] == 'aarch64'
-          block:
-            - name: Check for existing 1Password desktop install
-              ansible.builtin.stat:
-                path: /opt/1Password/1password
-              register: op_desktop
-
-            - name: Download and extract 1Password
-              ansible.builtin.unarchive:
-                src: https://downloads.1password.com/linux/tar/stable/aarch64/1password-latest.tar.gz
-                dest: /opt
-                remote_src: true
-                extra_opts:
-                  - --transform
-                  - s,^1password-[^/]*,1Password,
-              when: not op_desktop.stat.exists
-
-            - name: Run 1Password after-install script
-              ansible.builtin.command:
-                cmd: /opt/1Password/after-install.sh
-              when: not op_desktop.stat.exists
-              changed_when: true
-
-        # Parity with the macOS firewall and SoftwareUpdate settings. Packages
-        # install in CI too (a cheap check the names are right), but the
-        # container has no systemd, so the services are only enabled for real.
-        - name: Install firewalld and the dnf5 automatic plugin
-          ansible.builtin.dnf5:
-            name:
-              - firewalld
-              - dnf5-plugin-automatic
-            state: present
-
-        - name: Enable firewalld
-          ansible.builtin.systemd_service:
-            name: firewalld
-            enabled: true
-            state: started
-          when: not is_ci
-
-        - name: Check firewalld default zone
-          ansible.builtin.command:
-            cmd: firewall-cmd --get-default-zone
-          register: firewalld_default_zone
-          changed_when: false
-          check_mode: false
-          when: not is_ci
-
-        - name: Set firewalld default zone
-          ansible.builtin.command:
-            cmd: "firewall-cmd --set-default-zone={{ fedora_firewall_default_zone }}"
-          when:
-            - not is_ci
-            - not ansible_check_mode
-            - firewalld_default_zone.stdout | trim != fedora_firewall_default_zone
-          changed_when: true
-
-        - name: Allow configured Fedora firewall services
-          ansible.posix.firewalld:
-            zone: "{{ fedora_firewall_default_zone }}"
-            service: "{{ item }}"
-            state: enabled
-            permanent: true
-            immediate: true
-          loop: "{{ fedora_firewall_services + (['ssh'] if fedora_sshd_enabled else []) }}"
-          when: not is_ci
-
-        - name: Block SSH through firewalld when the SSH server is disabled
-          ansible.posix.firewalld:
-            zone: "{{ fedora_firewall_default_zone }}"
-            service: ssh
-            state: disabled
-            permanent: true
-            immediate: true
-          when:
-            - not is_ci
-            - not fedora_sshd_enabled
-
-        - name: Set SSH server package state
-          ansible.builtin.dnf5:
-            name: openssh-server
-            state: "{{ 'present' if fedora_sshd_enabled else 'absent' }}"
-          when: not is_ci
-
-        - name: Gather Fedora service facts
-          ansible.builtin.service_facts:
-          when: not is_ci
-
-        - name: Disable SSH socket activation
-          ansible.builtin.systemd_service:
-            name: sshd.socket
-            enabled: false
-            state: stopped
-          when:
-            - not is_ci
-            - "'sshd.socket' in (ansible_facts.services | default({}))"
-
-        - name: Set SSH server service state
-          ansible.builtin.systemd_service:
-            name: sshd.service
-            enabled: "{{ fedora_sshd_enabled }}"
-            state: "{{ 'started' if fedora_sshd_enabled else 'stopped' }}"
-          when:
-            - not is_ci
-            - "'sshd.service' in (ansible_facts.services | default({}))"
-
-        # Host overrides go in /etc/dnf/automatic.conf; the distro defaults
-        # (download only, apply nothing) live in
-        # /usr/share/dnf5/dnf5-plugins/automatic.conf.
-        - name: Configure automatic updates
-          community.general.ini_file:
-            path: /etc/dnf/automatic.conf
-            section: commands
-            option: "{{ item.option }}"
-            value: "{{ item.value }}"
-            mode: "0644"
-          loop:
-            - { option: upgrade_type, value: "{{ fedora_automatic_upgrade_type }}" }
-            - { option: apply_updates, value: "yes" }
-
-        - name: Enable automatic updates timer
-          ansible.builtin.systemd_service:
-            name: dnf5-automatic.timer
-            enabled: true
-            state: started
-          when: not is_ci
-
-        - name: Set zsh as default shell
-          ansible.builtin.user:
-            name: "{{ ansible_facts['user_id'] }}"
-            shell: /usr/bin/zsh
-
-    # Homebrew is the package source of truth on Asahi, running the same
-    # Brewfile as macOS. It must NOT run as root, so this block stays separate
-    # from the become: true dnf block above. Skipped in CI (the Fedora CI
-    # container runs as root); the test-asahi-brew job validates brew on Linux.
-    - name: Setup Homebrew on Linux
-      become: false
-      when: is_fedora and not is_ci
-      tags: [homebrew, packages]
-      block:
-        - name: Check for an existing Homebrew install
-          ansible.builtin.stat:
-            path: "{{ homebrew_linux_prefix }}/bin/brew"
-          register: brew_bin
-
-        # The installer can create the prefix itself, but it shells out to
-        # sudo to do it -- and NONINTERACTIVE requires that sudo be
-        # passwordless, which it isn't here, so it aborts with "Insufficient
-        # permissions to install Homebrew to /home/linuxbrew/.linuxbrew". Hand
-        # it a parent directory we already own and it never reaches for sudo:
-        # every mkdir/chown/chmod that follows targets our own uid inside a
-        # directory we control. This one task is the only part of the block
-        # that needs root, hence the local become override.
-        - name: Create the Homebrew prefix parent directory
-          become: true
-          ansible.builtin.file:
-            path: "{{ homebrew_linux_prefix | dirname }}"
-            state: directory
-            owner: "{{ ansible_facts['user_id'] }}"
-            group: "{{ ansible_facts['user_id'] }}"
-            mode: "0755"
-          when: not brew_bin.stat.exists
-        - name: Install Homebrew
-          ansible.builtin.shell:
-            cmd: >-
-              /bin/bash -c
-              "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-            creates: "{{ homebrew_linux_prefix }}/bin/brew"
-          environment:
-            NONINTERACTIVE: "1"
-
-        - name: Install Brewfile packages
-          ansible.builtin.command:
-            cmd: "{{ homebrew_linux_prefix }}/bin/brew bundle install --file={{ playbook_dir }}/Brewfile --no-upgrade"
-          environment:
-            HOMEBREW_BUNDLE_BREW_SKIP: "{{ homebrew_linux_brew_skip }}"
-            HOMEBREW_BUNDLE_CASK_SKIP: "{{ homebrew_linux_cask_skip }}"
-            HOMEBREW_NO_AUTO_UPDATE: "1"
-            # `brew` itself is called by absolute path, but the package managers
-            # it shells out to for `cargo`/`vscode` entries are looked up on
-            # PATH -- and Homebrew's bin isn't on the PATH Ansible inherits, so
-            # bundle reports "rust installation failed" for an installed rust.
-            PATH: "{{ homebrew_linux_prefix }}/bin:{{ ansible_facts['env']['PATH'] }}"
-          register: brew_bundle
-          changed_when: "'Installing' in brew_bundle.stdout"
-
-    # Plasma expands the named scheme into ~/.config/kdeglobals ([Colors:*]
-    # groups) the moment it's applied, so pinning ColorScheme= by hand would
-    # record the choice without actually recoloring anything -- let
-    # plasma-apply-colorscheme do the expansion and gate on the key it writes.
-    # It talks to the running Plasma session over DBus, so skip the whole thing
-    # when there's no graphical session (a TTY, SSH, or non-KDE Fedora box).
-    - name: Set the KDE color scheme
-      become: false
-      when:
-        - is_fedora
-        - not is_ci
-        - >-
-          'WAYLAND_DISPLAY' in ansible_facts['env']
-          or 'DISPLAY' in ansible_facts['env']
-      tags: [fedora, kde]
-      block:
-        - name: Check the current KDE color scheme
-          ansible.builtin.command:
-            cmd: kreadconfig6 --file kdeglobals --group General --key ColorScheme
-          register: kde_current_scheme
-          changed_when: false
-          failed_when: false
-
-        - name: Apply the KDE color scheme
-          ansible.builtin.command:
-            cmd: "plasma-apply-colorscheme {{ kde_color_scheme }}"
-          when:
-            - kde_current_scheme.rc == 0
-            - kde_current_scheme.stdout | trim != kde_color_scheme
-          changed_when: true
 
     - name: Set up oh-my-zsh
       ansible.builtin.git:
@@ -757,7 +397,6 @@
         # wrapper. CI skips the full Brewfile (and has no Workbrew), so let the
         # role install dockutil itself there.
         dockutil_install: "{{ is_ci }}"
-      when: is_macos
       tags: [macos, dock]
 
     - name: Set MacOS system defaults
@@ -770,7 +409,6 @@
       loop: "{{ macos_defaults.system }}"
       loop_control:
         label: "{{ item.name }}"
-      when: is_macos
       tags: [macos, defaults]
 
     # Guards against the bare-domain trap described in config.yml. This reads the
@@ -789,7 +427,6 @@
       register: system_defaults_check
       changed_when: false
       failed_when: (system_defaults_check.stdout | trim) in ["", "null"]
-      when: is_macos
       tags: [macos, defaults]
 
     - name: Remove MacOS defaults written to the wrong domain
@@ -800,7 +437,6 @@
       loop: "{{ macos_defaults.absent }}"
       loop_control:
         label: "{{ item.domain }} {{ item.key }}"
-      when: is_macos
       tags: [macos, defaults]
 
     - name: Set MacOS user defaults
@@ -813,7 +449,6 @@
       loop: "{{ macos_defaults.user }}"
       loop_control:
         label: "{{ item.name }}"
-      when: is_macos
       tags: [macos, defaults]
 
     # Read per-host values back from the ByHost domain, as the system defaults
@@ -828,12 +463,11 @@
       check_mode: false
       changed_when: false
       failed_when: host_defaults_check.rc != 0
-      when: is_macos and not ansible_check_mode
+      when: not ansible_check_mode
       tags: [macos, defaults]
 
     - name: Configure security settings
       tags: [macos, security]
-      when: is_macos
       block:
         - name: Check Gatekeeper status
           ansible.builtin.command:

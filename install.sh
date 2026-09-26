@@ -1,7 +1,8 @@
 #!/bin/sh
 # Codespaces-compatible dotfiles installer
-# Symlinks dotfiles to $HOME and sets up the shell environment.
-# On macOS, delegates to the full Ansible-based setup via script/setup.
+# On macOS, delegates to the full Ansible-based setup via script/setup. On
+# Linux (Codespaces, devcontainers), symlinks dotfiles to $HOME and sets up
+# the shell; the playbook is macOS-only.
 
 set -eu
 # shellcheck disable=SC3040
@@ -10,14 +11,6 @@ set -eu
 DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 if [ "$(uname)" = "Darwin" ]; then
-	exec "$DOTFILES_DIR/script/setup"
-fi
-
-# On Fedora (and derivatives like Asahi Remix), delegate to the full
-# Ansible-based setup. Set DOTFILES_SIMPLE_INSTALL=1 to force the simple
-# symlink-only installer (used by tests and containers).
-if [ "${DOTFILES_SIMPLE_INSTALL:-}" != "1" ] && [ -z "${CODESPACES:-}" ] &&
-	grep -qsE '^(ID|ID_LIKE)=.*fedora' /etc/os-release; then
 	exec "$DOTFILES_DIR/script/setup"
 fi
 
@@ -65,10 +58,9 @@ link "Library/Application Support/com.mitchellh.ghostty/themes/catppuccin-latte.
 link "Library/Application Support/com.mitchellh.ghostty/themes/catppuccin-mocha.conf" \
 	.config/ghostty/themes/catppuccin-mocha.conf
 
-# Skip .gitconfig.linux and linux_dotfile_links (config.yml) here: this path
-# serves Codespaces and containers, not a Linux desktop. .gitconfig.linux only
-# points commit signing at 1Password's op-ssh-sign, and the Code/ghostty
-# configs are for GUI apps a container doesn't have.
+# Skip .gitconfig.macos on Linux: it turns on commit signing through
+# 1Password's SSH agent, which a container doesn't have, and would override
+# the signing Codespaces configures itself.
 
 # Skip .gnupg/gpg-agent.conf on Linux: it points pinentry-program at
 # /opt/homebrew/bin/pinentry-mac, so gpg fails the moment it needs a passphrase.

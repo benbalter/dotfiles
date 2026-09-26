@@ -3,8 +3,8 @@ on:
   push:
     branches: [main]
   pull_request:
-  # Weekly, to catch upstream breakage (Homebrew bottles, runner images, Fedora
-  # updates) that otherwise only shows up on the next push.
+  # Weekly, to catch upstream breakage (Homebrew bottles, runner images) that
+  # otherwise only shows up on the next push.
   schedule:
     - cron: "0 6 * * 1"
   workflow_dispatch:
@@ -201,6 +201,7 @@ jobs:
       - name: Run tests
         run: script/test
 
+  # The Codespaces path: Linux only ever gets install.sh, not the playbook.
   install-linux:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -224,148 +225,24 @@ jobs:
           command -v zoxide
           command -v fzf
 
+      # Codespaces images ship zsh; the runner image doesn't.
+      - name: Verify zsh loads cleanly
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q zsh
+          zsh -ic 'echo "zsh ok"'
+
+      # Codespaces sets up its own commit signing, so nothing linked here may
+      # turn signing on (a 1Password SSH signer made every commit fail).
+      - name: Verify git can commit
+        run: |
+          repo=$(mktemp -d)
+          git -C "$repo" init -q
+          git -C "$repo" -c core.pager=cat commit -q --allow-empty -m test
+
       - name: Install bats and run unit tests
         run: |
           sudo apt-get update -q
           sudo apt-get install -y -q bats
           npm ci
           script/test
-
-  test-fedora:
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-    # A fixed release, so a new Fedora lands as a reviewable bump rather than
-    # a surprise red build.
-    container: fedora:44
-    # GitHub sets HOME=/github/home for container jobs, but Ansible's user_dir
-    # (and the shell verify steps below) resolve to root's real home, /root.
-    # Pin HOME=/root so ~ expansion, ansible_facts.user_dir, and $HOME all agree
-    # — matching a real Fedora/Asahi machine where HOME == the user's home.
-    env:
-      HOME: /root
-
-    steps:
-      - name: Install bootstrap dependencies
-        run: dnf install -y git python3 python3-pip sudo
-
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          # Nothing here pushes, so don't leave the token in .git/config.
-          persist-credentials: false
-
-      - name: Bootstrap
-        run: script/bootstrap
-
-      - name: Run playbook
-        run: script/ansible
-
-      - name: Verify dotfile symlinks
-        run: |
-          for file in .zshrc .zprofile .gitconfig .gitconfig.linux .gitignore \
-            .yamllint .config/mise/config.toml .config/starship.toml \
-            .config/ghostty/config .ssh/config; do
-            test -L "$HOME/$file" || { echo "FAIL: $file not symlinked"; exit 1; }
-          done
-          echo "All dotfile symlinks verified"
-
-      - name: Verify macOS-only dotfiles were not symlinked
-        run: |
-          for file in .Brewfile .gitconfig.macos .mackup.cfg; do
-            test ! -e "$HOME/$file" || { echo "FAIL: $file should not exist on Linux"; exit 1; }
-          done
-          echo "No macOS dotfiles leaked"
-
-      # Homebrew (and the Brewfile toolchain) is gated to non-CI runs because
-      # this Fedora container is root and Homebrew refuses to run as root.
-      # Here we only verify the dnf bootstrap set; the test-asahi-brew job
-      # exercises the Brewfile on Linux as a non-root user.
-      - name: Verify bootstrap packages installed
-        run: |
-          for cmd in zsh git gcc make curl ps; do
-            command -v "$cmd" || { echo "FAIL: $cmd not installed"; exit 1; }
-          done
-
-      - name: Verify oh-my-zsh installed
-        run: test -d "$HOME/.oh-my-zsh/.git"
-
-      - name: Verify zsh loads cleanly
-        run: |
-          ln -sfn "$GITHUB_WORKSPACE" "$HOME/.files"
-          zsh -ic 'echo "zsh ok"'
-
-      - name: Re-run playbook (no failures on second run)
-        run: |
-          output=$(script/ansible 2>&1)
-          echo "$output"
-          failed=$(echo "$output" | awk '/^localhost/ { for (i=1; i<=NF; i++) if ($i ~ /^failed=/) print substr($i, 8) }')
-          [ "$failed" = "0" ] || { echo "FAIL: re-run reported failed=$failed (expected 0)"; exit 1; }
-          echo "Playbook re-run completed without failures"
-
-  # Validates that the Brewfile runs under `brew bundle` on Linux the way it
-  # would on Asahi (Fedora aarch64), as a non-root user. Runs on both x86_64 and
-  # native aarch64 GitHub-hosted runners — the aarch64 leg matches Asahi's
-  # architecture and confirms arm64_linux bottles actually install. This proves
-  # the Brewfile parses, that macOS-only entries are skipped, and that bottles
-  # install on both arches; the full playbook wiring is still verified on real
-  # hardware.
-  test-asahi-brew:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-24.04, ubuntu-24.04-arm]
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 30
-    env:
-      HOMEBREW_NO_AUTO_UPDATE: 1
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          # Nothing here pushes, so don't leave the token in .git/config.
-          persist-credentials: false
-
-      # Formulae with no Linux bottle, read from config.yml rather than copied
-      # here, as script/update does.
-      - name: Read the Linux brew skip list
-        run: |
-          echo "HOMEBREW_BUNDLE_BREW_SKIP=$(sed -n 's/^homebrew_linux_brew_skip: *//p' config.yml)" >> "$GITHUB_ENV"
-
-      # ARM64 runner images don't ship Homebrew preinstalled like x86_64 ones do.
-      - name: Ensure Homebrew is installed
-        run: |
-          if [ ! -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
-            NONINTERACTIVE=1 /bin/bash -c \
-              "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          fi
-
-      - name: Brewfile parses under brew bundle on Linux
-        run: |
-          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-          brew bundle list --file=Brewfile --all >/dev/null
-          echo "Brewfile parses"
-
-      - name: macOS-only entries are skipped, not errors, on Linux
-        run: |
-          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-          # A Brewfile of only macOS-specific entries must install cleanly on
-          # Linux: the three bottle-less formulae via HOMEBREW_BUNDLE_BREW_SKIP,
-          # and cask/mas entries via brew bundle's automatic Linux skip.
-          cat > "$RUNNER_TEMP/Brewfile.macos-only" <<'EOF'
-          brew 'dockutil'
-          brew 'pinentry-mac'
-          brew 'mas'
-          cask '1password'
-          mas '1Password for Safari', id: 1_569_813_296
-          EOF
-          brew bundle install --file="$RUNNER_TEMP/Brewfile.macos-only"
-          echo "macOS-only entries skipped cleanly on Linux"
-
-      - name: Install a representative subset (proves Linux bottles install)
-        run: |
-          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-          brew install gh jq ripgrep
-          for cmd in gh jq rg; do
-            command -v "$cmd" || { echo "FAIL: $cmd not installed via Homebrew"; exit 1; }
-          done
-          echo "Homebrew Linux bottles install correctly"

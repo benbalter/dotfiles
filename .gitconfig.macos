@@ -1,6 +1,29 @@
 [credential]
 	helper = osxkeychain
 
+# gh for GitHub. The empty helper first clears any inherited ones; in the
+# common .gitconfig that also cleared Codespaces' own helper, so pushes there
+# depended on gh being installed.
+[credential "https://github.com"]
+	helper =
+	helper = !gh auth git-credential
+
+[credential "https://gist.github.com"]
+	helper =
+	helper = !gh auth git-credential
+
+[user]
+	signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJVznDI5iSIoLzOLMW54ZU6fnCe9JHd/tetOimr9G3c5
+
+[commit]
+	gpgsign = true
+
+[tag]
+	gpgSign = true
+
+[gpg]
+	format = ssh
+
 [gpg "ssh"]
 	program = /Applications/1Password.app/Contents/MacOS/op-ssh-sign
 

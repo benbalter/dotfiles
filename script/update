@@ -11,14 +11,8 @@ set -eu
 SELF="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
 cd "${DOTFILES_ROOT:-$HOME/.files}"
 
-# The repo's Brewfile, not --global: ~/.Brewfile is only linked on macOS, so
-# on Linux every bundle step failed for want of a file. There, also skip the
-# formulae and casks that are not supported on Linux.
+# The repo's Brewfile, not --global, so this works before setup links ~/.Brewfile.
 export HOMEBREW_BUNDLE_FILE="$PWD/Brewfile"
-if [ "$(uname)" != "Darwin" ]; then
-	HOMEBREW_BUNDLE_BREW_SKIP=$(sed -n 's/^homebrew_linux_brew_skip: *//p' config.yml 2>/dev/null || true)
-	export HOMEBREW_BUNDLE_BREW_SKIP
-fi
 
 # This script may run from a minimal environment (e.g. the nightly launchd job,
 # whose PATH is only /usr/bin:/bin:/usr/sbin:/sbin), so make Homebrew
@@ -26,7 +20,6 @@ fi
 # /opt/homebrew/bin or brew aborts with a wrapper-conflict error. Prepend in
 # ascending priority so the last entry wins. No-op where a path is absent.
 [ -x /opt/homebrew/bin/brew ] && PATH="/opt/homebrew/bin:$PATH"
-[ -x /home/linuxbrew/.linuxbrew/bin/brew ] && PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
 [ -x /opt/workbrew/bin/brew ] && PATH="/opt/workbrew/bin:$PATH"
 
 # Resolve mise-managed runtimes (ruby, node, …) ahead of Homebrew's. This
@@ -37,11 +30,6 @@ fi
 # resolves to the wrapper above.
 [ -d "$HOME/.local/share/mise/shims" ] && PATH="$HOME/.local/share/mise/shims:$PATH"
 export PATH
-
-if [ "$(uname)" != "Darwin" ]; then
-	HOMEBREW_BUNDLE_CASK_SKIP=$(yq -r '.homebrew_linux_cask_skip' config.yml 2>/dev/null || true)
-	export HOMEBREW_BUNDLE_CASK_SKIP
-fi
 
 # Steps end in `|| true`-style tolerance so one failure doesn't skip the rest,
 # but that used to make the script always exit 0: the nightly job looked
@@ -108,10 +96,13 @@ STATUS="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/update-status"
 mkdir -p "${STATUS%/*}"
 echo "started=$(date '+%Y-%m-%d %H:%M')" >"$STATUS"
 
-if command -v brew >/dev/null; then
+# macOS only: the Brewfile is full of casks and Mac-only formulae, and the
+# Linux path (install.sh, for Codespaces) doesn't install Homebrew. A
+# container that ships Linuxbrew anyway manages it itself.
+if [ "$(uname)" = "Darwin" ] && command -v brew >/dev/null; then
 	echo "==> Updating Homebrew packages..."
 	# step keeps errors visible but doesn't let `set -e` abort here: a single
-	# wedged cask must not skip every step below (dnf, mas, mise, npm, gems, pip).
+	# wedged cask must not skip every step below (mas, mise, npm, gems, pip).
 	step brew update
 	# Informational only, so not a step: nothing to count as failed.
 	brew outdated || true
@@ -184,22 +175,9 @@ if command -v brew >/dev/null; then
 	# (never uninstalls) — review the diff and run `clean` to act on it. Tune
 	# the window with AUDIT_STALE_DAYS (default 14).
 	AUDIT="${DOTFILES_ROOT:-$HOME/.files}/script/audit-casks"
-	if [ "$(uname)" = "Darwin" ] && [ -t 1 ] && [ -x "$AUDIT" ]; then
+	if [ -t 1 ] && [ -x "$AUDIT" ]; then
 		echo "==> Auditing casks for disuse..."
 		step "$AUDIT" --comment
-	fi
-fi
-
-if command -v dnf >/dev/null; then
-	echo "==> Updating dnf packages..."
-	# dnf needs root. From a terminal, allow an interactive sudo prompt. Headless
-	# (the nightly launchd/cron job) there's no one to answer it, so use `sudo -n`
-	# to fail fast instead of hanging on a password prompt, and step so a
-	# skipped upgrade doesn't abort the steps below (mas, mise, npm, gems, pip).
-	if [ -t 1 ]; then
-		step sudo dnf upgrade --refresh -y
-	else
-		step sudo -n dnf upgrade --refresh -y
 	fi
 fi
 

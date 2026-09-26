@@ -19,9 +19,10 @@ setup() {
 	# ahead of any PATH stub. So stub those commands as shell functions (which
 	# win over PATH), and source the script into the shell that defines them.
 	STUBS='
-		for cmd in brew defaults sudo dnf mas mise npm bundle mole git zsh tldr softwareupdate; do
+		for cmd in brew defaults sudo mas mise npm bundle mole git zsh tldr softwareupdate; do
 			eval "$cmd() { echo \"$cmd \$*\" >>\"\$LOG\"; return \$STUB_STATUS; }"
 		done
+		uname() { echo "${UNAME:-Darwin}"; }
 	'
 
 	# The venv's commands (hyphenated ansible-galaxy can't be a POSIX function)
@@ -76,7 +77,6 @@ refute_called() {
 	assert_called "brew autoremove"
 	assert_called "brew cleanup"
 	assert_called "defaults write com.microsoft.autoupdate2 HowToCheck Manual"
-	assert_called "sudo -n dnf upgrade --refresh -y"
 	assert_called "mise upgrade"
 	assert_called "npm ci"
 	assert_called "bundle update"
@@ -164,8 +164,6 @@ refute_called() {
 	[ "$status" -eq 0 ] || fail "update exited $status: $output"
 	# Cask upgrades need a GUI session and sudo; formula-only when headless.
 	refute_called '^brew upgrade$'
-	# No TTY to answer a password prompt: sudo must be non-interactive.
-	refute_called '^sudo dnf'
 	# Edits the tracked Brewfile; needs a human to review.
 	refute_called '^audit-casks'
 	# May prompt for sudo.
@@ -174,6 +172,14 @@ refute_called() {
 	refute_called '^git'
 	# Can hang on an App Store sign-in and hold the lock.
 	refute_called '^mas'
+}
+
+@test "update skips Homebrew on Linux" {
+	# The Brewfile is macOS-only; install.sh doesn't install Homebrew on Linux.
+	UNAME=Linux run_update 0
+	[ "$status" -eq 0 ] || fail "update exited $status: $output"
+	refute_called '^brew'
+	assert_called "mise upgrade"
 }
 
 @test "update never rewrites package-lock.json" {

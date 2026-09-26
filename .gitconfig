@@ -9,7 +9,6 @@
 [user]
 	name = Ben Balter
 	email = ben@balter.com
-	signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJVznDI5iSIoLzOLMW54ZU6fnCe9JHd/tetOimr9G3c5
 
 [color]
 	branch = auto
@@ -120,34 +119,23 @@
 
 [commit]
 	verbose = true
-	gpgsign = true
 
 [branch]
 	sort = -committerdate
 
 [tag]
 	sort = version:refname
-	gpgSign = true
 
 [column]
 	ui = auto
 
-[gpg]
-	format = ssh
-
 [gpg "ssh"]
 	allowedSignersFile = ~/.config/git/allowed_signers
 
-# OS-specific overrides; git silently ignores missing include files,
-# so only the file for the current OS is symlinked into ~
+# macOS-only settings: commit signing through 1Password and gh as the GitHub
+# credential helper. Git ignores a missing include, and install.sh doesn't
+# link this file on Linux: Codespaces configures its own signing and
+# credentials, which ours overrode (commits failed with "Couldn't get agent
+# socket").
 [include]
 	path = ~/.gitconfig.macos
-	path = ~/.gitconfig.linux
-
-[credential "https://github.com"]
-	helper =
-	helper = !gh auth git-credential
-
-[credential "https://gist.github.com"]
-	helper =
-	helper = !gh auth git-credential
