@@ -145,6 +145,7 @@ if [ -d env ]; then
 	# ("use --force to change version to 2.4.0"), so a pin bump would silently
 	# never apply. One small role, so the re-download is cheap.
 	echo "==> Updating Ansible roles and collections..."
+	script/blocking-io
 	ansible-galaxy role install -r requirements.yml --force
 	ansible-galaxy collection install -r requirements.yml
 	deactivate

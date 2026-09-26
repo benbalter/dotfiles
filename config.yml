@@ -119,9 +119,18 @@ fedora_packages:
 homebrew_linux_prefix: /home/linuxbrew/.linuxbrew
 
 # Brewfile formulae with no Linux bottle (macOS-only); skipped on Asahi via
-# HOMEBREW_BUNDLE_BREW_SKIP. Casks and Mac App Store (`mas`) entries are skipped
+# HOMEBREW_BUNDLE_BREW_SKIP. Mac App Store (`mas`) entries are skipped
 # automatically by `brew bundle` on Linux.
-homebrew_linux_brew_skip: dockutil mas pinentry-mac
+homebrew_linux_brew_skip: dockutil mas mole pinentry-mac terminal-notifier
+
+# Casks themselves DO work on Linux (1password-cli and font-hack-nerd-font
+# install fine on Asahi), so only the ones gated to Intel hardware with
+# `depends_on arch: :x86_64` need skipping via HOMEBREW_BUNDLE_CASK_SKIP.
+homebrew_linux_cask_skip: signal zoom
+
+# KDE Plasma color scheme applied on Fedora. `plasma-apply-colorscheme --list-schemes`
+# shows what's installed; stock Plasma ships BreezeClassic, BreezeDark, BreezeLight.
+kde_color_scheme: BreezeDark
 
 directories_to_create_common:
   - ~/.bundle

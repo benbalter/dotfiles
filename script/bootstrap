@@ -16,4 +16,5 @@ else
 	pip install --upgrade -r requirements.txt
 fi
 
+script/blocking-io
 ansible-galaxy install -r requirements.yml --force
