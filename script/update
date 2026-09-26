@@ -184,7 +184,7 @@ if command -v brew >/dev/null; then
 	# (never uninstalls) — review the diff and run `clean` to act on it. Tune
 	# the window with AUDIT_STALE_DAYS (default 14).
 	AUDIT="${DOTFILES_ROOT:-$HOME/.files}/script/audit-casks"
-	if [ -t 1 ] && [ -x "$AUDIT" ]; then
+	if [ "$(uname)" = "Darwin" ] && [ -t 1 ] && [ -x "$AUDIT" ]; then
 		echo "==> Auditing casks for disuse..."
 		step "$AUDIT" --comment
 	fi
