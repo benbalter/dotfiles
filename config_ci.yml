@@ -1,4 +1,0 @@
----
-# Skip the Brewfile install in CI; the macOS jobs install a minimal subset
-# separately (homebrew_upgrade_all_packages is already false in config.yml).
-homebrew_use_brewfile: false

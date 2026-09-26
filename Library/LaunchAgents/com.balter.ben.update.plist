@@ -6,6 +6,13 @@
 		<string>com.balter.ben.update</string>
 		<key>Program</key>
 		<string>/Users/benbalter/.files/script/update</string>
+		<!-- Without these, launchd discards the job's output, so a failing
+		     nightly step leaves no trace. launchd doesn't expand ~ or $HOME,
+		     hence the absolute paths. -->
+		<key>StandardOutPath</key>
+		<string>/Users/benbalter/Library/Logs/dotfiles-update.log</string>
+		<key>StandardErrorPath</key>
+		<string>/Users/benbalter/Library/Logs/dotfiles-update.log</string>
 		<key>StartCalendarInterval</key>
 		<dict>
 			<key>Hour</key>

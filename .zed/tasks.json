@@ -1,0 +1,24 @@
+// Project tasks: cmd-shift-p → "task: spawn" (or alt-shift-t)
+[
+  {
+    "label": "script/lint",
+    "command": "script/lint",
+    "save": "all"
+  },
+  {
+    "label": "script/test",
+    "command": "script/test",
+    "save": "all"
+  },
+  {
+    "label": "script/ansible",
+    "command": "script/ansible",
+    "save": "all",
+    "use_new_terminal": true
+  },
+  {
+    "label": "script/update",
+    "command": "script/update",
+    "use_new_terminal": true
+  }
+]

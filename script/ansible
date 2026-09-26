@@ -4,21 +4,26 @@ set -eu
 # shellcheck disable=SC3040
 (set -o pipefail) 2>/dev/null && set -o pipefail || true
 
+# Run the playbook, passing any arguments through to ansible-playbook.
+# Usage: script/ansible [--tags security] [--check --diff] ...
+
+cd "$(dirname "$0")/.."
+
 script/blocking-io
 
 # shellcheck disable=SC1091
 . env/bin/activate
 
 if [ "${CI:-}" = "true" ]; then
-	ansible-playbook playbook.yml
+	ansible-playbook playbook.yml "$@"
 elif [ -n "${ANSIBLE_BECOME_PASSWORD_FILE:-}" ]; then
 	# Ansible reads the password out of that file itself -- nothing to prompt for.
-	ansible-playbook playbook.yml
+	ansible-playbook playbook.yml "$@"
 elif [ -t 0 ]; then
-	ansible-playbook playbook.yml --ask-become-pass
+	ansible-playbook playbook.yml --ask-become-pass "$@"
 elif sudo -n true 2>/dev/null; then
 	# Nowhere to prompt, but sudo doesn't want a password here anyway.
-	ansible-playbook playbook.yml
+	ansible-playbook playbook.yml "$@"
 else
 	echo "==> No terminal to prompt for your sudo password." >&2
 	echo "    Run script/ansible from a terminal, or point" >&2

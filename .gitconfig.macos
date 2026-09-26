@@ -3,3 +3,8 @@
 
 [gpg "ssh"]
 	program = /Applications/1Password.app/Contents/MacOS/op-ssh-sign
+
+# Zed (installed via Brewfile cask) on macOS; .gitconfig's `code --wait`
+# remains the default on Linux and in Codespaces
+[core]
+	editor = zed --wait

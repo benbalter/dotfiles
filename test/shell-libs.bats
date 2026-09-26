@@ -50,3 +50,10 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 	"
 	[ "$status" -eq 0 ]
 }
+
+@test "lib files never set -e or -u" {
+	# They're sourced into interactive zsh, where set -e closes the shell on
+	# the first failing command and set -u on the first unset variable.
+	! grep -nE '^[[:space:]]*set -[a-zA-Z]*[eu]' "$REPO_ROOT"/lib/* ||
+		fail "lib/ must not use set -e or set -u"
+}

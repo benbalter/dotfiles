@@ -1,0 +1,7 @@
+# Mole whitelist: paths `mo clean` and `mo purge` never delete.
+# One absolute or ~ path per line; globs allowed.
+
+# Hugging Face model cache (~43GB, incl. gated Llama 3 weights). Purge sees a
+# `cache` dir in a project and flags it as a build artifact; re-downloading
+# means 40GB+ and a Hugging Face login.
+~/projects/fast-detect-gpt/cache

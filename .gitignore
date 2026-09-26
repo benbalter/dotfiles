@@ -2,7 +2,9 @@
 ._*
 node_modules
 Gemfile.lock
-.vscode
+# Only the tracked workspace settings (test/comic-sans.bats reads them).
+.vscode/*
+!.vscode/settings.json
 /env
 /Brewfile.lock.json
 /.ansible

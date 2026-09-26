@@ -7,12 +7,6 @@
 DOTFILES_ROOT=${DOTFILES_ROOT:-"$HOME/.files"}
 export DOTFILES_ROOT
 
-# Setup cli tools
-if [ "$(uname)" = "Darwin" ]; then
-	HOMEBREW_CASK_OPTS="--appdir=/Applications"
-	export HOMEBREW_CASK_OPTS
-fi
-
 # Resolve the Homebrew prefix by probing known paths rather than shelling out
 # to `brew --prefix`. Under Workbrew, `brew` is a setuid wrapper that can fail
 # outright (Homebrew 7.0 refuses to run when real and effective UIDs differ),
@@ -43,7 +37,13 @@ fi
 GOPATH=$HOME/go
 export GOPATH
 
-PATH="/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/local/sbin:$GOPATH/bin:$PATH"
+# From the probed prefix, so non-login Linux shells get Linuxbrew's binaries
+# too (.zprofile's `brew shellenv` only runs for login shells), and macOS
+# doesn't get a nonexistent /opt/homebrew on Linux.
+PATH="/usr/local/bin:/usr/local/sbin:$GOPATH/bin:$PATH"
+if [ -n "${HOMEBREW_PREFIX:-}" ] && [ "$HOMEBREW_PREFIX" != /usr/local ]; then
+	PATH="$HOMEBREW_PREFIX/bin:$HOMEBREW_PREFIX/sbin:$PATH"
+fi
 # Workbrew (enterprise-managed Homebrew) forces every `brew` invocation through
 # its wrapper at /opt/workbrew/bin; it must precede /opt/homebrew/bin or brew
 # aborts with a "conflicting Homebrew wrapper configuration" error. No-op on
@@ -59,15 +59,6 @@ export ZSH
 
 if command -v zsh >/dev/null 2>&1; then
 	SHELL=$(command -v zsh)
-	case "$SHELL" in
-		/*) ;;
-		*)
-			SHELL=""
-			for d in /opt/homebrew/bin /usr/local/bin /bin /usr/bin; do
-				[ -x "$d/zsh" ] && SHELL="$d/zsh" && break
-			done
-			;;
-	esac
 	export SHELL
 fi
 

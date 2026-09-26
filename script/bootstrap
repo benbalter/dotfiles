@@ -4,6 +4,8 @@ set -eu
 # shellcheck disable=SC3040
 (set -o pipefail) 2>/dev/null && set -o pipefail || true
 
+cd "$(dirname "$0")/.."
+
 if command -v uv >/dev/null; then
 	uv venv env
 	# shellcheck disable=SC1091
@@ -17,4 +19,6 @@ else
 fi
 
 script/blocking-io
-ansible-galaxy install -r requirements.yml --force
+# Not --force, which re-downloads every collection on every run. The pins are
+# exact, so a plain install already converges on them.
+ansible-galaxy collection install -r requirements.yml

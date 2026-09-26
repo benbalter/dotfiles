@@ -1,6 +1,7 @@
 #!/usr/bin/env bats
-# Verify Comic Sans is suppressed: VS Code font overrides are set,
-# and the disable script is wired into the playbook.
+# Verify Comic Sans is suppressed in VS Code via explicit font overrides. (It's
+# a protected system font, and Font Book isn't scriptable, so there's no way to
+# disable it system-wide from the playbook.)
 
 load test_helper
 
@@ -34,9 +35,4 @@ assert_font_overridden() {
 
 @test "VS Code workspace settings overrides terminal.integrated.fontFamily" {
 	assert_font_overridden "$WORKSPACE_SETTINGS" "terminal.integrated.fontFamily"
-}
-
-@test "playbook.yml references the disable-comic-sans script" {
-	grep -q 'script/disable-comic-sans' "$REPO_ROOT/playbook.yml" \
-		|| fail "playbook.yml does not invoke script/disable-comic-sans"
 }

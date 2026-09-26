@@ -1,8 +1,30 @@
 #!/bin/sh
+# Rewrite the Brewfile from what's actually installed.
+# Usage: update-brewfile
 
 set -eu
 # shellcheck disable=SC3040
 (set -o pipefail) 2>/dev/null && set -o pipefail || true
 
-brew bundle dump --global --describe --force
-bundle exec rubocop -A
+cd "${DOTFILES_ROOT:-$HOME/.files}"
+
+# `brew bundle dump` rebuilds the Brewfile from installed state: it silently
+# erases audit-casks' PROPOSED REMOVAL lines and re-adds every cask they
+# commented out, since those are still installed until `clean` runs. That
+# once brought back docker-desktop, whose nightly upgrade wipes Docker.app.
+# Settle the proposals first.
+if grep -q 'PROPOSED REMOVAL' Brewfile; then
+	echo "update-brewfile: Brewfile has pending PROPOSED REMOVAL lines." >&2
+	echo "  Run 'clean' to uninstall them, or delete the lines you want to keep" >&2
+	echo "  (uncommenting the cask), then re-run." >&2
+	exit 1
+fi
+
+# Descriptions are the default now; --describe is deprecated.
+brew bundle dump --global --force
+# Only the Brewfile: a bare `rubocop -A` also rewrites untracked Ruby like
+# the Gemfile Ruby LSP generates under .ruby-lsp/.
+bundle exec rubocop -A Brewfile
+
+echo "==> Brewfile rewritten. Review 'git diff Brewfile' before committing:"
+echo "    a dump re-adds anything installed, including casks you removed by hand."

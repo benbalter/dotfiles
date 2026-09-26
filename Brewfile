@@ -1,39 +1,15 @@
 # frozen_string_literal: true
 
-tap 'darrylmorley/whatcable'
-
 # Run your GitHub Actions locally
 brew 'act'
 # Improved shell history for zsh, bash, fish and nushell
 brew 'atuin'
-# GNU multiple precision arithmetic library
-brew 'gmp'
 # Static analysis and lint tool, for (ba)sh scripts
 brew 'shellcheck'
 # Static checker for GitHub Actions workflow files
 brew 'actionlint'
-# Software library to render fonts
-brew 'freetype'
-# JPEG image codec that aids compression and decompression
-brew 'jpeg-turbo'
-# TIFF library and utilities
-brew 'libtiff'
-# OpenType text shaping engine
-brew 'harfbuzz'
-# Library to render SVG files using Cairo
-brew 'librsvg'
-# Cryptography and SSL/TLS Toolkit
-brew 'openssl@3'
-# C library SSHv1/SSHv2 client and server protocols
-brew 'libssh'
-# YAML Parser
-brew 'libyaml'
-# Automate deployment, configuration, and upgrading
-brew 'ansible'
-# Checks ansible playbooks for practices and behaviour
-brew 'ansible-lint'
-# Interpreted, interactive, object-oriented programming language
-brew 'python@3.13'
+# Simple, modern, secure file encryption
+brew 'age'
 # Microsoft Azure CLI 2.0
 brew 'azure-cli'
 # Bash Automated Testing System
@@ -46,12 +22,14 @@ brew 'caddy', restart_service: :changed
 brew 'cloc'
 # Cross-platform make
 brew 'cmake'
+# Container runtimes on MacOS (and Linux) with minimal setup
+brew 'colima'
 # GNU File, Shell, and Text utilities
 brew 'coreutils'
-# C library implementing the SSH2 protocol
-brew 'libssh2'
 # Get a file from an HTTP, HTTPS or FTP server
 brew 'curl'
+# Pack, ship and run any application as a lightweight container
+brew 'docker'
 # Tool for managing dock items
 brew 'dockutil'
 # Disk Usage/Free Utility - a better 'df' alternative
@@ -62,14 +40,16 @@ brew 'dust'
 brew 'openjdk'
 # Validate EPUB files, version 2.0 and later
 brew 'epubcheck'
+# Speech synthesizer that supports more than hundred languages and accents
+brew 'espeak-ng'
+# Make creating custom firmwares for ESP32/ESP8266 super easy
+brew 'esphome'
 # Read, write, modify, and display EXIF data on the command-line
 brew 'exif'
 # Perl lib for reading and writing EXIF metadata
 brew 'exiftool'
 # Modern, maintained replacement for ls
 brew 'eza'
-# SDL2 compatibility layer that uses SDL3 behind the scenes
-brew 'sdl2-compat'
 # Play, record, convert, and stream select audio and video codecs
 brew 'ffmpeg'
 # Clone of cat(1) with syntax highlighting and Git integration
@@ -100,14 +80,10 @@ brew 'gitleaks'
 brew 'gmailctl'
 # GNU implementation of the famous stream editor
 brew 'gnu-sed'
-# GNU Transport Layer Security (TLS) Library
-brew 'gnutls'
 # Passphrase entry dialog utilizing the Assuan protocol
 brew 'pinentry'
 # GNU Privacy Guard (OpenPGP)
 brew 'gnupg'
-# Package compiler and linker metadata toolkit
-brew 'pkgconf'
 # Use Realtek DVB-T dongles as a cheap SDR
 brew 'librtlsdr'
 # Open source programming language to build simple/reliable/efficient software
@@ -122,14 +98,12 @@ brew 'grep'
 brew 'hackrf'
 # Smarter Dockerfile linter to validate best practices
 brew 'hadolint'
+# Grammar Checker for Developers
+brew 'harper'
 # Process manager for Procfile-based applications
 brew 'hivemind'
 # User-friendly cURL replacement (command-line HTTP client)
 brew 'httpie'
-# ISO/IEC 23008-12:2017 HEIF file format decoder and encoder
-brew 'libheif'
-# Generic library support script
-brew 'libtool'
 # Tools and libraries to manipulate images in select formats
 brew 'imagemagick'
 # Convert images to PDF via direct JPEG inclusion
@@ -138,8 +112,6 @@ brew 'img2pdf'
 brew 'iperf'
 # JSON diff and patch
 brew 'jd'
-# Implementation of malloc emphasizing fragmentation avoidance
-brew 'jemalloc'
 # Command-line pager for JSON data
 brew 'jless'
 # Lightweight and flexible command-line JSON processor
@@ -148,8 +120,6 @@ brew 'jq'
 brew 'jsonnet'
 # Handy way to save and run project-specific commands
 brew 'just'
-# Development kit for the Java programming language
-brew 'openjdk@17'
 # Style and grammar checker
 brew 'languagetool', restart_service: :changed
 # Fast, async, resource-friendly link checker
@@ -164,20 +134,16 @@ brew 'mas'
 brew 'maven'
 # Polyglot runtime manager (asdf rust clone)
 brew 'mise'
+# Program for MPEG audio stream validation
+brew 'mp3val'
 # 'traceroute' and 'ping' in a single tool
 brew 'mtr'
 # Port scanning utility for large networks
 brew 'nmap'
 # Open-source, cross-platform JavaScript runtime environment
 brew 'node'
-# Install NodeJS versions
-brew 'node-build'
-# Libraries for security-enabled client and server applications
-brew 'nss'
 # Adds an OCR text layer to scanned PDF files
 brew 'ocrmypdf'
-# Open source suite of directory software
-brew 'openldap'
 # Swiss-army knife of markup format conversion
 brew 'pandoc'
 # Port of pdftk in java
@@ -186,6 +152,8 @@ brew 'pdftk-java'
 brew 'pinentry-mac'
 # Execute binaries from Python packages in isolated environments
 brew 'pipx'
+# Fast, disk space efficient package manager
+brew 'pnpm'
 # Code formatter for JavaScript, CSS, JSON, GraphQL, Markdown, YAML
 brew 'prettier'
 # Protocol buffers (Google's data interchange format)
@@ -194,8 +162,6 @@ brew 'protobuf'
 brew 'ripgrep'
 # Powerful, clean, object-oriented scripting language
 brew 'ruby'
-# Install various Ruby versions and implementations
-brew 'ruby-build'
 # Safe, concurrent, practical language
 brew 'rust'
 # SDL2 graphics drawing primitives and other support functions
@@ -234,8 +200,6 @@ brew 'tfsec'
 brew 'tmpreaper'
 # Very fast implementation of tldr in Rust
 brew 'tealdeer'
-# Language for application scale JavaScript development
-brew 'typescript'
 # Extremely fast Python package installer and resolver, written in Rust
 brew 'uv'
 # GNU diction and style
@@ -279,7 +243,7 @@ cask 'cleanshot'
 # Drivers for DisplayLink docks, adapters and monitors
 cask 'displaylink'
 # App to build and share containerised applications and microservices
-cask 'docker-desktop'
+# cask 'docker-desktop' # PROPOSED REMOVAL: last opened 15 days ago
 # Client for the Dropbox cloud storage service
 cask 'dropbox'
 # Elgato FACECAM configuration tool
@@ -305,8 +269,8 @@ cask 'google-drive'
 cask 'gpg-suite'
 # Software-defined radio receiver powered by GNU Radio and Qt
 # cask 'gqrx' # PROPOSED REMOVAL: last opened 20 days ago
-# Terminal emulator as alternative to Apple's Terminal app
-# cask 'iterm2@beta' # PROPOSED REMOVAL: last opened 28 days ago
+# Grammar checker for developers
+cask 'harper-desktop'
 # Keyboard customiser
 cask 'karabiner-elements'
 # Preview and audit Kindle eBooks
@@ -320,7 +284,7 @@ cask 'microsoft-auto-update'
 # Multi-platform web browser
 # cask 'microsoft-edge' # PROPOSED REMOVAL: never opened
 # Meet, chat, call, and collaborate in just one place
-cask 'microsoft-teams'
+# cask 'microsoft-teams' # PROPOSED REMOVAL: last opened 31 days ago
 # Intercept, modify, replay, save HTTP/S traffic
 cask 'mitmproxy'
 # Cross-platform MQTT 5.0 Desktop Client
@@ -372,12 +336,12 @@ cask 'whatcable'
 # Full-featured companion app to the YubiKey
 cask 'yubico-authenticator'
 # Multiplayer code editor
-# cask 'zed' # PROPOSED REMOVAL: never opened (using visual-studio-code)
+cask 'zed'
 # Video communication and virtual meeting platform
 cask 'zoom'
 mas '1Password for Safari', id: 1_569_813_296
 mas '24 Hour Wallpaper', id: 1_226_087_575
-mas '2FAS Auth - Two Factor Authentication Extension', id: 6_443_941_139
+mas '2FAS - Two Factor Authentication', id: 6_443_941_139
 mas 'AdGuard Mini', id: 1_440_147_259
 mas 'Dark Reader for Safari', id: 1_438_243_180
 mas 'GhostText', id: 1_552_641_506
@@ -410,6 +374,7 @@ vscode 'csholmq.excel-to-markdown-table'
 vscode 'darkriszty.markdown-table-prettify'
 vscode 'davidanson.vscode-markdownlint'
 vscode 'ltex-plus.vscode-ltex-plus'
+vscode 'davidlday.languagetool-linter'
 vscode 'docker.docker'
 vscode 'eamodio.gitlens'
 vscode 'elijah-potter.harper'
@@ -431,7 +396,6 @@ vscode 'ms-dotnettools.vscode-dotnet-runtime'
 vscode 'ms-vscode-remote.remote-containers'
 vscode 'ms-vscode-remote.remote-ssh'
 vscode 'ms-vscode-remote.remote-ssh-edit'
-vscode 'ms-vscode-remote.remote-wsl'
 vscode 'ms-vscode-remote.vscode-remote-extensionpack'
 vscode 'ms-vscode.makefile-tools'
 vscode 'ms-vscode.remote-explorer'
@@ -451,8 +415,6 @@ vscode 'streetsidesoftware.code-spell-checker'
 vscode 'tlahmann.alex-linter'
 vscode 'tomoki1207.pdf'
 vscode 'travisthetechie.write-good-linter'
-vscode 'visualstudiotoolsforunity.vstuc'
+vscode 'usernamehw.errorlens'
 vscode 'yzhang.markdown-all-in-one'
-cargo 'just'
-cargo 'lychee'
 # Global npm CLIs are managed by mise (see .config/mise/config.toml)

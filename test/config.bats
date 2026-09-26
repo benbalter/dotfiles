@@ -13,37 +13,18 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 	done
 }
 
-@test "config.yml linux_dotfile_links sources all exist in the repo" {
-	while IFS= read -r file; do
-		[ -e "$REPO_ROOT/$file" ] || fail "linux_dotfile_links src '$file' does not exist in repo"
-	done < <(yq -r '.linux_dotfile_links[].src' "$REPO_ROOT/config.yml")
-}
-
-@test "install.sh dotfiles all exist in the repo" {
-	# Parse the for-loop file list from install.sh
-	in_list=false
-	while IFS= read -r line; do
-		if echo "$line" | grep -q 'for file in'; then
-			in_list=true
-			continue
-		fi
-		if $in_list; then
-			# Strip trailing backslash and semicolon
-			cleaned=$(echo "$line" | sed 's/\\$//' | sed 's/;.*//')
-			for file in $cleaned; do
-				[ "$file" = "do" ] && continue
-				[ -e "$REPO_ROOT/$file" ] || fail "install.sh references '$file' which does not exist in repo"
-			done
-			# Stop after the line without a backslash (end of list)
-			echo "$line" | grep -q '\\$' || break
-		fi
-	done <"$REPO_ROOT/install.sh"
+@test "config.yml dotfile link sources all exist in the repo" {
+	for list in dotfile_links_common linux_dotfile_links; do
+		while IFS= read -r file; do
+			[ -e "$REPO_ROOT/$file" ] || fail "$list src '$file' does not exist in repo"
+		done < <(yq -r ".${list}[].src" "$REPO_ROOT/config.yml")
+	done
 }
 
 @test "config.yml has required top-level keys" {
 	for key in dotfiles_files dotfiles_files_common dotfiles_files_macos \
-		dotfiles_files_linux linux_dotfile_links fedora_packages \
-		homebrew_brewfile_dir directories_to_create macos_defaults; do
+		dotfiles_files_linux dotfile_links_common linux_dotfile_links fedora_packages \
+		directories_to_create private_directories macos_defaults; do
 		grep -q "^${key}:" "$REPO_ROOT/config.yml" || fail "config.yml missing required key '$key'"
 	done
 }
@@ -61,10 +42,6 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 	done
 }
 
-@test "config_ci.yml is valid YAML" {
-	yq '.' "$REPO_ROOT/config_ci.yml" >/dev/null
-}
-
 @test "directories_to_create entries use tilde paths" {
 	for list in directories_to_create_common directories_to_create_macos \
 		directories_to_create_linux; do
@@ -76,12 +53,67 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 	done
 }
 
-@test "install.sh covers every dotfiles_files_common entry" {
-	# The Codespaces/simple-Linux installer maintains its own symlink list;
-	# ensure it does not drift from config.yml's common list. Each entry must
-	# appear somewhere in install.sh (the flat for-loop or a special-cased ln).
+@test "claude/settings.json is valid JSON without machine-only keys" {
+	# Merged into ~/.claude/settings.json by the playbook. This repo is public,
+	# so autoMode (which names private hosts) and permissions must stay local.
+	jq -e 'has("autoMode") or has("permissions") | not' "$REPO_ROOT/claude/settings.json" >/dev/null ||
+		fail "claude/settings.json must not contain autoMode or permissions"
+}
+
+@test "private_directories are all created by directories_to_create" {
+	# The playbook sets these to 0700; a private dir missing from
+	# directories_to_create would only ever be created 0755 by a dotfile task.
+	while IFS= read -r dir; do
+		# shellcheck disable=SC2088 # a literal ~/ path, as config.yml spells it
+		yq -r '.directories_to_create_common[]' "$REPO_ROOT/config.yml" | grep -qxF "~/$dir" ||
+			fail "private directory '$dir' is not in directories_to_create_common"
+	done < <(yq -r '.private_directories[]' "$REPO_ROOT/config.yml")
+}
+
+@test "launch agent labels match their filenames" {
+	# The playbook derives each agent's launchd label from its filename to
+	# check whether it is loaded before bootstrapping it.
 	while IFS= read -r file; do
-		grep -qF "$file" "$REPO_ROOT/install.sh" ||
-			fail "install.sh does not handle dotfiles_files_common entry '$file'"
-	done < <(yq -r '.dotfiles_files_common[]' "$REPO_ROOT/config.yml")
+		label=$(sed -n '/<key>Label<\/key>/{n;s/.*<string>\(.*\)<\/string>.*/\1/p;}' "$REPO_ROOT/$file")
+		[ "$label" = "$(basename "$file" .plist)" ] ||
+			fail "$file has Label '$label'; it must match the filename"
+	done < <(yq -r '.dotfiles_files_macos[] | select(test("^Library/LaunchAgents/"))' "$REPO_ROOT/config.yml")
+}
+
+@test "macos_defaults host entries only use currentHost" {
+	# The playbook reads these back with `defaults -currentHost`.
+	while IFS= read -r host; do
+		[ "$host" = "currentHost" ] || fail "unsupported macos_defaults host '$host'"
+	done < <(yq -r '.macos_defaults.user[] | select(has("host")) | .host' "$REPO_ROOT/config.yml")
+}
+
+@test "macos_defaults system entries use absolute domain paths" {
+	# These run with become: true, so a bare domain (com.apple.foo) writes to
+	# root's preferences and does nothing while the task reports success.
+	while IFS=$'\t' read -r name domain; do
+		case "$domain" in
+			/*) ;;
+			*) fail "macos_defaults.system '$name' uses bare domain '$domain'; use /Library/Preferences/$domain" ;;
+		esac
+	done < <(yq -r '.macos_defaults.system[] | [.name, .domain] | @tsv' "$REPO_ROOT/config.yml")
+}
+
+@test "claude/settings.json plugins come from a known marketplace" {
+	# The playbook runs `claude plugin install` for each enabled plugin, which
+	# fails unless its marketplace is the official one or declared here. The
+	# playbook skips this in CI, so check it statically.
+	while IFS= read -r plugin; do
+		marketplace=${plugin#*@}
+		[ "$marketplace" = claude-plugins-official ] && continue
+		jq -e --arg m "$marketplace" '.extraKnownMarketplaces | has($m)' \
+			"$REPO_ROOT/claude/settings.json" >/dev/null ||
+			fail "$plugin: marketplace '$marketplace' is not in extraKnownMarketplaces"
+	done < <(jq -r '.enabledPlugins | keys[]' "$REPO_ROOT/claude/settings.json")
+}
+
+@test "launch agent plists are valid" {
+	command -v plutil >/dev/null || skip "plutil is macOS-only"
+	for plist in "$REPO_ROOT"/Library/LaunchAgents/*.plist; do
+		plutil -lint "$plist" >/dev/null || fail "$(basename "$plist") is not a valid plist"
+	done
 }

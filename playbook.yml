@@ -18,11 +18,6 @@
       ansible.builtin.include_vars: "{{ playbook_dir }}/config.yml"
       tags: always
 
-    - name: Include CI config
-      ansible.builtin.include_vars: "{{ playbook_dir }}/config_ci.yml"
-      when: is_ci
-      tags: always
-
     # Workbrew wraps Homebrew and forces every `brew` invocation through
     # /opt/workbrew/bin/brew (HOMEBREW_FORCE_BREW_WRAPPER). Calling
     # /opt/homebrew/bin/brew directly then fails with a wrapper-conflict error,
@@ -42,25 +37,22 @@
       when: is_macos
       tags: always
 
-    # Workbrew runs brew as the `workbrew` user, which shares the `staff` group
-    # with the prefix owner but cannot write the download-lock dir unless it is
-    # group-writable. Ensure it is so `brew bundle` can acquire locks when
-    # fetching new packages.
-    - name: Ensure Homebrew locks dir is group-writable for the Workbrew user
-      ansible.builtin.file:
-        path: /opt/homebrew/var/homebrew/locks
-        state: directory
-        mode: g+w
-        recurse: true
-      when: is_macos and workbrew_bin.stat.exists
-      tags: [homebrew, packages]
+    # Everything Homebrew owns must belong to the user that actually runs brew:
+    # `workbrew` under Workbrew, the login user otherwise. An earlier attempt to
+    # paper over this by making the download-lock dir group-writable lived here;
+    # the ownership rule below replaces it.
+    - name: Select the Homebrew prefix owner
+      ansible.builtin.set_fact:
+        homebrew_owner: "{{ 'workbrew' if workbrew_bin.stat.exists else ansible_facts['user_id'] }}"
+      when: is_macos
+      tags: always
 
   tasks:
     - name: Create directories
       ansible.builtin.file:
         path: "{{ item }}"
         state: directory
-        mode: "0755"
+        mode: "{{ '0700' if (item | regex_replace('^~/', '')) in private_directories else '0755' }}"
       loop: "{{ directories_to_create }}"
       tags: [directories]
 
@@ -71,7 +63,7 @@
           ansible.builtin.file:
             path: "{{ ansible_facts['user_dir'] }}/{{ item | dirname }}"
             state: directory
-            mode: "0755"
+            mode: "{{ '0700' if (item | dirname) in private_directories else '0755' }}"
           loop: "{{ dotfiles_files }}"
           when: item | dirname not in dotfile_root_dirs
 
@@ -81,10 +73,16 @@
           loop: "{{ dotfiles_files }}"
           register: dotfile_targets
 
+        # Never skip the move when a .bak already exists (the old `creates:`
+        # guard did): the force-link below would then replace the file with no
+        # copy kept. A second backup gets a timestamp suffix instead.
         - name: Back up existing non-symlink dotfile targets
-          ansible.builtin.command:
-            cmd: mv "{{ ansible_facts['user_dir'] }}/{{ item.item }}" "{{ ansible_facts['user_dir'] }}/{{ item.item }}.bak"
-            creates: "{{ ansible_facts['user_dir'] }}/{{ item.item }}.bak"
+          ansible.builtin.shell:
+            cmd: >-
+              f="{{ ansible_facts['user_dir'] }}/{{ item.item }}";
+              bak="$f.bak"; [ ! -e "$bak" ] || bak="$bak.$(date +%s)";
+              mv "$f" "$bak"
+          changed_when: true
           loop: "{{ dotfile_targets.results }}"
           loop_control:
             label: "{{ item.item }}"
@@ -100,9 +98,8 @@
             force: true
           loop: "{{ dotfiles_files }}"
 
-    - name: Setup Linux dotfile links (XDG destinations)
+    - name: Setup dotfile links (destination differs from repo path)
       tags: [dotfiles]
-      when: not is_macos
       block:
         # Create each link's parent under user_dir before symlinking. These
         # parents (e.g. ~/.ssh, ~/.config/ghostty) are otherwise only made by
@@ -110,44 +107,128 @@
         # the GitHub Actions Fedora container $HOME (/github/home) differs from
         # user_dir (/root), so those dirs land in the wrong place and the
         # symlink fails with ENOENT. user_dir matches the symlink dest below.
-        - name: Ensure parent directories of Linux dotfile links exist
+        - name: Ensure parent directories of dotfile links exist
           ansible.builtin.file:
             path: "{{ ansible_facts['user_dir'] }}/{{ item.dest | dirname }}"
             state: directory
-            mode: "0755"
-          loop: "{{ linux_dotfile_links }}"
+            mode: "{{ '0700' if (item.dest | dirname) in private_directories else '0755' }}"
+          loop: "{{ dotfile_links }}"
           loop_control:
             label: "{{ item.dest | dirname }}"
 
-        - name: Stat existing Linux dotfile targets
+        - name: Stat existing dotfile link targets
           ansible.builtin.stat:
             path: "{{ ansible_facts['user_dir'] }}/{{ item.dest }}"
-          loop: "{{ linux_dotfile_links }}"
+          loop: "{{ dotfile_links }}"
           loop_control:
             label: "{{ item.dest }}"
-          register: linux_dotfile_targets
+          register: dotfile_link_targets
 
-        - name: Back up existing non-symlink Linux dotfile targets
-          ansible.builtin.command:
-            cmd: mv "{{ ansible_facts['user_dir'] }}/{{ item.item.dest }}" "{{ ansible_facts['user_dir'] }}/{{ item.item.dest }}.bak"
-            creates: "{{ ansible_facts['user_dir'] }}/{{ item.item.dest }}.bak"
-          loop: "{{ linux_dotfile_targets.results }}"
+        - name: Back up existing non-symlink dotfile link targets
+          ansible.builtin.shell:
+            cmd: >-
+              f="{{ ansible_facts['user_dir'] }}/{{ item.item.dest }}";
+              bak="$f.bak"; [ ! -e "$bak" ] || bak="$bak.$(date +%s)";
+              mv "$f" "$bak"
+          changed_when: true
+          loop: "{{ dotfile_link_targets.results }}"
           loop_control:
             label: "{{ item.item.dest }}"
           when:
             - item.stat.exists
             - not item.stat.islnk
 
-        - name: Symlink Linux dotfiles into HOME
+        - name: Symlink dotfile links into HOME
           ansible.builtin.file:
             src: "{{ playbook_dir }}/{{ item.src }}"
             dest: "{{ ansible_facts['user_dir'] }}/{{ item.dest }}"
             state: link
             force: true
-          loop: "{{ linux_dotfile_links }}"
+          loop: "{{ dotfile_links }}"
           loop_control:
             label: "{{ item.dest }}"
 
+    # Symlinking a plist into ~/Library/LaunchAgents doesn't load it until the
+    # next login, so on a fresh machine the nightly update never ran until
+    # script/doctor flagged it. Bootstrap only jobs that aren't loaded:
+    # bootstrapping a loaded job fails with "Input/output error" (5). The
+    # label is the filename stem; test/config.bats keeps that true.
+    #
+    # A loaded job also keeps running its old definition after the plist
+    # changes (tmpreaper's new flags didn't apply until a logout), so record
+    # each plist's checksum and reload the job when it differs.
+    - name: Load launch agents
+      when: is_macos and not is_ci
+      tags: [dotfiles, launchagents]
+      vars:
+        launch_agents: "{{ dotfiles_files_macos | select('match', '^Library/LaunchAgents/') | list }}"
+        launch_agent_stamp_dir: "{{ ansible_facts['user_dir'] }}/.local/state/dotfiles/launchagents"
+      block:
+        - name: Check launch agent status
+          ansible.builtin.command:
+            cmd: "launchctl print gui/{{ ansible_facts['user_uid'] }}/{{ item | basename | splitext | first }}"
+          loop: "{{ launch_agents }}"
+          register: launch_agent_status
+          check_mode: false
+          changed_when: false
+          failed_when: false
+
+        - name: Create the launch agent checksum directory
+          ansible.builtin.file:
+            path: "{{ launch_agent_stamp_dir }}"
+            state: directory
+            mode: "0755"
+
+        - name: Record launch agent plist checksums
+          ansible.builtin.copy:
+            content: "{{ lookup('ansible.builtin.file', playbook_dir + '/' + item) | hash('sha1') }}\n"
+            dest: "{{ launch_agent_stamp_dir }}/{{ item | basename }}.sha1"
+            mode: "0644"
+          loop: "{{ launch_agents }}"
+          register: launch_agent_stamps
+
+        # Pairs each agent's status with its checksum result (same loop order).
+        - name: Unload launch agents whose plist changed
+          ansible.builtin.command:
+            cmd: "launchctl bootout gui/{{ ansible_facts['user_uid'] }}/{{ item.0.item | basename | splitext | first }}"
+          loop: "{{ launch_agent_status.results | zip(launch_agent_stamps.results) | list }}"
+          loop_control:
+            label: "{{ item.0.item | basename }}"
+          when: item.0.rc == 0 and item.1.changed
+          changed_when: true
+
+        - name: Bootstrap launch agents that aren't loaded or changed
+          ansible.builtin.command:
+            cmd: >-
+              launchctl bootstrap gui/{{ ansible_facts['user_uid'] }}
+              "{{ ansible_facts['user_dir'] }}/{{ item.0.item }}"
+          loop: "{{ launch_agent_status.results | zip(launch_agent_stamps.results) | list }}"
+          loop_control:
+            label: "{{ item.0.item | basename }}"
+          when: item.0.rc != 0 or item.1.changed
+          register: launch_agent_bootstrap
+          # Right after a bootout, launchd can still be tearing the job down
+          # and bootstrap fails with "Input/output error" (5) for a moment.
+          retries: 3
+          delay: 2
+          until: launch_agent_bootstrap.rc == 0
+          changed_when: true
+
+    # Skipped under Workbrew, which installs and owns Homebrew itself. The role
+    # would contribute nothing there -- brew is already installed, the tap/
+    # package/cask lists are empty and homebrew_use_brewfile is false -- while
+    # every remaining task rewrites ownership in ways that break this machine:
+    #
+    #   * "Ensure proper ownership on homebrew_install_path subdirs" chowns all
+    #     of /opt/homebrew to the login user, recursively, on every run. brew
+    #     then runs as `workbrew` against a tree it cannot write and aborts with
+    #     "/opt/homebrew/Cellar is not writable" (broke 2026-09-16 16:35).
+    #   * "Ensure proper permissions and ownership on homebrew_brew_bin_path
+    #     dirs" chowns that path 0775 to the login user -- and we point
+    #     homebrew_brew_bin_path at /opt/workbrew/bin, which holds the
+    #     setuid-root brew wrapper. That dir must stay root:wheel 0755.
+    #
+    # Package installation happens in the brew bundle task below either way.
     - name: Setup Homebrew
       ansible.builtin.include_role:
         name: geerlingguy.mac.homebrew
@@ -157,7 +238,7 @@
         # Run our own `brew bundle` task below instead of the role's, so we can
         # pass --no-upgrade (see the Install Brewfile packages task).
         homebrew_use_brewfile: false
-      when: is_macos
+      when: is_macos and not workbrew_bin.stat.exists
       tags: [homebrew, packages]
 
     # Mirrors the Linux Brewfile task: --no-upgrade so already-installed,
@@ -175,12 +256,21 @@
       when: is_macos and not is_ci
       tags: [homebrew, packages]
 
+    # become: the Homebrew prefix is owned by the user that runs brew, which is
+    # `workbrew` (not the login user) under Workbrew, so this write needs root
+    # and has to leave the file owned by the prefix owner.
     - name: Configure LanguageTool server
+      become: true
       ansible.builtin.copy:
         src: "{{ playbook_dir }}/homebrew/etc/languagetool/server.properties"
         dest: /opt/homebrew/etc/languagetool/server.properties
+        owner: "{{ homebrew_owner }}"
+        group: "{{ ansible_facts['user_gid'] }}"
         mode: "0644"
       when: is_macos and not is_ci
+      # The Brewfile's restart_service only fires when the formula changes, so
+      # a config edit otherwise waited for the next upgrade or reboot.
+      notify: Restart LanguageTool
       tags: [languagetool]
 
     - name: Setup Fedora packages
@@ -275,6 +365,44 @@
               when: not op_desktop.stat.exists
               changed_when: true
 
+        # Parity with the macOS firewall and SoftwareUpdate settings. Packages
+        # install in CI too (a cheap check the names are right), but the
+        # container has no systemd, so the services are only enabled for real.
+        - name: Install firewalld and the dnf5 automatic plugin
+          ansible.builtin.dnf5:
+            name:
+              - firewalld
+              - dnf5-plugin-automatic
+            state: present
+
+        - name: Enable firewalld
+          ansible.builtin.systemd_service:
+            name: firewalld
+            enabled: true
+            state: started
+          when: not is_ci
+
+        # Host overrides go in /etc/dnf/automatic.conf; the distro defaults
+        # (download only, apply nothing) live in
+        # /usr/share/dnf5/dnf5-plugins/automatic.conf.
+        - name: Configure automatic updates
+          community.general.ini_file:
+            path: /etc/dnf/automatic.conf
+            section: commands
+            option: "{{ item.option }}"
+            value: "{{ item.value }}"
+            mode: "0644"
+          loop:
+            - { option: upgrade_type, value: "{{ fedora_automatic_upgrade_type }}" }
+            - { option: apply_updates, value: "yes" }
+
+        - name: Enable automatic updates timer
+          ansible.builtin.systemd_service:
+            name: dnf5-automatic.timer
+            enabled: true
+            state: started
+          when: not is_ci
+
         - name: Set zsh as default shell
           ansible.builtin.user:
             name: "{{ ansible_facts['user_id'] }}"
@@ -311,16 +439,14 @@
             group: "{{ ansible_facts['user_id'] }}"
             mode: "0755"
           when: not brew_bin.stat.exists
-
         - name: Install Homebrew
           ansible.builtin.shell:
             cmd: >-
               /bin/bash -c
               "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+            creates: "{{ homebrew_linux_prefix }}/bin/brew"
           environment:
             NONINTERACTIVE: "1"
-          when: not brew_bin.stat.exists
-          changed_when: true
 
         - name: Install Brewfile packages
           ansible.builtin.command:
@@ -396,7 +522,8 @@
         chdir: "{{ ansible_facts['env']['HOME'] }}"
       become: false
       register: mise_install
-      changed_when: "'✓' in mise_install.stdout"
+      # mise reports progress on stderr, so stdout alone never showed a change.
+      changed_when: "'✓' in (mise_install.stdout + mise_install.stderr)"
       when: not is_ci
       tags: [packages, mise]
 
@@ -412,7 +539,73 @@
         - { repo: hardikpandya/stop-slop, name: stop-slop }
       become: false
       when: not is_ci
-      tags: [packages]
+      tags: [packages, claude]
+
+    # Claude Code rewrites ~/.claude/settings.json by replacing the file, so a
+    # symlink wouldn't survive. Instead merge the shareable keys from
+    # claude/settings.json over whatever is there: the repo wins for keys it
+    # sets, and machine-only keys (autoMode, which names private hosts) stay
+    # local and out of this public repo.
+    - name: Configure Claude Code
+      tags: [claude]
+      when: not is_ci
+      become: false
+      vars:
+        claude_dir: "{{ ansible_facts['env']['HOME'] }}/.claude"
+        claude_settings_repo: "{{ lookup('ansible.builtin.file', playbook_dir + '/claude/settings.json') | from_json }}"
+      block:
+        - name: Read existing Claude Code settings
+          ansible.builtin.slurp:
+            src: "{{ claude_dir }}/settings.json"
+          register: claude_settings_current
+          failed_when: false
+
+        - name: Merge repo Claude Code settings
+          ansible.builtin.copy:
+            content: "{{ ((claude_settings_current.content | default('e30=') | b64decode | from_json) | combine(claude_settings_repo, recursive=true)) | to_nice_json(indent=2, sort_keys=false, ensure_ascii=false) }}\n"
+            dest: "{{ claude_dir }}/settings.json"
+            mode: "0644"
+
+        - name: Add Claude Code plugin marketplaces
+          ansible.builtin.command:
+            cmd: "claude plugin marketplace add {{ item.value.source.repo }}"
+            creates: "{{ claude_dir }}/plugins/marketplaces/{{ item.key }}"
+          loop: "{{ claude_settings_repo.extraKnownMarketplaces | dict2items }}"
+          loop_control:
+            label: "{{ item.key }}"
+
+        - name: Read installed Claude Code plugins
+          ansible.builtin.slurp:
+            src: "{{ claude_dir }}/plugins/installed_plugins.json"
+          register: claude_installed_plugins
+          failed_when: false
+
+        - name: Install Claude Code plugins
+          ansible.builtin.command:
+            cmd: "claude plugin install {{ item }}"
+          loop: "{{ claude_settings_repo.enabledPlugins | dict2items | selectattr('value') | map(attribute='key') | list }}"
+          when: >-
+            item not in (claude_installed_plugins.content | default('e30=')
+            | b64decode | from_json).get('plugins', {})
+          changed_when: true
+
+        - name: Check for the chrome-devtools MCP server
+          ansible.builtin.command:
+            cmd: claude mcp get chrome-devtools
+          register: claude_mcp_chrome_devtools
+          check_mode: false
+          changed_when: false
+          failed_when: false
+
+        # The binary comes from mise (.config/mise/config.toml) rather than
+        # `npx chrome-devtools-mcp@latest`, which re-resolves every session.
+        - name: Add the chrome-devtools MCP server
+          ansible.builtin.command:
+            cmd: >-
+              claude mcp add -s user chrome-devtools --
+              {{ ansible_facts['env']['HOME'] }}/.local/share/mise/shims/chrome-devtools-mcp
+          when: claude_mcp_chrome_devtools.rc != 0
+          changed_when: true
 
     - name: Setup Dock
       ansible.builtin.include_role:
@@ -436,6 +629,8 @@
         value: "{{ item.value }}"
       become: true
       loop: "{{ macos_defaults.system }}"
+      loop_control:
+        label: "{{ item.name }}"
       when: is_macos
       tags: [macos, defaults]
 
@@ -475,35 +670,57 @@
         key: "{{ item.key }}"
         type: "{{ item.type }}"
         value: "{{ item.value }}"
+        host: "{{ item.host | default(omit) }}"
       loop: "{{ macos_defaults.user }}"
+      loop_control:
+        label: "{{ item.name }}"
       when: is_macos
       tags: [macos, defaults]
 
-    - name: Set screensaver idle time
-      community.general.osx_defaults:
-        domain: com.apple.screensaver
-        key: idleTime
-        type: integer
-        value: 300
-      when: is_macos and not is_ci
-      tags: [macos, defaults]
-
-    - name: Disable Comic Sans globally
-      ansible.builtin.command: "{{ playbook_dir }}/script/disable-comic-sans"
-      when: not is_ci
+    # Read per-host values back from the ByHost domain, as the system defaults
+    # are verified above. Skipped in check mode, where nothing was written.
+    - name: Verify MacOS per-host user defaults applied
+      ansible.builtin.command:
+        cmd: "defaults -currentHost read {{ item.domain }} {{ item.key }}"
+      loop: "{{ macos_defaults.user | selectattr('host', 'defined') | list }}"
+      loop_control:
+        label: "{{ item.name }}"
+      register: host_defaults_check
+      check_mode: false
       changed_when: false
-      failed_when: false
-      tags: [macos, fonts]
+      failed_when: host_defaults_check.rc != 0
+      when: is_macos and not ansible_check_mode
+      tags: [macos, defaults]
 
     - name: Configure security settings
       tags: [macos, security]
       when: is_macos
       block:
+        - name: Check Gatekeeper status
+          ansible.builtin.command:
+            cmd: spctl --status
+          register: gatekeeper_status
+          check_mode: false
+          changed_when: false
+          failed_when: false
+
+        # The setters in this block skip CI: a runner's security settings
+        # aren't ours to change, and they mean nothing on a throwaway VM.
         - name: Enable Gatekeeper
           ansible.builtin.command:
             cmd: spctl --master-enable
           become: true
+          when: not is_ci and 'assessments enabled' not in gatekeeper_status.stdout
+          changed_when: true
+
+        - name: Verify Gatekeeper is enabled
+          ansible.builtin.command:
+            cmd: spctl --status
+          register: gatekeeper_verify
+          check_mode: false
           changed_when: false
+          failed_when: "'assessments enabled' not in gatekeeper_verify.stdout"
+          when: not is_ci and not ansible_check_mode
 
         # The firewall can only be driven through socketfilterfw. Writing
         # globalstate/stealthenabled to com.apple.alf silently does nothing on
@@ -521,6 +738,7 @@
                 cmd: /usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate
               register: firewall_state
               changed_when: false
+              check_mode: false
 
             - name: Enable firewall
               ansible.builtin.command:
@@ -541,6 +759,7 @@
                 cmd: /usr/libexec/ApplicationFirewall/socketfilterfw --getstealthmode
               register: stealth_state
               changed_when: false
+              check_mode: false
 
             - name: Enable firewall stealth mode
               ansible.builtin.command:
@@ -556,6 +775,9 @@
               changed_when: false
               failed_when: "'stealth mode is on' not in stealth_verify.stdout"
 
+            # The reads in this block set check_mode: false so --check still
+            # sees real values; skipped in check mode they return no output,
+            # and stdout_lines[0] below fails.
             # --getallowsigned prints built-in policy on line 1 and downloaded
             # (notarized) policy on line 2. "ENABLED" is not a substring of
             # "DISABLED", so a plain containment test is unambiguous here.
@@ -564,6 +786,7 @@
                 cmd: /usr/libexec/ApplicationFirewall/socketfilterfw --getallowsigned
               register: allowsigned_state
               changed_when: false
+              check_mode: false
 
             - name: Set firewall policy for built-in signed software
               ansible.builtin.command:
@@ -603,12 +826,105 @@
         # no --setloggingmode), so it is deliberately not managed here. The old
         # com.apple.alf loggingenabled write was a no-op.
 
+        # Remote Login (sshd) and Screen Sharing are launchd daemons that are
+        # merely "off" until someone flips them in System Settings. Disabling
+        # them in launchd's override database keeps them from starting even if
+        # toggled by accident. systemsetup is not used: it needs admin just to
+        # read, and on recent macOS setting remote login demands Full Disk
+        # Access for the terminal.
+        - name: Disable remote access services
+          when: not is_ci
+          block:
+            - name: Read launchd disabled services
+              ansible.builtin.command:
+                cmd: launchctl print-disabled system
+              register: launchd_disabled
+              check_mode: false
+              changed_when: false
+
+            - name: Disable remote access daemons
+              ansible.builtin.command:
+                cmd: "launchctl disable system/{{ item }}"
+              become: true
+              loop: "{{ macos_disabled_daemons }}"
+              when: ('"' ~ item ~ '" => disabled') not in launchd_disabled.stdout
+              changed_when: true
+
+            # disable only stops future launches, so boot out a running copy.
+            # `launchctl print` needs no root and fails for a job not loaded.
+            - name: Check whether remote access daemons are loaded
+              ansible.builtin.command:
+                cmd: "launchctl print system/{{ item }}"
+              loop: "{{ macos_disabled_daemons }}"
+              register: daemon_loaded
+              check_mode: false
+              changed_when: false
+              failed_when: false
+
+            - name: Stop loaded remote access daemons
+              ansible.builtin.command:
+                cmd: "launchctl bootout system/{{ item.item }}"
+              become: true
+              loop: "{{ daemon_loaded.results }}"
+              loop_control:
+                label: "{{ item.item }}"
+              when: item.rc == 0
+              changed_when: true
+
+            - name: Verify remote access daemons are disabled
+              ansible.builtin.command:
+                cmd: launchctl print-disabled system
+              loop: "{{ macos_disabled_daemons }}"
+              register: launchd_disabled_verify
+              check_mode: false
+              changed_when: false
+              failed_when: ('"' ~ item ~ '" => disabled') not in launchd_disabled_verify.stdout
+              when: not ansible_check_mode
+
+        # With `shared` true, one admin unlock of a System Settings pane is
+        # reused by other panes and processes; false asks every time.
+        - name: Require admin for system-wide System Settings
+          when: not is_ci
+          vars:
+            want_shared: "{{ not macos_require_admin_for_system_settings }}"
+            # `security authorizationdb read` prints the rule as an XML plist.
+            shared_pattern: "<key>shared</key>\\s*<{{ want_shared | lower }}/>"
+          block:
+            - name: Read System Settings authorization rule
+              ansible.builtin.command:
+                cmd: security authorizationdb read system.preferences
+              register: sysprefs_rule
+              check_mode: false
+              changed_when: false
+
+            - name: Set System Settings authorization rule
+              ansible.builtin.shell:
+                cmd: >-
+                  set -o pipefail;
+                  security authorizationdb read system.preferences 2>/dev/null
+                  | plutil -replace shared -bool {{ want_shared | lower }} -o - -
+                  | security authorizationdb write system.preferences
+                executable: /bin/bash
+              become: true
+              when: sysprefs_rule.stdout | regex_search(shared_pattern) is none
+              changed_when: true
+
+            - name: Verify System Settings authorization rule
+              ansible.builtin.command:
+                cmd: security authorizationdb read system.preferences
+              register: sysprefs_rule_verify
+              check_mode: false
+              changed_when: false
+              failed_when: sysprefs_rule_verify.stdout | regex_search(shared_pattern) is none
+              when: not ansible_check_mode
+
         - name: Disable automatic login
           community.general.osx_defaults:
             domain: /Library/Preferences/com.apple.loginwindow
             key: autoLoginUser
             state: absent
           become: true
+          when: not is_ci
 
         # Wake for network access lets the machine be woken by unsolicited
         # traffic. On a laptop that buys nothing and keeps a sleeping machine
@@ -619,6 +935,7 @@
             cmd: pmset -g
           register: pmset_state
           changed_when: false
+          check_mode: false
           when: not is_ci
 
         - name: Disable wake for network access
@@ -633,13 +950,21 @@
             cmd: fdesetup status
           register: filevault_status
           changed_when: false
+          check_mode: false
 
+        # Once enabling is deferred, status still says "FileVault is Off." until
+        # the next logout, so also skip while a deferral is pending; otherwise
+        # every run re-deferred and reported changed. The recovery key is
+        # written at logout, so keep it out of /tmp, which a reboot clears.
         - name: Enable FileVault
           ansible.builtin.command:
-            cmd: fdesetup enable -defer /tmp/filevault-setup.plist
+            cmd: fdesetup enable -defer /var/root/filevault-recovery.plist
           become: true
           register: filevault_enable
-          when: "'FileVault is On' not in filevault_status.stdout"
+          when:
+            - not is_ci
+            - "'FileVault is On' not in filevault_status.stdout"
+            - "'Deferred enablement' not in filevault_status.stdout"
           changed_when: filevault_enable.rc == 0
           notify: FileVault restart reminder
 
@@ -664,9 +989,28 @@
             group: wheel
             mode: "0444"
           become: true
-          when: pam_tid.matched > 0
+          when: not is_ci and pam_tid.matched > 0
+
+        # sudo_local is the file macOS preserves across updates, but it only
+        # works while /etc/pam.d/sudo (which updates do replace) includes it.
+        # Catch a future macOS dropping that include, which would silently
+        # turn TouchID sudo off.
+        - name: Verify sudo includes sudo_local
+          ansible.builtin.command:
+            cmd: grep -Eq '^auth[[:space:]]+include[[:space:]]+sudo_local' /etc/pam.d/sudo
+          check_mode: false
+          changed_when: false
+          when: not is_ci and pam_tid.matched > 0
 
   handlers:
+    - name: Restart LanguageTool
+      ansible.builtin.command:
+        cmd: "{{ homebrew_brew_bin_path }}/brew services restart languagetool"
+      changed_when: true
+
     - name: FileVault restart reminder
       ansible.builtin.debug:
-        msg: "FileVault will activate on next logout. Log out and back in to complete setup and save your recovery key."
+        msg: >-
+          FileVault will activate on next logout. Log out and back in to complete
+          setup, then save the recovery key from /var/root/filevault-recovery.plist
+          (sudo plutil -p it) somewhere safe, such as 1Password, and delete the file.
