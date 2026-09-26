@@ -1,0 +1,24 @@
+#!/bin/sh
+# Restore blocking IO on stdin/stdout/stderr so Ansible will run
+# Usage: script/blocking-io
+
+set -eu
+
+# Ansible's CLIs refuse to start when any of the three standard file handles is
+# non-blocking ("ERROR: Ansible requires blocking IO on stdin/stdout/stderr"),
+# which is how some CI runners and agent harnesses hand over their pipes.
+# O_NONBLOCK lives on the open file description we share with whoever invoked
+# us, so clearing it from this child process clears it for the caller and every
+# command the caller runs afterwards. Best effort: if there's no python3, or a
+# handle won't take the flag, leave things as they were.
+command -v python3 >/dev/null || exit 0
+
+python3 - <<'PY' || true
+import os
+
+for fd in (0, 1, 2):
+    try:
+        os.set_blocking(fd, True)
+    except OSError:
+        pass
+PY

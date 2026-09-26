@@ -2,41 +2,14 @@
 # Update all installed dependencies
 # Usage: up
 
-set -eu
-# shellcheck disable=SC3040
-(set -o pipefail) 2>/dev/null && set -o pipefail || true
-
-# Absolute, so the re-exec after a pull still finds this script when it was
-# started by a relative path from outside the repo.
-SELF="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
-cd "${DOTFILES_ROOT:-$HOME/.files}"
-
-# The repo's Brewfile, not --global: ~/.Brewfile is only linked on macOS, so
+# Not --force; the old `install --force` re-downloaded everything every
+# run. Collections are pinned to exact versions (Renovate opens the bump
+# PRs), so a plain install converges on its own: it installs whenever the
+# pin is unsatisfied, in either direction, and no-ops when it already
+# matches.
+echo "==> Updating Ansible collections..."
 # on Linux every bundle step failed for want of a file. There, also skip the
-# formulae with no Linux bottle, as the playbook does.
-export HOMEBREW_BUNDLE_FILE="$PWD/Brewfile"
-if [ "$(uname)" != "Darwin" ]; then
-	HOMEBREW_BUNDLE_BREW_SKIP=$(sed -n 's/^homebrew_linux_brew_skip: *//p' config.yml 2>/dev/null || true)
-	export HOMEBREW_BUNDLE_BREW_SKIP
-fi
-
-# This script may run from a minimal environment (e.g. the nightly launchd job,
-# whose PATH is only /usr/bin:/bin:/usr/sbin:/sbin), so make Homebrew
-# discoverable. Mirror lib/globals: Workbrew's wrapper must precede
-# /opt/homebrew/bin or brew aborts with a wrapper-conflict error. Prepend in
-# ascending priority so the last entry wins. No-op where a path is absent.
-[ -x /opt/homebrew/bin/brew ] && PATH="/opt/homebrew/bin:$PATH"
-[ -x /home/linuxbrew/.linuxbrew/bin/brew ] && PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
-[ -x /opt/workbrew/bin/brew ] && PATH="/opt/workbrew/bin:$PATH"
-
-# Resolve mise-managed runtimes (ruby, node, …) ahead of Homebrew's. This
-# non-interactive script never runs mise's shell hook, so without the shims
-# `bundle`/`npm` fall back to Homebrew's Ruby/Node, whose gem and package dirs
-# are owned by Workbrew and not user-writable (bundle install then fails with
-# Bundler::PermissionError). Shims only shadow installed tools, so `brew` still
-# resolves to the wrapper above.
-[ -d "$HOME/.local/share/mise/shims" ] && PATH="$HOME/.local/share/mise/shims:$PATH"
-export PATH
+step ansible-galaxy collection install -r requirements.yml
 
 # Steps end in `|| true`-style tolerance so one failure doesn't skip the rest,
 # but that used to make the script always exit 0: the nightly job looked
@@ -237,9 +210,9 @@ if [ -d env ]; then
 	# run. Collections are pinned to exact versions (Renovate opens the bump
 	# PRs), so a plain install converges on its own: it installs whenever the
 	# pin is unsatisfied, in either direction, and no-ops when it already
-	# matches. (Roles would need --force to apply a pin bump, since `role
-	# install` has no --upgrade; requirements.yml has none today.)
+	# matches.
 	echo "==> Updating Ansible collections..."
+	script/blocking-io
 	step ansible-galaxy collection install -r requirements.yml
 	deactivate
 fi

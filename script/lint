@@ -10,6 +10,8 @@ set -eu
 
 cd "$(dirname "$0")/.."
 
+script/blocking-io
+
 failed=""
 # lint <description> <command>...: run one linter, recording a failure.
 lint() {

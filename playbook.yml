@@ -417,6 +417,28 @@
       when: is_fedora and not is_ci
       tags: [homebrew, packages]
       block:
+        - name: Check for an existing Homebrew install
+          ansible.builtin.stat:
+            path: "{{ homebrew_linux_prefix }}/bin/brew"
+          register: brew_bin
+
+        # The installer can create the prefix itself, but it shells out to
+        # sudo to do it -- and NONINTERACTIVE requires that sudo be
+        # passwordless, which it isn't here, so it aborts with "Insufficient
+        # permissions to install Homebrew to /home/linuxbrew/.linuxbrew". Hand
+        # it a parent directory we already own and it never reaches for sudo:
+        # every mkdir/chown/chmod that follows targets our own uid inside a
+        # directory we control. This one task is the only part of the block
+        # that needs root, hence the local become override.
+        - name: Create the Homebrew prefix parent directory
+          become: true
+          ansible.builtin.file:
+            path: "{{ homebrew_linux_prefix | dirname }}"
+            state: directory
+            owner: "{{ ansible_facts['user_id'] }}"
+            group: "{{ ansible_facts['user_id'] }}"
+            mode: "0755"
+          when: not brew_bin.stat.exists
         - name: Install Homebrew
           ansible.builtin.shell:
             cmd: >-
@@ -431,9 +453,46 @@
             cmd: "{{ homebrew_linux_prefix }}/bin/brew bundle install --file={{ playbook_dir }}/Brewfile --no-upgrade"
           environment:
             HOMEBREW_BUNDLE_BREW_SKIP: "{{ homebrew_linux_brew_skip }}"
+            HOMEBREW_BUNDLE_CASK_SKIP: "{{ homebrew_linux_cask_skip }}"
             HOMEBREW_NO_AUTO_UPDATE: "1"
+            # `brew` itself is called by absolute path, but the package managers
+            # it shells out to for `cargo`/`vscode` entries are looked up on
+            # PATH -- and Homebrew's bin isn't on the PATH Ansible inherits, so
+            # bundle reports "rust installation failed" for an installed rust.
+            PATH: "{{ homebrew_linux_prefix }}/bin:{{ ansible_facts['env']['PATH'] }}"
           register: brew_bundle
           changed_when: "'Installing' in brew_bundle.stdout"
+
+    # Plasma expands the named scheme into ~/.config/kdeglobals ([Colors:*]
+    # groups) the moment it's applied, so pinning ColorScheme= by hand would
+    # record the choice without actually recoloring anything -- let
+    # plasma-apply-colorscheme do the expansion and gate on the key it writes.
+    # It talks to the running Plasma session over DBus, so skip the whole thing
+    # when there's no graphical session (a TTY, SSH, or non-KDE Fedora box).
+    - name: Set the KDE color scheme
+      become: false
+      when:
+        - is_fedora
+        - not is_ci
+        - >-
+          'WAYLAND_DISPLAY' in ansible_facts['env']
+          or 'DISPLAY' in ansible_facts['env']
+      tags: [fedora, kde]
+      block:
+        - name: Check the current KDE color scheme
+          ansible.builtin.command:
+            cmd: kreadconfig6 --file kdeglobals --group General --key ColorScheme
+          register: kde_current_scheme
+          changed_when: false
+          failed_when: false
+
+        - name: Apply the KDE color scheme
+          ansible.builtin.command:
+            cmd: "plasma-apply-colorscheme {{ kde_color_scheme }}"
+          when:
+            - kde_current_scheme.rc == 0
+            - kde_current_scheme.stdout | trim != kde_color_scheme
+          changed_when: true
 
     - name: Set up oh-my-zsh
       ansible.builtin.git:

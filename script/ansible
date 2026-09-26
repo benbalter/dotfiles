@@ -9,13 +9,26 @@ set -eu
 
 cd "$(dirname "$0")/.."
 
+script/blocking-io
+
 # shellcheck disable=SC1091
 . env/bin/activate
 
 if [ "${CI:-}" = "true" ]; then
 	ansible-playbook playbook.yml "$@"
-else
+elif [ -n "${ANSIBLE_BECOME_PASSWORD_FILE:-}" ]; then
+	# Ansible reads the password out of that file itself -- nothing to prompt for.
+	ansible-playbook playbook.yml "$@"
+elif [ -t 0 ]; then
 	ansible-playbook playbook.yml --ask-become-pass "$@"
+elif sudo -n true 2>/dev/null; then
+	# Nowhere to prompt, but sudo doesn't want a password here anyway.
+	ansible-playbook playbook.yml "$@"
+else
+	echo "==> No terminal to prompt for your sudo password." >&2
+	echo "    Run script/ansible from a terminal, or point" >&2
+	echo "    ANSIBLE_BECOME_PASSWORD_FILE at a file holding it." >&2
+	exit 1
 fi
 
 deactivate
