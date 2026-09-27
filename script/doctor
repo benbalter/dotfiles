@@ -211,8 +211,9 @@ if [ "$(uname)" = "Darwin" ]; then
 	# Read back what the playbook's security block set. It only runs with
 	# script/setup, so nothing else would notice an OS update or an app
 	# turning one of these off.
-	# Overridable so tests can stub it; everything else here is found on PATH.
+	# Overridable so tests can stub them; everything else here is found on PATH.
 	fw=${SOCKETFILTERFW:-/usr/libexec/ApplicationFirewall/socketfilterfw}
+	sudo_local=${SUDO_LOCAL:-/etc/pam.d/sudo_local}
 	check_security() { # <description> <expected substring> <command>...
 		desc=$1 want=$2
 		shift 2
@@ -227,7 +228,7 @@ if [ "$(uname)" = "Darwin" ]; then
 	check_security "Gatekeeper" "assessments enabled" spctl --status
 	check_security "FileVault" "FileVault is On" fdesetup status
 	check_security "automatic update checks" "turned on" softwareupdate --schedule
-	check_security "TouchID for sudo" "pam_tid.so" cat /etc/pam.d/sudo_local
+	check_security "TouchID for sudo" "pam_tid.so" cat "$sudo_local"
 	# -g custom: every power source, not just the current one.
 	if pmset -g custom | grep -Eq 'womp[[:space:]]+1'; then
 		bad "wake for network access is on (re-run: script/ansible --tags security)"

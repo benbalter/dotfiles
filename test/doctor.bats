@@ -45,6 +45,7 @@ STUB
 	stub SOFTWAREUPDATE "Automatic checking for updates is turned on" softwareupdate
 	stub PMSET " womp                 0" pmset
 	stub SOCKETFILTERFW "State = 1; stealth mode is on" socketfilterfw
+	echo "auth sufficient pam_tid.so" >"$STUB_BIN/sudo_local"
 	# `defaults read ... autoLoginUser` fails when the key is absent.
 	# shellcheck disable=SC2016 # expands when the stub runs
 	printf '#!/bin/sh\nexit "${DEFAULTS_STATUS:-1}"\n' >"$STUB_BIN/defaults"
@@ -67,7 +68,8 @@ teardown() {
 
 run_doctor() {
 	run env HOME="$TEST_HOME" DOTFILES_ROOT="$REPO_ROOT" PATH="$STUB_BIN:$PATH" \
-		SOCKETFILTERFW="$STUB_BIN/socketfilterfw" "$REPO_ROOT/script/doctor"
+		SOCKETFILTERFW="$STUB_BIN/socketfilterfw" SUDO_LOCAL="$STUB_BIN/sudo_local" \
+		"$REPO_ROOT/script/doctor"
 	# Per-section slices: the Homebrew and security checks depend on the host.
 	links_output=$(echo "$output" | sed -n '/^==> Dotfile symlinks/,/^==> /p')
 	update_output=$(echo "$output" | sed -n '/^==> Last update run/,/^==> Packages/p')

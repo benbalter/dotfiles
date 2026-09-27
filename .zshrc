@@ -67,16 +67,21 @@ source "$DOTFILES_ROOT/lib/aliases"
 export PATH="$PATH:$HOME/.local/bin"
 
 # _cached_init <name> <command>...: source a tool's shell init script from a
-# cache, regenerated when the tool's binary is newer (like lib/auto-complete
-# does for gh). Forking mise, starship, fzf and atuin on every start cost
-# about 25ms. Written to a temp file first, so a failed run can't leave a
-# truncated cache behind.
+# cache instead of forking mise, starship, fzf and atuin on every start (about
+# 25ms). The cache's first line records the binary's resolved path, which
+# includes Homebrew's Cellar version, and the command: an upgrade or a changed
+# flag regenerates it. (Not an mtime check: bottles keep their build time.) It
+# is written to a temp file first, so a failed run can't leave a truncated
+# cache behind.
 _cached_init() {
-  local cache="${ZSH_CACHE_DIR:-$HOME/.cache}/init-$1.zsh" bin=${commands[$2]}
+  local cache="${ZSH_CACHE_DIR:-$HOME/.cache}/init-$1.zsh" bin=${commands[$2]} first
   [[ -n $bin ]] || return 0
-  if [[ ! -s $cache || $bin -nt $cache ]]; then
+  local stamp="# ${bin:A} ${(j: :)@[2,-1]}"
+  [[ -s $cache ]] && read -r first <"$cache"
+  if [[ $first != "$stamp" ]]; then
     mkdir -p "${cache:h}"
-    "${@:2}" >|"$cache.tmp" && mv -f "$cache.tmp" "$cache" || { rm -f "$cache.tmp"; return 1; }
+    { print -r -- "$stamp" && "${@:2}"; } >|"$cache.tmp" && mv -f "$cache.tmp" "$cache" ||
+      { rm -f "$cache.tmp"; return 1; }
   fi
   source "$cache"
 }
