@@ -16,6 +16,8 @@ Managed in ~/.files (github.com/benbalter/dotfiles, public) and symlinked to
 
 ## Code
 
+- For web UI styling, prefer Tailwind CSS utilities over custom CSS unless the
+  project already follows a different styling convention.
 - Prefer established open source libraries over custom code. Before writing
   a parser, client, validator, or other utility, check whether the project
   already depends on something that does it, then look for a well-maintained
