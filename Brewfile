@@ -226,18 +226,14 @@ cask '1password-cli'
 cask 'adguard'
 # Inspect application bundles
 cask 'apparency'
-# Open source IDE for exploring and testing APIs
-# cask 'bruno' # PROPOSED REMOVAL: never opened
 # Utility that prevents the system from going to sleep
 cask 'caffeine'
-# Use your phone as a high-quality webcam with image tuning controls
-# cask 'camo-studio' # PROPOSED REMOVAL: never opened
 # Screen capturing tool
 cask 'cleanshot'
 # Drivers for DisplayLink docks, adapters and monitors
 cask 'displaylink'
 # App to build and share containerised applications and microservices
-# cask 'docker-desktop' # PROPOSED REMOVAL: last opened 15 days ago
+cask 'docker-desktop'
 # Client for the Dropbox cloud storage service
 cask 'dropbox'
 # Elgato FACECAM configuration tool
@@ -246,8 +242,6 @@ cask 'elgato-camera-hub'
 cask 'elgato-control-center'
 # Assign keys, and then decorate and label them
 cask 'elgato-stream-deck'
-# Offline voice-to-text dictation app with AI enhancement
-# cask 'fluidvoice' # PROPOSED REMOVAL: last opened 10 days ago
 cask 'font-hack-nerd-font'
 # Terminal emulator that uses platform-native UI and GPU acceleration
 cask 'ghostty'
@@ -259,8 +253,6 @@ cask 'github@beta'
 cask 'google-chrome'
 # Client for the Google Drive storage service
 cask 'google-drive'
-# Software-defined radio receiver powered by GNU Radio and Qt
-# cask 'gqrx' # PROPOSED REMOVAL: last opened 20 days ago
 # Grammar checker for developers
 cask 'harper-desktop'
 # Keyboard customiser
@@ -269,36 +261,16 @@ cask 'karabiner-elements'
 cask 'kindle-previewer'
 # Grammar, spelling and style suggestions in all the writing apps
 cask 'languagetool-desktop'
-# Discover, download, and run local LLMs
-# cask 'lm-studio' # PROPOSED REMOVAL: last opened 10 days ago
-# Multi-platform web browser
-# cask 'microsoft-edge' # PROPOSED REMOVAL: never opened
-# Meet, chat, call, and collaborate in just one place
-# cask 'microsoft-teams' # PROPOSED REMOVAL: last opened 31 days ago
 # Intercept, modify, replay, save HTTP/S traffic
 cask 'mitmproxy'
-# Cross-platform MQTT 5.0 Desktop Client
-# cask 'mqttx' # PROPOSED REMOVAL: never opened
 # Toggle mute, video, record, share, and leave a meeting in a call app
 cask 'mutedeck'
-# Open-source software for live streaming and screen recording
-# cask 'obs' # PROPOSED REMOVAL: never opened
-# Get up and running with large language models locally
-# cask 'ollama-app' # PROPOSED REMOVAL: last opened 16 days ago
 # Local-first alternative to Logitech Options+ for HID++ devices
-# cask 'openlogi' # PROPOSED REMOVAL: last opened 20 days ago
-# Network utility for sending / receiving TCP, UDP, SSL
-# cask 'packetsender' # PROPOSED REMOVAL: never opened
+cask 'openlogi'
 # Extracts pages, splits, merges, mixes and rotates PDF files
 cask 'pdfsam-basic'
-# Companion app for Flipper Zero devices
-# cask 'qflipper' # PROPOSED REMOVAL: never opened
 # Quick Look generator for Markdown files
 cask 'qlmarkdown'
-# Imaging utility to install operating systems to a microSD card
-# cask 'raspberry-pi-imager' # PROPOSED REMOVAL: never opened
-# Screenshot measurement and annotation tool
-# cask 'shottr' # PROPOSED REMOVAL: last opened 11 days ago
 # Instant messaging application focusing on security
 cask 'signal'
 # Team communication and collaboration software
@@ -306,7 +278,7 @@ cask 'slack@beta'
 # Music streaming service
 cask 'spotify'
 # Video game digital distribution service
-# cask 'steam' # PROPOSED REMOVAL: last opened 21 days ago
+cask 'steam'
 # Application for inspecting installer packages
 cask 'suspicious-package'
 # Quicklook extension for source files
@@ -315,12 +287,8 @@ cask 'syntax-highlight'
 cask 'thaw'
 # Mutes your keyboard while you type
 cask 'unclack'
-# Management tool for Unity
-# cask 'unity-hub' # PROPOSED REMOVAL: never opened
 # Open-source code editor
 cask 'visual-studio-code'
-# Open-source code editor
-# cask 'visual-studio-code@insiders' # PROPOSED REMOVAL: redundant with visual-studio-code, never opened
 # Menu bar app for USB-C cable diagnostics
 cask 'whatcable'
 # Full-featured companion app to the YubiKey
