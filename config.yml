@@ -49,6 +49,7 @@ dotfiles_files_common:
   - .ripgreprc
   - .yamllint
   - .zprofile
+  - .zshenv
   - .zshrc
   - .config/atuin/config.toml
   - .config/bat/config

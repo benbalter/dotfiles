@@ -37,7 +37,7 @@ link() {
 # Symlink dotfiles
 for file in \
 	.default-gems .digrc .gemrc .gitconfig .gitignore .hushlogin \
-	.irbrc .npmrc .pryrc .remarkrc .ripgreprc .yamllint .zprofile .zshrc; do
+	.irbrc .npmrc .pryrc .remarkrc .ripgreprc .yamllint .zprofile .zshenv .zshrc; do
 	link "$file"
 done
 

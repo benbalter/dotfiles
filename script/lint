@@ -71,7 +71,7 @@ lint "Linting shell scripts" shellcheck $SHELL_FILES
 lint "Checking shell formatting" shfmt -d -i 0 -ci $SHELL_FILES
 # ShellCheck can't parse zsh, so the zsh-only files get a syntax check, and
 # the libs .zshrc sources get checked as zsh as well as sh.
-lint "Checking zsh syntax" zsh_syntax .zshrc .zprofile lib/*
+lint "Checking zsh syntax" zsh_syntax .zshrc .zprofile .zshenv lib/*
 lint "Checking git config syntax" git_config_syntax .gitconfig .gitconfig.macos
 lint "Linting GitHub Actions workflows" actionlint
 # bundle exec, so the Gemfile's rubocop pin applies rather than whatever
