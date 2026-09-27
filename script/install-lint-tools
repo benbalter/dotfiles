@@ -1,0 +1,71 @@
+#!/bin/sh
+# Install the pinned shellcheck, shfmt and actionlint that script/lint expects,
+# on Linux (CI's lint job and the devcontainer). apt's shellcheck is older and
+# `go install ...@latest` drifts, and either one checked or formatted
+# differently from Homebrew's copies on the Mac.
+# Usage: script/install-lint-tools
+
+set -eu
+# shellcheck disable=SC3040
+(set -o pipefail) 2>/dev/null && set -o pipefail || true
+
+if [ "$(uname)" = "Darwin" ]; then
+	echo "Skipping install-lint-tools on macOS (the Brewfile installs them)"
+	exit 0
+fi
+
+# Renovate bumps the versions (see renovate.json), but not the checksums, so a
+# bump fails its CI run until the matching checksums are pasted in here.
+# renovate: datasource=github-releases depName=koalaman/shellcheck
+SHELLCHECK_VERSION=v0.11.0
+# renovate: datasource=github-releases depName=mvdan/sh
+SHFMT_VERSION=v3.14.1
+# renovate: datasource=github-releases depName=rhysd/actionlint
+ACTIONLINT_VERSION=v1.7.12
+
+case "$(uname -m)" in
+	x86_64 | amd64)
+		sc_arch=x86_64 go_arch=amd64
+		SHELLCHECK_SHA256=8c3be12b05d5c177a04c29e3c78ce89ac86f1595681cab149b65b97c4e227198
+		SHFMT_SHA256=76e77641faa025814b77f153b29796b8e6fa2fca03e0c76a691608b86c7ea7bf
+		ACTIONLINT_SHA256=8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
+		;;
+	aarch64 | arm64)
+		sc_arch=aarch64 go_arch=arm64
+		SHELLCHECK_SHA256=12b331c1d2db6b9eb13cfca64306b1b157a86eb69db83023e261eaa7e7c14588
+		SHFMT_SHA256=5f2db09dae91fca848f7adbdd014632e921a383863a2ad7e0450ad3aba0c6489
+		ACTIONLINT_SHA256=325e971b6ba9bfa504672e29be93c24981eeb1c07576d730e9f7c8805afff0c6
+		;;
+	*)
+		echo "install-lint-tools: unsupported architecture $(uname -m)" >&2
+		exit 1
+		;;
+esac
+
+BIN_DIR="${BIN_DIR:-/usr/local/bin}"
+SUDO=""
+[ -w "$BIN_DIR" ] || SUDO="sudo"
+
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+
+# fetch <url> <sha256>: download into $tmp and verify it, or fail.
+fetch() {
+	file="$tmp/${1##*/}"
+	curl -fsSL -o "$file" "$1"
+	echo "$2  $file" | sha256sum -c --quiet -
+}
+
+echo "==> Installing shellcheck $SHELLCHECK_VERSION"
+fetch "https://github.com/koalaman/shellcheck/releases/download/$SHELLCHECK_VERSION/shellcheck-$SHELLCHECK_VERSION.linux.$sc_arch.tar.xz" "$SHELLCHECK_SHA256"
+tar -xJf "$file" -C "$tmp"
+$SUDO install "$tmp/shellcheck-$SHELLCHECK_VERSION/shellcheck" "$BIN_DIR/"
+
+echo "==> Installing shfmt $SHFMT_VERSION"
+fetch "https://github.com/mvdan/sh/releases/download/$SHFMT_VERSION/shfmt_${SHFMT_VERSION}_linux_$go_arch" "$SHFMT_SHA256"
+$SUDO install "$file" "$BIN_DIR/shfmt"
+
+echo "==> Installing actionlint $ACTIONLINT_VERSION"
+fetch "https://github.com/rhysd/actionlint/releases/download/$ACTIONLINT_VERSION/actionlint_${ACTIONLINT_VERSION#v}_linux_$go_arch.tar.gz" "$ACTIONLINT_SHA256"
+tar -xzf "$file" -C "$tmp" actionlint
+$SUDO install "$tmp/actionlint" "$BIN_DIR/"

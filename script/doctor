@@ -195,8 +195,13 @@ if command -v mise >/dev/null; then
 	missing=$(cd "$HOME" && mise ls --missing 2>/dev/null || true)
 	if [ -z "$missing" ]; then
 		ok "every mise tool installed"
-	else
+	elif [ "$(uname)" = "Darwin" ]; then
 		bad "mise tools not installed (mise install):"
+		echo "$missing" | sed 's/^/        /'
+	else
+		# install.sh links the full mise config but installs only a few tools,
+		# so a Codespace always has the rest missing.
+		warn "mise tools not installed (mise install to add them):"
 		echo "$missing" | sed 's/^/        /'
 	fi
 fi
@@ -206,7 +211,8 @@ if [ "$(uname)" = "Darwin" ]; then
 	# Read back what the playbook's security block set. It only runs with
 	# script/setup, so nothing else would notice an OS update or an app
 	# turning one of these off.
-	fw=/usr/libexec/ApplicationFirewall/socketfilterfw
+	# Overridable so tests can stub it; everything else here is found on PATH.
+	fw=${SOCKETFILTERFW:-/usr/libexec/ApplicationFirewall/socketfilterfw}
 	check_security() { # <description> <expected substring> <command>...
 		desc=$1 want=$2
 		shift 2
@@ -220,6 +226,7 @@ if [ "$(uname)" = "Darwin" ]; then
 	check_security "firewall stealth mode" "stealth mode is on" "$fw" --getstealthmode
 	check_security "Gatekeeper" "assessments enabled" spctl --status
 	check_security "FileVault" "FileVault is On" fdesetup status
+	check_security "automatic update checks" "turned on" softwareupdate --schedule
 	check_security "TouchID for sudo" "pam_tid.so" cat /etc/pam.d/sudo_local
 	# -g custom: every power source, not just the current one.
 	if pmset -g custom | grep -Eq 'womp[[:space:]]+1'; then

@@ -186,3 +186,23 @@ refute_called() {
 	run_update 0
 	refute_called '^npm (update|install)'
 }
+
+@test "headless update skips installing casks and App Store apps" {
+	# A new cask can want sudo, and mas can hang on an App Store sign-in while
+	# holding the update lock, so the nightly bundle install leaves both out.
+	cat >"$FAKE_ROOT/Brewfile" <<-'BREWFILE'
+		brew 'jq'
+		cask 'foo'
+		cask 'bar', greedy: true
+		mas 'Baz', id: 1_234
+	BREWFILE
+	STUBS="$STUBS"'
+		brew() {
+			echo "brew $*" >>"$LOG"
+			[ "$1" != bundle ] || echo "skip casks=$HOMEBREW_BUNDLE_CASK_SKIP mas=$HOMEBREW_BUNDLE_MAS_SKIP" >>"$LOG"
+			return $STUB_STATUS
+		}
+	'
+	run_update 0
+	grep -qE '^skip casks=foo bar +mas=1234 *$' "$LOG" || fail "$(cat "$LOG")"
+}

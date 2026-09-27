@@ -33,6 +33,23 @@ STUB
 STUB
 	chmod +x "$STUB_BIN/launchctl" "$STUB_BIN/brew" "$STUB_BIN/mise"
 
+	# The macOS security read-backs, healthy unless a test overrides <NAME>_OUT,
+	# so UNAME=Darwin tests never depend on the host's settings.
+	# shellcheck disable=SC2016 # expands when the stub runs
+	stub() { # <VAR prefix> <healthy output> <command>
+		printf '#!/bin/sh\nprintf "%%s\\n" "${%s_OUT-%s}"\n' "$1" "$2" >"$STUB_BIN/$3"
+		chmod +x "$STUB_BIN/$3"
+	}
+	stub SPCTL "assessments enabled" spctl
+	stub FDESETUP "FileVault is On." fdesetup
+	stub SOFTWAREUPDATE "Automatic checking for updates is turned on" softwareupdate
+	stub PMSET " womp                 0" pmset
+	stub SOCKETFILTERFW "State = 1; stealth mode is on" socketfilterfw
+	# `defaults read ... autoLoginUser` fails when the key is absent.
+	# shellcheck disable=SC2016 # expands when the stub runs
+	printf '#!/bin/sh\nexit "${DEFAULTS_STATUS:-1}"\n' >"$STUB_BIN/defaults"
+	chmod +x "$STUB_BIN/defaults"
+
 	# Link everything install.sh would.
 	while IFS= read -r file; do
 		mkdir -p "$(dirname "$TEST_HOME/$file")"
@@ -50,12 +67,13 @@ teardown() {
 
 run_doctor() {
 	run env HOME="$TEST_HOME" DOTFILES_ROOT="$REPO_ROOT" PATH="$STUB_BIN:$PATH" \
-		"$REPO_ROOT/script/doctor"
+		SOCKETFILTERFW="$STUB_BIN/socketfilterfw" "$REPO_ROOT/script/doctor"
 	# Per-section slices: the Homebrew and security checks depend on the host.
 	links_output=$(echo "$output" | sed -n '/^==> Dotfile symlinks/,/^==> /p')
 	update_output=$(echo "$output" | sed -n '/^==> Last update run/,/^==> Packages/p')
 	agents_output=$(echo "$output" | sed -n '/^==> Launch agents/,/^==> /p')
 	packages_output=$(echo "$output" | sed -n '/^==> Packages/,/^==> /p')
+	security_output=$(echo "$output" | sed -n '/^==> Security/,/^==> /p')
 }
 
 # write_status <line>...: a fake script/update status file, one per line.
@@ -157,9 +175,17 @@ write_status() {
 }
 
 @test "doctor lists missing mise tools" {
-	MISE_OUT="node  24  (missing)" run_doctor
+	UNAME=Darwin MISE_OUT="node  24  (missing)" run_doctor
 	echo "$packages_output" | grep -q "FAIL  mise tools not installed" || fail "$packages_output"
 	echo "$packages_output" | grep -q "^        node  24  (missing)" || fail "$packages_output"
+}
+
+@test "doctor only warns about missing mise tools on Linux" {
+	# install.sh installs a handful of the tools the linked mise config lists.
+	write_status "started=Tue" "finished=Tue"
+	MISE_OUT="node  24  (missing)" run_doctor
+	[ "$status" -eq 0 ] || fail "$output"
+	echo "$packages_output" | grep -q "warn  mise tools not installed" || fail "$packages_output"
 }
 
 @test "doctor passes when every package is installed" {
@@ -192,4 +218,29 @@ write_status() {
 	echo "$dead" >"$TEST_HOME/.cache/dotfiles-update.lock/pid"
 	run_doctor
 	echo "$update_output" | grep -q "warn  stale lock .* from dead PID $dead" || fail "$update_output"
+}
+
+@test "doctor exits 0 on a healthy Linux install" {
+	# The state install.sh leaves in a Codespace: links, no venv, no Homebrew.
+	# Doctor failed there on the venv check alone. CI's unit-test job has no
+	# venv either, so this covers that case there.
+	write_status "started=Tue" "finished=Tue"
+	run_doctor
+	[ "$status" -eq 0 ] || fail "$output"
+}
+
+@test "doctor passes healthy macOS security settings" {
+	UNAME=Darwin run_doctor
+	echo "$security_output" | grep -q "ok    automatic update checks" || fail "$security_output"
+	! echo "$security_output" | grep -q FAIL || fail "$security_output"
+}
+
+@test "doctor flags macOS security settings that were turned off" {
+	UNAME=Darwin SPCTL_OUT="assessments disabled" PMSET_OUT=" womp 1" DEFAULTS_STATUS=0 \
+		SOFTWAREUPDATE_OUT="Automatic checking for updates is turned off" run_doctor
+	[ "$status" -ne 0 ] || fail "doctor should exit non-zero"
+	for want in "Gatekeeper is off" "wake for network access is on" "automatic login is on" \
+		"automatic update checks is off"; do
+		echo "$security_output" | grep -q "FAIL  $want" || fail "missing '$want': $security_output"
+	done
 }

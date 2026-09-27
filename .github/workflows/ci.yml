@@ -11,9 +11,11 @@ on:
 permissions:
   contents: read
 
+# Cancel superseded PR runs only: cancelling on main left some commits there
+# without a full result.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   HOMEBREW_NO_AUTO_UPDATE: 1
@@ -72,6 +74,13 @@ jobs:
       - name: Verify oh-my-zsh installed
         run: test -d "$HOME/.oh-my-zsh/.git"
 
+      # `zsh -ic 'echo ok'` passed whatever .zshrc printed to stderr, so fail
+      # on any stderr at all.
+      - name: Verify zsh loads cleanly
+        run: |
+          err=$(zsh -ic exit 2>&1 >/dev/null)
+          [ -z "$err" ] || { echo "$err"; exit 1; }
+
       - name: Verify Homebrew installed
         run: |
           command -v brew
@@ -82,13 +91,20 @@ jobs:
       # and assert each lands on PATH. The playbook symlinked
       # ~/.config/mise/config.toml above (verified earlier), so installing from
       # $HOME picks up that global config.
+      - name: mise cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.local/share/mise
+          key: ${{ runner.os }}-mise-${{ hashFiles('.config/mise/config.toml') }}
+
       - name: Install and verify mise-managed CLIs
         run: |
           brew install mise
           cd "$HOME"
           mise install
           export PATH="$HOME/.local/share/mise/shims:$PATH"
-          for cmd in node tsx wrangler ncu serve claude copilot zx ni degit taze; do
+          for cmd in node tsx wrangler ncu serve claude copilot zx ni degit taze \
+            tsc typescript-language-server chrome-devtools-mcp; do
             command -v "$cmd" >/dev/null || { echo "FAIL: $cmd not on PATH"; exit 1; }
           done
           echo "All mise-managed CLIs verified"
@@ -103,16 +119,16 @@ jobs:
           [ "$ask_pw" = "1" ] || { echo "FAIL: screensaver askForPassword=$ask_pw (expected 1)"; exit 1; }
           echo "macOS user defaults verified"
 
-      - name: Re-run playbook (no failures on second run)
+      # A second run must neither fail nor change anything. The dock role is
+      # skipped: geerlingguy.mac.dock always reports changed for item positions.
+      - name: Re-run playbook (idempotent)
         run: |
-          # Re-run to catch tasks that error on a second invocation.
-          # Note: not asserting changed=0 because geerlingguy.mac.dock
-          # always reports changed for dock item positions.
-          output=$(script/ansible 2>&1)
+          output=$(script/ansible --skip-tags dock 2>&1)
           echo "$output"
-          failed=$(echo "$output" | awk '/^localhost/ { for (i=1; i<=NF; i++) if ($i ~ /^failed=/) print substr($i, 8) }')
-          [ "$failed" = "0" ] || { echo "FAIL: re-run reported failed=$failed (expected 0)"; exit 1; }
-          echo "Playbook re-run completed without failures"
+          recap() { echo "$output" | awk -v k="$1=" '/^localhost/ { for (i=1; i<=NF; i++) if (index($i, k) == 1) print substr($i, length(k) + 1) }'; }
+          [ "$(recap failed)" = "0" ] || { echo "FAIL: re-run reported failed=$(recap failed)"; exit 1; }
+          [ "$(recap changed)" = "0" ] || { echo "FAIL: re-run reported changed=$(recap changed) (expected 0)"; exit 1; }
+          echo "Playbook re-run was idempotent"
 
   # Nothing in lint needs macOS, and an Ubuntu runner starts faster.
   lint:
@@ -156,24 +172,12 @@ jobs:
       - name: Bootstrap
         run: script/bootstrap
 
-      # shellcheck, shfmt and actionlint at the versions Homebrew has locally;
-      # apt's are older and check or format differently.
+      # zsh: script/lint syntax-checks the zsh files.
       - name: Install lint tools
-        env:
-          SHELLCHECK_VERSION: v0.11.0
-          SHELLCHECK_SHA256: 8c3be12b05d5c177a04c29e3c78ce89ac86f1595681cab149b65b97c4e227198
         run: |
-          # In RUNNER_TEMP, so the unpacked files stay out of the lint run.
-          cd "$RUNNER_TEMP"
-          tarball="shellcheck-$SHELLCHECK_VERSION.linux.x86_64.tar.xz"
-          curl -fsSLO "https://github.com/koalaman/shellcheck/releases/download/$SHELLCHECK_VERSION/$tarball"
-          echo "$SHELLCHECK_SHA256  $tarball" | sha256sum -c -
-          tar -xJf "$tarball"
-          sudo install "shellcheck-$SHELLCHECK_VERSION/shellcheck" /usr/local/bin/
-          cd "$GITHUB_WORKSPACE"
-          go install mvdan.cc/sh/v3/cmd/shfmt@v3.14.1
-          go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
-          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+          sudo apt-get update -q
+          sudo apt-get install -y -q zsh
+          script/install-lint-tools
           npm ci
 
       - name: Lint
@@ -216,7 +220,18 @@ jobs:
       # No chmod first: that would hide the missing exec bit test/scripts.bats
       # exists to catch. test/install.bats checks the links it makes against
       # config.yml.
+      # Codespaces images ship zsh and bats; the runner image doesn't.
+      - name: Install zsh and bats
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q zsh bats
+
       - name: Run install.sh
+        run: ./install.sh
+
+      # A second run must succeed over the first one's links, as a rebuilt
+      # Codespace does.
+      - name: Re-run install.sh
         run: ./install.sh
 
       - name: Verify tools installed
@@ -224,13 +239,15 @@ jobs:
           command -v delta
           command -v zoxide
           command -v fzf
+          command -v yq
 
-      # Codespaces images ship zsh; the runner image doesn't.
       - name: Verify zsh loads cleanly
         run: |
-          sudo apt-get update -q
-          sudo apt-get install -y -q zsh
-          zsh -ic 'echo "zsh ok"'
+          err=$(zsh -ic exit 2>&1 >/dev/null)
+          [ -z "$err" ] || { echo "$err"; exit 1; }
+
+      - name: Run script/doctor
+        run: script/doctor
 
       # Codespaces sets up its own commit signing, so nothing linked here may
       # turn signing on (a 1Password SSH signer made every commit fail).
@@ -240,9 +257,7 @@ jobs:
           git -C "$repo" init -q
           git -C "$repo" -c core.pager=cat commit -q --allow-empty -m test
 
-      - name: Install bats and run unit tests
+      - name: Run unit tests
         run: |
-          sudo apt-get update -q
-          sudo apt-get install -y -q bats
           npm ci
           script/test

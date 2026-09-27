@@ -25,11 +25,42 @@ lint() {
 # Shell files: scripts, the libs sourced by .zshrc, and the BATS suite.
 SHELL_FILES="script/* install.sh lib/* test/*.bats test/test_helper.bash .devcontainer/post-create.sh"
 
+# zsh_syntax <file>...: zsh -n each file (given several, zsh -n would parse
+# only the first and treat the rest as its arguments).
+zsh_syntax() {
+	rc=0
+	for f; do
+		zsh -n "$f" || rc=1
+	done
+	return "$rc"
+}
+
+# git_config_syntax <file>...: git config refuses to list a malformed file.
+git_config_syntax() {
+	rc=0
+	for f; do
+		git config -f "$f" --list >/dev/null || rc=1
+	done
+	return "$rc"
+}
+
+if [ ! -f env/bin/activate ]; then
+	echo "script/lint: no Python venv; run script/bootstrap first" >&2
+	exit 1
+fi
 # shellcheck disable=SC1091
 . env/bin/activate
 
 lint "Linting Ansible playbook" ansible-lint playbook.yml
 lint "Linting YAML files" yamllint ./*.yml .ansible-lint .yamllint .github/workflows/*.yml
+# The venv's Python, for tomllib: macOS's system python3 predates it. A broken
+# mise config breaks every new shell.
+lint "Checking TOML syntax" python3 -c '
+import sys, tomllib
+for f in sys.argv[1:]:
+    with open(f, "rb") as fh:
+        tomllib.load(fh)
+' .config/mise/config.toml .config/starship.toml .config/atuin/config.toml
 
 deactivate
 
@@ -38,10 +69,17 @@ deactivate
 lint "Linting shell scripts" shellcheck $SHELL_FILES
 # shellcheck disable=SC2086
 lint "Checking shell formatting" shfmt -d -i 0 -ci $SHELL_FILES
+# ShellCheck can't parse zsh, so the zsh-only files get a syntax check, and
+# the libs .zshrc sources get checked as zsh as well as sh.
+lint "Checking zsh syntax" zsh_syntax .zshrc .zprofile lib/*
+lint "Checking git config syntax" git_config_syntax .gitconfig .gitconfig.macos
 lint "Linting GitHub Actions workflows" actionlint
 # bundle exec, so the Gemfile's rubocop pin applies rather than whatever
 # version happens to be installed.
 lint "Linting Ruby files" bundle exec rubocop --force-exclusion .irbrc .pryrc Gemfile
+# .rubocop.yml excludes the Brewfile, and nothing in CI runs brew bundle, so a
+# syntax error would first surface in a nightly `up`.
+lint "Checking Brewfile syntax" ruby -c Brewfile
 # --frail: fail on warnings too, or a broken link only warns and CI stays green.
 lint "Linting Markdown files" npx remark --no-stdout --silently-ignore --frail \
 	--ignore-pattern node_modules/ --ignore-pattern .ansible/ --ignore-pattern env/ \

@@ -19,7 +19,7 @@ teardown() {
 	# shellcheck disable=SC2016
 	run env HOME="$TEST_HOME" DOTFILES_SKIP_TOOLS=1 bash -c '
 		uname() { echo Linux; }; export -f uname
-		git() { mkdir -p "$3"; }; export -f git
+		git() { for d; do :; done; mkdir -p "$d"; }; export -f git
 		sudo() { :; }; export -f sudo
 		. "'"$REPO_ROOT"'/install.sh"
 	'
@@ -36,13 +36,14 @@ teardown() {
 	# shellcheck disable=SC2016
 	run env HOME="$TEST_HOME" DOTFILES_SKIP_TOOLS=1 bash -c '
 		uname() { echo Linux; }; export -f uname
-		git() { mkdir -p "$3"; }; export -f git
+		git() { for d; do :; done; mkdir -p "$d"; }; export -f git
 		sudo() { :; }; export -f sudo
 		. "'"$REPO_ROOT"'/install.sh"
 	'
 	[ "$status" -eq 0 ]
 
-	for dir in .bundle .gnupg; do
+	# The git stub creates the clone destination (its last argument).
+	for dir in .bundle .gnupg .oh-my-zsh; do
 		[ -d "$TEST_HOME/$dir" ] || fail "$dir directory was not created"
 	done
 	perms=$(stat -c %a "$TEST_HOME/.gnupg" 2>/dev/null || stat -f %Lp "$TEST_HOME/.gnupg")
@@ -53,7 +54,7 @@ teardown() {
 	# shellcheck disable=SC2016
 	run env HOME="$TEST_HOME" DOTFILES_SKIP_TOOLS=1 bash -c '
 		uname() { echo Linux; }; export -f uname
-		git() { mkdir -p "$3"; }; export -f git
+		git() { for d; do :; done; mkdir -p "$d"; }; export -f git
 		sudo() { :; }; export -f sudo
 		. "'"$REPO_ROOT"'/install.sh"
 	'
@@ -72,7 +73,7 @@ teardown() {
 	# shellcheck disable=SC2016
 	run env HOME="$TEST_HOME" DOTFILES_SKIP_TOOLS=1 bash -c '
 		uname() { echo Linux; }; export -f uname
-		git() { mkdir -p "$3"; }; export -f git
+		git() { for d; do :; done; mkdir -p "$d"; }; export -f git
 		sudo() { :; }; export -f sudo
 		. "'"$REPO_ROOT"'/install.sh"
 	'
@@ -105,7 +106,7 @@ teardown() {
 	# shellcheck disable=SC2016
 	run env HOME="$TEST_HOME" DOTFILES_SKIP_TOOLS=1 bash -c '
 		uname() { echo Linux; }; export -f uname
-		git() { mkdir -p "$3"; }; export -f git
+		git() { for d; do :; done; mkdir -p "$d"; }; export -f git
 		sudo() { :; }; export -f sudo
 		. "'"$REPO_ROOT"'/install.sh"
 	'

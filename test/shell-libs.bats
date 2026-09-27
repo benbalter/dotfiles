@@ -43,12 +43,27 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 }
 
 @test "lib/auto-complete sources without error when gh is missing" {
-	run bash -c "
-		# Hide gh so the conditional is exercised
-		gh() { return 1; }
-		. '$REPO_ROOT/lib/auto-complete'
-	"
-	[ "$status" -eq 0 ]
+	# Not a gh() stub: `command -v` finds functions, so that ran the gh branch
+	# against the real HOME. A PATH holding only a bare shell hides gh.
+	bin=$(mktemp -d) home=$(mktemp -d)
+	ln -s "$(command -v bash)" "$bin/bash"
+	run env -i HOME="$home" PATH="$bin" "$bin/bash" -c ". '$REPO_ROOT/lib/auto-complete'"
+	cache=$(find "$home" -type f)
+	rm -rf "$bin" "$home"
+	[ "$status" -eq 0 ] || fail "$output"
+	[ -z "$cache" ] || fail "wrote $cache without gh"
+}
+
+@test "lib/auto-complete caches gh's completion under ZSH_CACHE_DIR" {
+	bin=$(mktemp -d) home=$(mktemp -d)
+	printf '#!/bin/sh\necho "# gh completion"\n' >"$bin/gh"
+	chmod +x "$bin/gh"
+	run env HOME="$home" ZSH_CACHE_DIR="$home/cache" PATH="$bin:$PATH" \
+		bash -c "compdef() { :; }; . '$REPO_ROOT/lib/auto-complete'"
+	cached=$(cat "$home/cache/gh-completion.zsh" 2>/dev/null)
+	rm -rf "$bin" "$home"
+	[ "$status" -eq 0 ] || fail "$output"
+	[ "$cached" = "# gh completion" ] || fail "cache holds: $cached"
 }
 
 @test "lib/globals sets HOMEBREW_PREFIX without invoking brew" {
