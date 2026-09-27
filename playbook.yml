@@ -114,21 +114,22 @@
         # Create each link's parent under user_dir before symlinking. These
         # parents (e.g. ~/.config/ghostty) are otherwise only made by the
         # directories_to_create task, which resolves ~ via $HOME, and that can
-        # differ from user_dir (it did in a GitHub Actions container job), so
-        # the symlink failed with ENOENT. user_dir matches the symlink dest below.
+        # differ from user_dir (it did in a GitHub Actions container job, back
+        # when the playbook also ran on Linux), so the symlink failed with
+        # ENOENT. user_dir matches the symlink dest below.
         - name: Ensure parent directories of dotfile links exist
           ansible.builtin.file:
             path: "{{ ansible_facts['user_dir'] }}/{{ item.dest | dirname }}"
             state: directory
             mode: "{{ '0700' if (item.dest | dirname) in private_directories else '0755' }}"
-          loop: "{{ dotfile_links }}"
+          loop: "{{ dotfile_links_common }}"
           loop_control:
             label: "{{ item.dest | dirname }}"
 
         - name: Stat existing dotfile link targets
           ansible.builtin.stat:
             path: "{{ ansible_facts['user_dir'] }}/{{ item.dest }}"
-          loop: "{{ dotfile_links }}"
+          loop: "{{ dotfile_links_common }}"
           loop_control:
             label: "{{ item.dest }}"
           register: dotfile_link_targets
@@ -153,7 +154,7 @@
             dest: "{{ ansible_facts['user_dir'] }}/{{ item.dest }}"
             state: link
             force: true
-          loop: "{{ dotfile_links }}"
+          loop: "{{ dotfile_links_common }}"
           loop_control:
             label: "{{ item.dest }}"
 
@@ -370,6 +371,9 @@
           register: claude_settings_current
           failed_when: false
 
+        # Recursive combine only adds and overrides keys. Deleting one from
+        # claude/settings.json leaves it in place locally, so to turn a plugin
+        # off, set it to false rather than removing it.
         - name: Merge repo Claude Code settings
           ansible.builtin.copy:
             content: "{{ ((claude_settings_current.content | default('e30=') | b64decode | from_json) | combine(claude_settings_repo, recursive=true)) | to_nice_json(indent=2, sort_keys=false, ensure_ascii=false) }}\n"

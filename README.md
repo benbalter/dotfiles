@@ -111,8 +111,8 @@ lists pending macOS updates without installing them.
 
 A launch agent also runs it nightly at midnight, logging to
 `~/Library/Logs/dotfiles-update.log`. With no terminal attached, it skips
-anything that needs a human: cask upgrades, the `git pull`,
-`script/audit-casks`, and mole. A failed step doesn't stop the rest, but the
+anything that needs a human: cask and App Store upgrades, installing new casks
+and App Store apps, the `git pull`, `script/audit-casks`, and mole. A failed step doesn't stop the rest, but the
 run exits non-zero, and `script/doctor` reports which steps failed.
 
 ### Testing

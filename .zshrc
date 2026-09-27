@@ -52,6 +52,11 @@ zstyle ':omz:update' mode disabled
 
 source "$ZSH/oh-my-zsh.sh"
 
+# common-aliases opens notes.txt and friends with '$EDITOR', which zsh doesn't
+# word-split, so EDITOR="code --wait" failed with "command not found: code
+# --wait". ${=EDITOR} splits it.
+(( ${+_editor_fts} )) && for ft in $_editor_fts; do alias -s $ft='${=EDITOR}'; done
+
 # shellcheck source=lib/auto-complete
 source "$DOTFILES_ROOT/lib/auto-complete"
 
@@ -61,9 +66,22 @@ source "$DOTFILES_ROOT/lib/aliases"
 # Before the mise check: install-tools puts mise itself in ~/.local/bin.
 export PATH="$PATH:$HOME/.local/bin"
 
-if command -v mise >/dev/null; then
-  eval "$(mise activate zsh)"
-fi
+# _cached_init <name> <command>...: source a tool's shell init script from a
+# cache, regenerated when the tool's binary is newer (like lib/auto-complete
+# does for gh). Forking mise, starship, fzf and atuin on every start cost
+# about 25ms. Written to a temp file first, so a failed run can't leave a
+# truncated cache behind.
+_cached_init() {
+  local cache="${ZSH_CACHE_DIR:-$HOME/.cache}/init-$1.zsh" bin=${commands[$2]}
+  [[ -n $bin ]] || return 0
+  if [[ ! -s $cache || $bin -nt $cache ]]; then
+    mkdir -p "${cache:h}"
+    "${@:2}" >|"$cache.tmp" && mv -f "$cache.tmp" "$cache" || { rm -f "$cache.tmp"; return 1; }
+  fi
+  source "$cache"
+}
+
+_cached_init mise mise activate zsh
 
 # 1Password SSH agent. Only if it's running, and not over SSH: exporting it
 # unconditionally replaced a forwarded agent, or pointed at a dead socket.
@@ -76,14 +94,16 @@ if [[ $OSTYPE == darwin* ]]; then
   [[ -d "$HOME/.lmstudio/bin" ]] && export PATH="$PATH:$HOME/.lmstudio/bin"
 fi
 
-if command -v starship >/dev/null; then
-  eval "$(starship init zsh)"
-fi
+# --print-full-init: plain `init zsh` prints a stub that forks starship again.
+_cached_init starship starship init zsh --print-full-init
 
 # fzf: Ctrl-T (files), Alt-C (cd). Sourced BEFORE atuin so atuin keeps Ctrl-R.
 # Each helper only if installed: install-tools (Codespaces) provides fzf but
 # not fd, bat or eza, and fzf's defaults beat a command that doesn't exist.
-if command -v fzf >/dev/null; then
+# Only on a terminal: fzf's script saves and restores every option, and
+# without a terminal (`zsh -ic` in CI) zsh can't set zle back, so it printed
+# "can't change option: zle" twice. Its key bindings need a terminal anyway.
+if [[ -t 0 ]] && command -v fzf >/dev/null; then
   if command -v fd >/dev/null; then
     export FZF_DEFAULT_COMMAND='fd --type f --hidden --exclude .git'
     export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
@@ -93,13 +113,11 @@ if command -v fzf >/dev/null; then
     export FZF_CTRL_T_OPTS="--preview 'bat --color=always --style=numbers --line-range=:200 {}'"
   command -v eza >/dev/null &&
     export FZF_ALT_C_OPTS="--preview 'eza --tree --level=2 --color=always {}'"
-  source <(fzf --zsh)
+  _cached_init fzf fzf --zsh
 fi
 
 # Better shell history (Ctrl-R). Leave the up-arrow to history-substring-search.
-if command -v atuin >/dev/null; then
-  eval "$(atuin init zsh --disable-up-arrow)"
-fi
+_cached_init atuin atuin init zsh --disable-up-arrow
 
 # ── Loaded shell (ORDER MATTERS) ──────────────────────────────────
 # Notify when a >Ns command finishes in an unfocused terminal (bgnotify plugin).
@@ -114,6 +132,8 @@ bgnotify_threshold=8
 [[ -f $HOMEBREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] && source $HOMEBREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 [[ -f $ZSH/plugins/history-substring-search/history-substring-search.plugin.zsh ]] &&
   source $ZSH/plugins/history-substring-search/history-substring-search.plugin.zsh
+
+unfunction _cached_init
 
 # Apply -U to everything added through the PATH/FPATH scalars above.
 path=("${path[@]}")

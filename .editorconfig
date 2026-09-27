@@ -17,7 +17,9 @@ indent_size = 2
 [*.md]
 trim_trailing_whitespace = false
 
-[*.{sh,bash,bats}]
+# script/* and lib/* have no extension, but shfmt (script/lint) checks them
+# with tabs too.
+[{*.{sh,bash,bats},script/*,lib/*}]
 indent_style = tab
 switch_case_indent = true
 

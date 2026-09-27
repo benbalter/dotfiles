@@ -16,7 +16,7 @@ script/doctor      # read-only health check: symlinks, .bak files, brew wrapper,
 ```
 
 - Run one test file: `bats test/config.bats`. Run one test by name: `bats test/config.bats -f 'install.sh links'`.
-- Run part of the playbook: `. env/bin/activate && ansible-playbook playbook.yml --tags dotfiles --ask-become-pass`. Tags include `dotfiles`, `packages`, `mise`, `claude`, `macos`, `defaults`, `security`, `launchagents`, `homebrew`.
+- Run part of the playbook: `. env/bin/activate && ansible-playbook playbook.yml --tags dotfiles --ask-become-pass`. Tags: `dotfiles`, `directories`, `packages`, `homebrew`, `mise`, `claude`, `languagetool`, `ohmyzsh`, `macos`, `defaults`, `dock`, `security`, `launchagents`.
 - Preview playbook changes without applying them: add `--check --diff`.
 - ansible-lint and yamllint run from the venv, so run `script/bootstrap` first on a fresh checkout.
 
