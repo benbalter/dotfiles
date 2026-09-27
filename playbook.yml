@@ -338,10 +338,11 @@
 
     # Global Claude Code writing skills that strip AI-slop patterns from prose.
     # `creates` skips the network call (and keeps this idempotent) once the
-    # skill is symlinked into ~/.claude/skills by `npx skills add --global`.
+    # skill is symlinked into ~/.claude/skills by `skills add --global`. The
+    # skills CLI comes from mise (.config/mise/config.toml), via the play's PATH.
     - name: Install Claude writing skills
       ansible.builtin.command:
-        cmd: "npx -y skills add {{ item.repo }} --global --yes"
+        cmd: "skills add {{ item.repo }} --global --yes"
         creates: "{{ ansible_facts['env']['HOME'] }}/.claude/skills/{{ item.name }}"
       loop:
         - { repo: petergyang/no-ai-slop, name: no-ai-slop }

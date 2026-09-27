@@ -80,8 +80,6 @@ brew 'gitleaks'
 brew 'gmailctl'
 # GNU implementation of the famous stream editor
 brew 'gnu-sed'
-# Passphrase entry dialog utilizing the Assuan protocol
-brew 'pinentry'
 # GNU Privacy Guard (OpenPGP)
 brew 'gnupg'
 # Use Realtek DVB-T dongles as a cheap SDR
@@ -140,8 +138,6 @@ brew 'mp3val'
 brew 'mtr'
 # Port scanning utility for large networks
 brew 'nmap'
-# Open-source, cross-platform JavaScript runtime environment
-brew 'node'
 # Adds an OCR text layer to scanned PDF files
 brew 'ocrmypdf'
 # Swiss-army knife of markup format conversion
@@ -160,8 +156,6 @@ brew 'prettier'
 brew 'protobuf'
 # Search tool like grep and The Silver Searcher
 brew 'ripgrep'
-# Powerful, clean, object-oriented scripting language
-brew 'ruby'
 # Safe, concurrent, practical language
 brew 'rust'
 # SDL2 graphics drawing primitives and other support functions
@@ -265,8 +259,6 @@ cask 'github@beta'
 cask 'google-chrome'
 # Client for the Google Drive storage service
 cask 'google-drive'
-# Tools to protect your emails and files
-cask 'gpg-suite'
 # Software-defined radio receiver powered by GNU Radio and Qt
 # cask 'gqrx' # PROPOSED REMOVAL: last opened 20 days ago
 # Grammar checker for developers
@@ -279,8 +271,6 @@ cask 'kindle-previewer'
 cask 'languagetool-desktop'
 # Discover, download, and run local LLMs
 # cask 'lm-studio' # PROPOSED REMOVAL: last opened 10 days ago
-# Provides updates to various Microsoft products
-cask 'microsoft-auto-update'
 # Multi-platform web browser
 # cask 'microsoft-edge' # PROPOSED REMOVAL: never opened
 # Meet, chat, call, and collaborate in just one place
@@ -381,7 +371,6 @@ vscode 'elijah-potter.harper'
 vscode 'fcrespo82.markdown-table-formatter'
 vscode 'ginfuru.ginfuru-vscode-jekyll-syntax'
 vscode 'github.codespaces'
-vscode 'github.copilot-workspace'
 vscode 'github.github-vscode-theme'
 vscode 'github.vscode-github-actions'
 vscode 'github.vscode-pull-request-github'
