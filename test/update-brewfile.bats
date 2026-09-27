@@ -37,6 +37,6 @@ run_update_brewfile() {
 	printf "cask 'kept'\n" >"$FAKE_ROOT/Brewfile"
 	run_update_brewfile
 	[ "$status" -eq 0 ] || fail "exited $status: $output"
-	grep -qxF "brew bundle dump --global --force" "$LOG" || fail "$(cat "$LOG")"
+	grep -qxF "brew bundle dump --file=Brewfile --force" "$LOG" || fail "$(cat "$LOG")"
 	grep -qxF "bundle exec rubocop -A Brewfile" "$LOG" || fail "$(cat "$LOG")"
 }

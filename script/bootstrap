@@ -7,7 +7,9 @@ set -eu
 cd "$(dirname "$0")/.."
 
 if command -v uv >/dev/null; then
-	uv venv env
+	# --allow-existing: newer uv refuses (or, without a TTY, fails) to reuse
+	# an existing env/ otherwise, and setup runs this on every pass.
+	uv venv --allow-existing env
 	# shellcheck disable=SC1091
 	. env/bin/activate
 	uv pip install --upgrade -r requirements.txt

@@ -18,7 +18,19 @@ alias gr="gh repo view"
 # uncommitted work, and script/audit-casks tells you to run `clean` to
 # uninstall casks, which instead deleted merged branches.
 alias greset="git reset HEAD --hard; git clean -f -d"
-alias gclean="git branch --merged | grep -v '\*' | xargs -n 1 git branch -d"
+# Delete local branches merged into the default branch. Not a bare
+# `git branch --merged`: from a feature branch that lists main itself (an
+# ancestor of HEAD), so `-d` deleted main, and branches checked out in another
+# worktree (`+`) passed a stray `+` to git. The unalias drops oh-my-zsh's git
+# plugin alias of the same name, which would otherwise shadow this function.
+unalias gclean 2>/dev/null || true
+gclean() {
+	base=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null) || base=main
+	base=${base#origin/}
+	git branch --merged "$base" |
+		grep -vE "^[*+]|^[[:space:]]*(main|master|$base)\$" |
+		xargs -r -n 1 git branch -d
+}
 alias ggb="git commit -m ':gem: bump'"
 # Clone a repo and cd into it; if it's already cloned, cd in and pull instead
 gccd() {

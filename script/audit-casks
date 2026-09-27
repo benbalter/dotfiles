@@ -41,7 +41,10 @@ for cmd in brew jq mdls; do
 	}
 done
 
-BREWFILE="${HOMEBREW_BUNDLE_FILE_GLOBAL:-$HOME/.Brewfile}"
+# The repo's Brewfile unless one is named, like update, doctor and clean, so
+# this works before setup links ~/.Brewfile. script/update exports
+# HOMEBREW_BUNDLE_FILE.
+BREWFILE="${HOMEBREW_BUNDLE_FILE:-${HOMEBREW_BUNDLE_FILE_GLOBAL:-$(cd "$(dirname "$0")/.." && pwd)/Brewfile}}"
 [ -f "$BREWFILE" ] || {
 	echo "audit-casks: no Brewfile at $BREWFILE" >&2
 	exit 1

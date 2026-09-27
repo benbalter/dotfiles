@@ -84,7 +84,10 @@ teardown() {
 }
 
 run_audit() {
-	run env HOME="$TEST_HOME" PATH="$STUB_BIN:$PATH" AUDIT_STALE_DAYS=14 \
+	# Named explicitly: with neither variable set, audit-casks reads the repo's
+	# own Brewfile.
+	run env -u HOMEBREW_BUNDLE_FILE HOME="$TEST_HOME" PATH="$STUB_BIN:$PATH" \
+		HOMEBREW_BUNDLE_FILE_GLOBAL="$TEST_HOME/.Brewfile" AUDIT_STALE_DAYS=14 \
 		"$REPO_ROOT/script/audit-casks" "$@"
 }
 

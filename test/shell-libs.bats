@@ -25,6 +25,23 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 	[ "$status" -eq 0 ]
 }
 
+@test "gclean deletes merged branches but keeps main and the current branch" {
+	repo=$(mktemp -d)
+	git -C "$repo" init -q -b main
+	git -C "$repo" -c user.name=t -c user.email=t@t commit -q --allow-empty -m init
+	git -C "$repo" branch merged
+	git -C "$repo" checkout -q -b feature
+	run bash -c "
+		cd '$repo'
+		. '$REPO_ROOT/lib/aliases'
+		gclean
+	"
+	branches=$(git -C "$repo" branch --format='%(refname:short)' | sort | tr '\n' ' ')
+	rm -rf "$repo"
+	[ "$status" -eq 0 ] || fail "$output"
+	[ "$branches" = "feature main " ] || fail "branches left: $branches"
+}
+
 @test "lib/auto-complete sources without error when gh is missing" {
 	run bash -c "
 		# Hide gh so the conditional is exercised

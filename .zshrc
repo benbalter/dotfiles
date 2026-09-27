@@ -32,7 +32,7 @@ plugins=(
   vscode
 )
 
-if [[ "$(uname)" == "Darwin" ]]; then
+if [[ $OSTYPE == darwin* ]]; then
   plugins+=(
     brew
     bundler
@@ -45,6 +45,10 @@ fi
 # audit flags those as insecure and skips them. They are trusted local files,
 # so disable the audit (oh-my-zsh's sanctioned escape hatch for this case).
 ZSH_DISABLE_COMPFIX="true"
+
+# script/update runs oh-my-zsh's upgrade nightly. Left on, the built-in check
+# ran a `git pull` as a new shell started, which could race that job.
+zstyle ':omz:update' mode disabled
 
 source "$ZSH/oh-my-zsh.sh"
 
@@ -61,9 +65,12 @@ if command -v mise >/dev/null; then
   eval "$(mise activate zsh)"
 fi
 
-# 1Password SSH agent
-if [[ "$(uname)" == "Darwin" ]]; then
-  export SSH_AUTH_SOCK="$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+# 1Password SSH agent. Only if it's running, and not over SSH: exporting it
+# unconditionally replaced a forwarded agent, or pointed at a dead socket.
+if [[ $OSTYPE == darwin* ]]; then
+  _op_sock="$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+  [[ -S $_op_sock && -z $SSH_CONNECTION ]] && export SSH_AUTH_SOCK="$_op_sock"
+  unset _op_sock
 
   # Added by LM Studio CLI (lms)
   [[ -d "$HOME/.lmstudio/bin" ]] && export PATH="$PATH:$HOME/.lmstudio/bin"

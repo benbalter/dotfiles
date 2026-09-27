@@ -17,12 +17,14 @@ fi
 # --- Linux / Codespaces setup ---
 
 # link <repo path> [<path under $HOME>]: symlink a repo file into $HOME,
-# first moving any real file there aside (to .bak, or .bak.<epoch> if a .bak
-# already exists) so a plain `ln -sf` never silently destroys it.
+# creating its parent directory and first moving any real file there aside (to
+# .bak, or .bak.<epoch> if a .bak already exists) so a plain `ln -sf` never
+# silently destroys it.
 link() {
 	src="$DOTFILES_DIR/$1"
 	dest="$HOME/${2:-$1}"
 	[ -e "$src" ] || return 0
+	mkdir -p "$(dirname "$dest")"
 	if [ -e "$dest" ] && [ ! -L "$dest" ]; then
 		bak="$dest.bak"
 		[ ! -e "$bak" ] || bak="$bak.$(date +%s)"
@@ -39,10 +41,9 @@ for file in \
 	link "$file"
 done
 
-# Symlink directories that need parent dirs
-mkdir -p "$HOME/.bundle" "$HOME/.gnupg" "$HOME/.config/mise" \
-	"$HOME/.config/git" "$HOME/.config/bat" "$HOME/.config/atuin" "$HOME/.config/zed" \
-	"$HOME/.config/ghostty/themes" "$HOME/.claude"
+# link() creates parent directories. ~/.gnupg is made here so it can be
+# locked down before anything is linked into it.
+mkdir -p "$HOME/.gnupg"
 # gpg warns "unsafe permissions on homedir" unless ~/.gnupg is private
 # (config.yml's private_directories does the same for the playbook).
 chmod 700 "$HOME/.gnupg"
@@ -74,7 +75,7 @@ if [ ! -d "$HOME/.oh-my-zsh" ]; then
 	git clone --depth 1 https://github.com/ohmyzsh/ohmyzsh.git "$HOME/.oh-my-zsh"
 fi
 
-# Install essential CLI tools (delta, zoxide, fzf)
+# Install essential CLI tools (delta, zoxide, fzf, yq)
 if [ "${DOTFILES_SKIP_TOOLS:-}" != "1" ]; then
 	"$DOTFILES_DIR/script/install-tools"
 fi

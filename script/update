@@ -2,14 +2,16 @@
 # Update all installed dependencies
 # Usage: up
 
-# Absolute, so the re-exec after a pull still finds this script when it was
-# started by a relative path from outside the repo.
 set -eu
 # shellcheck disable=SC3040
 (set -o pipefail) 2>/dev/null && set -o pipefail || true
 
+# Absolute, so the re-exec after a pull still finds this script when it was
+# started by a relative path from outside the repo.
 SELF="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
-cd "${DOTFILES_ROOT:-$HOME/.files}"
+# This script's own checkout unless DOTFILES_ROOT says otherwise: only .zshrc
+# exports DOTFILES_ROOT, and the repo isn't always at ~/.files (Codespaces).
+cd "${DOTFILES_ROOT:-${SELF%/script/*}}"
 
 # The repo's Brewfile, not --global, so this works before setup links ~/.Brewfile.
 export HOMEBREW_BUNDLE_FILE="$PWD/Brewfile"
@@ -227,9 +229,10 @@ if [ -d env ]; then
 	deactivate
 fi
 
-# oh-my-zsh only updates itself when a new shell prompts for it, so a machine
-# that lives in long-running terminals drifts for weeks. Its upgrade script is
-# non-interactive unless passed -i. It's zsh, not sh.
+# .zshrc turns off oh-my-zsh's own update check, which ran a `git pull` as a
+# new shell started and could race this job, so this is the only place it
+# updates. Its upgrade script is non-interactive unless passed -i. It's zsh,
+# not sh.
 export ZSH="${ZSH:-$HOME/.oh-my-zsh}"
 if [ -f "$ZSH/tools/upgrade.sh" ] && command -v zsh >/dev/null; then
 	echo "==> Updating oh-my-zsh..."

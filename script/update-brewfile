@@ -6,7 +6,7 @@ set -eu
 # shellcheck disable=SC3040
 (set -o pipefail) 2>/dev/null && set -o pipefail || true
 
-cd "${DOTFILES_ROOT:-$HOME/.files}"
+cd "${DOTFILES_ROOT:-$(dirname "$0")/..}"
 
 # `brew bundle dump` rebuilds the Brewfile from installed state: it silently
 # erases audit-casks' PROPOSED REMOVAL lines and re-adds every cask they
@@ -21,7 +21,9 @@ if grep -q 'PROPOSED REMOVAL' Brewfile; then
 fi
 
 # Descriptions are the default now; --describe is deprecated.
-brew bundle dump --global --force
+# The repo's Brewfile, not --global: before setup links ~/.Brewfile, --global
+# dumped into a new unlinked file and left this one unchanged.
+brew bundle dump --file=Brewfile --force
 # Only the Brewfile: a bare `rubocop -A` also rewrites untracked Ruby like
 # the Gemfile Ruby LSP generates under .ruby-lsp/.
 bundle exec rubocop -A Brewfile

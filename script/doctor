@@ -12,7 +12,9 @@ set -eu
 # shellcheck disable=SC3040
 (set -o pipefail) 2>/dev/null && set -o pipefail || true
 
-DOTFILES_ROOT="${DOTFILES_ROOT:-$HOME/.files}"
+# This script's own checkout unless DOTFILES_ROOT says otherwise: only .zshrc
+# exports it, and the repo isn't always at ~/.files (Codespaces).
+DOTFILES_ROOT="${DOTFILES_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
 CONFIG="$DOTFILES_ROOT/config.yml"
 problems=0
 
@@ -233,11 +235,14 @@ fi
 
 echo "==> Dotfiles repo"
 # script/update runs the Python/Ansible steps only when the venv exists, and
-# skips them silently otherwise.
+# skips them silently otherwise. Only macOS needs it: install.sh never creates
+# it on Linux, where the playbook doesn't run, so this failed every Codespace.
 if [ -f "$DOTFILES_ROOT/env/bin/activate" ]; then
 	ok "Python venv present"
-else
+elif [ "$(uname)" = "Darwin" ]; then
 	bad "no Python venv at $DOTFILES_ROOT/env (run script/bootstrap)"
+else
+	ok "no Python venv (not needed on Linux)"
 fi
 # `up` pulls only onto a clean tree, so uncommitted changes quietly stop it
 # picking up new commits.

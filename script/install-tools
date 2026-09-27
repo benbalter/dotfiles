@@ -18,7 +18,9 @@ fi
 # mise.run installer checks mise itself against a checksum baked into the
 # script.
 missing=""
-for tool in delta zoxide fzf; do
+# yq: script/doctor reads config.yml with it. mise resolves `yq` to
+# mikefarah/yq, the Go one doctor's expressions are written for.
+for tool in delta zoxide fzf yq; do
 	command -v "$tool" >/dev/null || missing="$missing $tool"
 done
 if [ -z "$missing" ]; then
@@ -44,8 +46,21 @@ echo "==> Installing$missing via mise..."
 # before `mise activate` runs, and the plugin only initializes if zoxide is
 # already on PATH. Shims resolve the current version at run time, so these
 # links survive upgrades.
-for tool in $missing; do
-	sudo ln -sf "$HOME/.local/share/mise/shims/$tool" "/usr/local/bin/$tool"
-done
+# Plain ln where /usr/local/bin is writable (a root container may have no
+# sudo), else sudo only if it needs no password: under set -e a sudo prompt
+# with no TTY aborted install.sh before it set the login shell.
+if [ -w /usr/local/bin ]; then
+	LN="ln"
+elif command -v sudo >/dev/null && sudo -n true 2>/dev/null; then
+	LN="sudo -n ln"
+else
+	LN=""
+	echo "Warning: can't write /usr/local/bin; zoxide's oh-my-zsh plugin may not load" >&2
+fi
+if [ -n "$LN" ]; then
+	for tool in $missing; do
+		$LN -sf "$HOME/.local/share/mise/shims/$tool" "/usr/local/bin/$tool"
+	done
+fi
 
 echo "==> Tool installation complete"
