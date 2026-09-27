@@ -13,3 +13,11 @@ Managed in ~/.files (github.com/benbalter/dotfiles, public) and symlinked to
   Brewfile `npm` entries.
 - Secrets live in 1Password. Use the `op` CLI (e.g. `op run --env-file=.env`)
   and never write secrets to disk or commit them.
+
+## Code
+
+- Prefer established open source libraries over custom code. Before writing
+  a parser, client, validator, or other utility, check whether the project
+  already depends on something that does it, then look for a well-maintained
+  library. Write custom code only when no suitable library exists, and say
+  why.
