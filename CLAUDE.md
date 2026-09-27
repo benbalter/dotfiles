@@ -40,7 +40,7 @@ script/doctor      # read-only health check: symlinks, .bak files, brew wrapper,
 
 **`script/update` runs headless** from a nightly launchd job with a minimal `PATH` and no TTY. Anything interactive (sudo prompts, cask upgrades, `script/audit-casks`, mole) must be guarded with `[ -t 1 ]`. Wrap each step in `step`, which records a failure without stopping the rest; the run exits 1 with a list of failed steps, and records the run in `~/.local/state/dotfiles/update-status` for `script/doctor`.
 
-**macOS defaults.** `macos_defaults.system` entries run with `become: true`, so they must use an absolute domain path like `/Library/Preferences/com.apple.foo`. A bare domain writes to root's preferences and has no effect, yet the task still reports success. The playbook reads back each value it writes to catch this. Firewall settings go through `socketfilterfw`, not `defaults`.
+**macOS defaults.** `macos_defaults.system` entries run with `become: true`, so they must use an absolute domain path like `/Library/Preferences/com.apple.foo`. A bare domain writes to root's preferences and has no effect, yet the task still reports success. The playbook reads back each system default and fails unless it matches `config.yml`, which catches this. Unlike other system changes, these deliberately run in CI so that read-back is exercised. Some keys are stripped by their daemon after the write (`AutomaticCheckEnabled`); drive those through their CLI instead. Firewall settings go through `socketfilterfw`, not `defaults`, and automatic update checks through `softwareupdate --schedule`.
 
 **`lib/`** (`globals`, `aliases`, `auto-complete`) is sourced by interactive `.zshrc`, so never add `set -e` or `set -u` there.
 

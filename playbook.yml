@@ -1,6 +1,15 @@
 - name: Configure development environment
   hosts: localhost
   connection: local
+  # The play inherits the caller's PATH, and on a fresh Mac setup runs before
+  # any shell has put Homebrew or mise's shims on it, so the bare mise, npx
+  # and claude commands below would fail with "command not found". lookup,
+  # not ansible_facts, because this is also templated for fact gathering.
+  environment:
+    PATH: >-
+      {{ lookup('ansible.builtin.env', 'HOME') }}/.local/share/mise/shims:{{
+      homebrew_brew_bin_path | default('/opt/homebrew/bin') }}:/opt/homebrew/bin:{{
+      lookup('ansible.builtin.env', 'PATH') }}
 
   pre_tasks:
     - name: Detect CI environment
@@ -179,12 +188,17 @@
             state: directory
             mode: "0755"
 
-        - name: Record launch agent plist checksums
+        # A dry run of the write below: it only reports which checksums
+        # changed. The stamps are written after the reload succeeds, or a
+        # failed bootout left the new checksum behind and the job was never
+        # reloaded.
+        - name: Compare launch agent plist checksums
           ansible.builtin.copy:
             content: "{{ lookup('ansible.builtin.file', playbook_dir + '/' + item) | hash('sha1') }}\n"
             dest: "{{ launch_agent_stamp_dir }}/{{ item | basename }}.sha1"
             mode: "0644"
           loop: "{{ launch_agents }}"
+          check_mode: true
           register: launch_agent_stamps
 
         # Pairs each agent's status with its checksum result (same loop order).
@@ -213,6 +227,13 @@
           delay: 2
           until: launch_agent_bootstrap.rc == 0
           changed_when: true
+
+        - name: Record launch agent plist checksums
+          ansible.builtin.copy:
+            content: "{{ lookup('ansible.builtin.file', playbook_dir + '/' + item) | hash('sha1') }}\n"
+            dest: "{{ launch_agent_stamp_dir }}/{{ item | basename }}.sha1"
+            mode: "0644"
+          loop: "{{ launch_agents }}"
 
     # Skipped under Workbrew, which installs and owns Homebrew itself. The role
     # would contribute nothing there -- brew is already installed, the tap/
@@ -256,6 +277,15 @@
       when: not is_ci
       tags: [homebrew, packages]
 
+    # The copy below fails when languagetool isn't installed: dropped from the
+    # Brewfile, or a --check run on a machine bundle hasn't set up yet.
+    - name: Check for the LanguageTool config directory
+      ansible.builtin.stat:
+        path: /opt/homebrew/etc/languagetool
+      register: languagetool_etc
+      when: not is_ci
+      tags: [languagetool]
+
     # become: the Homebrew prefix is owned by the user that runs brew, which is
     # `workbrew` (not the login user) under Workbrew, so this write needs root
     # and has to leave the file owned by the prefix owner.
@@ -267,7 +297,7 @@
         owner: "{{ homebrew_owner }}"
         group: "{{ ansible_facts['user_gid'] }}"
         mode: "0644"
-      when: not is_ci
+      when: not is_ci and languagetool_etc.stat.isdir | default(false)
       # The Brewfile's restart_service only fires when the formula changes, so
       # a config edit otherwise waited for the next upgrade or reboot.
       notify: Restart LanguageTool
@@ -399,6 +429,9 @@
         dockutil_install: "{{ is_ci }}"
       tags: [macos, dock]
 
+    # Unlike the security setters, these run in CI on purpose, although they
+    # change the runner's settings: CI is the only place the verify task below
+    # (the guard against bare-domain writes) gets exercised on every change.
     - name: Set MacOS system defaults
       community.general.osx_defaults:
         domain: "{{ item.domain }}"
@@ -426,7 +459,14 @@
         label: "{{ item.domain | basename }} {{ item.key }}"
       register: system_defaults_check
       changed_when: false
-      failed_when: (system_defaults_check.stdout | trim) in ["", "null"]
+      # Must match config.yml, not just exist. Booleans (and 1/0 integers,
+      # which cfprefsd may hand back as booleans) read back as true/false. A
+      # missing key reads back empty, so it fails too.
+      failed_when: >-
+        (system_defaults_check.stdout | trim | lower) not in
+        (['true', '1'] if item.value in [true, 1]
+        else ['false', '0'] if item.value in [false, 0]
+        else [item.value | string | lower])
       tags: [macos, defaults]
 
     - name: Remove MacOS defaults written to the wrong domain
@@ -481,7 +521,7 @@
         # aren't ours to change, and they mean nothing on a throwaway VM.
         - name: Enable Gatekeeper
           ansible.builtin.command:
-            cmd: spctl --master-enable
+            cmd: spctl --global-enable
           become: true
           when: not is_ci and 'assessments enabled' not in gatekeeper_status.stdout
           changed_when: true
@@ -493,6 +533,33 @@
           check_mode: false
           changed_when: false
           failed_when: "'assessments enabled' not in gatekeeper_verify.stdout"
+          when: not is_ci and not ansible_check_mode
+
+        # Not an AutomaticCheckEnabled default: softwareupdated strips that key
+        # from /Library/Preferences/com.apple.SoftwareUpdate, so the write only
+        # read back until the daemon next rewrote the file.
+        - name: Check automatic update checking
+          ansible.builtin.command:
+            cmd: softwareupdate --schedule
+          register: softwareupdate_schedule
+          check_mode: false
+          changed_when: false
+          when: not is_ci
+
+        - name: Enable automatic update checking
+          ansible.builtin.command:
+            cmd: softwareupdate --schedule on
+          become: true
+          when: not is_ci and 'turned on' not in softwareupdate_schedule.stdout
+          changed_when: true
+
+        - name: Verify automatic update checking is on
+          ansible.builtin.command:
+            cmd: softwareupdate --schedule
+          register: softwareupdate_verify
+          check_mode: false
+          changed_when: false
+          failed_when: "'turned on' not in softwareupdate_verify.stdout"
           when: not is_ci and not ansible_check_mode
 
         # The firewall can only be driven through socketfilterfw. Writing
@@ -699,13 +766,32 @@
           become: true
           when: not is_ci
 
+        # Deleting autoLoginUser alone left /etc/kcpassword behind, which
+        # holds the login password under a reversible XOR encoding.
+        - name: Remove the saved automatic login password
+          ansible.builtin.file:
+            path: /etc/kcpassword
+            state: absent
+          become: true
+          when: not is_ci
+
+        - name: Verify automatic login is disabled
+          ansible.builtin.command:
+            cmd: defaults read /Library/Preferences/com.apple.loginwindow autoLoginUser
+          register: autologin_verify
+          check_mode: false
+          changed_when: false
+          failed_when: autologin_verify.rc == 0
+          when: not is_ci and not ansible_check_mode
+
         # Wake for network access lets the machine be woken by unsolicited
         # traffic. On a laptop that buys nothing and keeps a sleeping machine
-        # reachable. `pmset -g` reports the live value, so no separate read-back
-        # task is needed beyond this check.
+        # reachable. `pmset -g custom` reports the live value for every power
+        # source (plain `pmset -g` shows only the current one, while the setter
+        # uses -a), so no separate read-back task is needed beyond this check.
         - name: Check wake for network access
           ansible.builtin.command:
-            cmd: pmset -g
+            cmd: pmset -g custom
           register: pmset_state
           changed_when: false
           check_mode: false

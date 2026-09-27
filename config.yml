@@ -132,16 +132,10 @@ macos_defaults:
       key: AutoUpdate
       type: bool
       value: true
-    - name: App Store auto restart
-      domain: /Library/Preferences/com.apple.commerce
-      key: AutoUpdateRestartRequired
-      type: bool
-      value: true
-    - name: App Store Auto check
-      domain: /Library/Preferences/com.apple.SoftwareUpdate
-      key: AutomaticCheckEnabled
-      type: bool
-      value: true
+    # No AutomaticCheckEnabled here: softwareupdated strips it from this file,
+    # so it only read back right after the write. The playbook's security block
+    # drives it through `softwareupdate --schedule` instead. The pre-Mojave
+    # com.apple.commerce AutoUpdateRestartRequired key went the same way.
     - name: Set lock screen message
       domain: /Library/Preferences/com.apple.loginwindow
       key: LoginwindowText
@@ -247,11 +241,6 @@ macos_defaults:
       type: integer
       value: 300
       host: currentHost
-    - name: Schedule auto update
-      domain: com.apple.SoftwareUpdate
-      key: ScheduleFrequency
-      type: integer
-      value: 1
     - name: Secure keyboard entry in Terminal
       domain: com.apple.Terminal
       key: SecureKeyboardEntry
