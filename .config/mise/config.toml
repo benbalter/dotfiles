@@ -34,7 +34,7 @@ ruby = "3.4"
 # Language server for Claude Code's typescript-lsp plugin (falls back to the
 # global typescript when a project doesn't have its own; 7.x dropped tsserver)
 "npm:typescript-language-server" = "latest"
-"npm:typescript" = "6"
+"npm:typescript" = "7"
 # Installs the playbook's global Claude Code skills. Here like the other CLIs,
 # so `up` upgrades it, rather than `npx -y skills` fetching it on every run.
 "npm:skills" = "latest"
