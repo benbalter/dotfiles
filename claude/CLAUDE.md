@@ -25,6 +25,14 @@ and symlinked to `~/.claude/CLAUDE.md`. Don't put anything private here.
   1Password prompts again. Don't disable signing or pass `--no-gpg-sign`. When
   a commit is chained with `git push` / `gh pr create`, check it succeeded
   before pushing or opening the PR.
+- The shell is [zsh](https://www.zsh.org), which doesn't word-split unquoted
+  variables: `for r in $LIST` runs once with the whole string. Use an array
+  (`for r in ${=LIST}` or `list=(a b c)`), or wrap bash-style loops in
+  `bash <<'EOF' … EOF`.
+- For multi-line scripts, commit messages, PR bodies, or any text with
+  quotes, `$`, or backticks, use a quoted heredoc (`<<'EOF'`) so the shell
+  doesn't expand or mangle it. Pass it via `-F -` / `--body-file -` / stdin
+  rather than nesting it inside a double-quoted `-m "…"` argument.
 
 ## Code
 
