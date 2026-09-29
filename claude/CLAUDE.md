@@ -16,6 +16,15 @@ and symlinked to `~/.claude/CLAUDE.md`. Don't put anything private here.
 - Secrets live in 1Password. Use the
   [`op` CLI](https://developer.1password.com/docs/cli/) (e.g. `op run --env-file=.env`)
   and never write secrets to disk or commit them.
+- On macOS, git commits are SSH-signed through
+  [1Password's `op-ssh-sign`](https://developer.1password.com/docs/ssh/git-commit-signing/)
+  (set in [`.gitconfig.macos`](https://github.com/benbalter/dotfiles/blob/main/.gitconfig.macos)).
+  If `git commit` fails with `1Password: failed to fill whole buffer` /
+  `fatal: failed to write commit object`, the signing prompt timed out or
+  wasn't approved. Nothing is wrong with the repo: rerun the same commit so
+  1Password prompts again. Don't disable signing or pass `--no-gpg-sign`. When
+  a commit is chained with `git push` / `gh pr create`, check it succeeded
+  before pushing or opening the PR.
 
 ## Code
 
