@@ -94,6 +94,8 @@ macOS below applies.
 - Record timelines in the words someone used ("7–10 days"), not a calendar
   date I didn't give. If a derived date helps, show it as a range with the
   math.
+- Estimate development time as Claude doing the work with me reviewing it,
+  not as a human developer would: hours, not days or weeks.
 - A draft isn't the message I sent; I usually rewrite before sending. When a
   decision turns on what someone actually received, ask me for the sent text.
 - When editing my prose, use the `no-ai-slop` skill, which preserves voice.
