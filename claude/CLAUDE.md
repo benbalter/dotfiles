@@ -78,7 +78,10 @@ macOS below applies.
   `git blame`, linked issues). Say what you found when it bears on the change.
 - Ship the smallest useful change, then iterate.
 - Everything should have a URL: when you mention an issue, PR, commit, doc,
-  or run that has one, link it.
+  or run that has one, link it. Local files count too: when you create,
+  edit, or point me to a file, give a clickable markdown link with its
+  absolute path (`[name.md](/abs/path/name.md)`), so I don't have to ask
+  where it is.
 - Write down the why. Commit messages, PR bodies, and comments should say
   why a change was made, not just what changed.
 - Don't hand me work a script or tool could do. Automate it or do it
