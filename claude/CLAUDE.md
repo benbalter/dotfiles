@@ -20,6 +20,7 @@ Managed in [benbalter/dotfiles](https://github.com/benbalter/dotfiles) (public) 
 
 ## Code
 
+- For new websites and web apps, use [Astro](https://astro.build), which my sites already run on, unless the project already uses another framework.
 - For web UI styling, prefer [Tailwind CSS](https://tailwindcss.com) utilities over custom CSS unless the project already follows a different styling convention.
 - Prefer established open source libraries over custom code. Before writing a parser, client, validator, or other utility, check whether the project already depends on something that does it, then look for a well-maintained library. Write custom code only when no suitable library exists, and say why.
 - Check for prior art before building, reverse-engineering, or proposing something new: search the web, GitHub, my repos in `~/projects`, and [github.com/benbalter](https://github.com/benbalter). It may already exist, or I may already have it.
