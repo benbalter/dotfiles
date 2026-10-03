@@ -206,3 +206,12 @@ refute_called() {
 	run_update 0
 	grep -qE '^skip casks=foo bar +mas=1234 *$' "$LOG" || fail "$(cat "$LOG")"
 }
+
+@test "update tells Homebrew not to ask before upgrading" {
+	# Homebrew asks y/N before upgrading by default, stalling interactive runs.
+	STUBS="$STUBS"'
+		brew() { echo "brew $*${HOMEBREW_NO_ASK:+ (no-ask)}" >>"$LOG"; return $STUB_STATUS; }
+	'
+	run_update 0
+	grep -q '^brew upgrade.* (no-ask)$' "$LOG" || fail "brew upgrade ran without HOMEBREW_NO_ASK: $(cat "$LOG")"
+}

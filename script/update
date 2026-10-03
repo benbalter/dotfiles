@@ -120,6 +120,11 @@ if [ "$(uname)" = "Darwin" ] && command -v brew >/dev/null; then
 	# accumulated this way. Non-auto-updating casks still upgrade normally.
 	export HOMEBREW_NO_UPGRADE_AUTO_UPDATES_CASKS=1
 
+	# Homebrew now asks for confirmation before upgrading or installing by
+	# default, which stalled every interactive `up` at a y/N prompt. This
+	# script exists to apply updates, so don't ask.
+	export HOMEBREW_NO_ASK=1
+
 	# Cask upgrades replace GUI apps: they need an interactive sudo and a GUI
 	# session to quit the running app, neither of which the headless nightly
 	# launchd job has. From a terminal, upgrade everything; when headless,
