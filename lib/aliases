@@ -122,7 +122,7 @@ npm() {
 	if [ -z "${NPM_TOKEN-}" ] && command -v op >/dev/null 2>&1; then
 		case "${1-}" in
 			publish | unpublish | deprecate | dist-tag | owner | access | token | whoami)
-				NPM_TOKEN="$(op read 'op://Private/npm token/credential')" command npm "$@"
+				NPM_TOKEN="$(op read 'op://Private/hhpwgv7riqeklozdk5sjs4lel4/Saved on www.npmjs.com/access token')" command npm "$@"
 				return
 				;;
 		esac
