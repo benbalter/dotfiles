@@ -56,6 +56,7 @@ Managed in [benbalter/dotfiles](https://github.com/benbalter/dotfiles) (public) 
 ## Drafting text for me to paste
 
 - The terminal renders a quote bar alongside drafted text, and it comes along when I copy. So whenever you show a draft I'll paste elsewhere (email, reply, message, PR or issue comment), also put it on my clipboard with `pbcopy` (macOS only), and copy it again after every revision, so I can paste it clean without asking. Use a quoted heredoc (`pbcopy <<'EOF'`) so the shell doesn't mangle quotes or `$`. Don't hard-wrap prose meant for pasting.
+- For casual messages to Gen Z recipients (texts or DMs to neighbors, friends, younger folks), work in a touch of subtle Gen Z slang to connect: one or two self-aware bits like "not the vibe" or "a W" in asides or jokes, never in the actual ask, and only slang you're sure of. I'm a millennial, so more than that reads as parody. Skip it in anything professional.
 - When drafting an email, new or reply, also give me a Gmail compose link that prefills it whenever you know the recipient: `https://mail.google.com/mail/?view=cm&fs=1&to=…&cc=…&bcc=…&su=…&body=…`, with every value URL-encoded (newlines as `%0A`). Omit empty fields.
 - For events, give me a Google Calendar link that prefills it: `https://calendar.google.com/calendar/render?action=TEMPLATE&text=…&dates=…&details=…&location=…`, URL-encoded, with `dates` as `YYYYMMDDTHHMMSS/YYYYMMDDTHHMMSS` (or `YYYYMMDD/YYYYMMDD` for all-day). If you write an `.ics` file, link it too.
 
