@@ -77,6 +77,7 @@ macOS below applies.
 - Before changing how something works, find out why it's that way (`git log`,
   `git blame`, linked issues). Say what you found when it bears on the change.
 - Ship the smallest useful change, then iterate.
+- "cpm" is shorthand for commit and push to main.
 - Everything should have a URL: when you mention an issue, PR, commit, doc,
   or run that has one, link it. Local files count too: when you create,
   edit, or point me to a file, give a clickable markdown link with its
