@@ -511,6 +511,30 @@
       when: not ansible_check_mode
       tags: [macos, defaults]
 
+    # osx_defaults can only replace DesktopViewSettings whole, which would
+    # reset icon size and spacing. Round-trip the domain through `defaults`
+    # rather than editing the plist on disk, which cfprefsd would overwrite
+    # with its cached copy.
+    - name: Sort desktop icons
+      ansible.builtin.shell: |
+        set -eu
+        tmp="$(mktemp)"
+        trap 'rm -f "$tmp"' EXIT
+        defaults export com.apple.finder "$tmp"
+        pb() { /usr/libexec/PlistBuddy -c "$1" "$tmp"; }
+        key=:DesktopViewSettings:IconViewSettings:arrangeBy
+        [ "$(pb "Print $key" 2>/dev/null || true)" != "$WANT" ] || exit 0
+        pb "Add :DesktopViewSettings dict" 2>/dev/null || true
+        pb "Add :DesktopViewSettings:IconViewSettings dict" 2>/dev/null || true
+        pb "Set $key $WANT" 2>/dev/null || pb "Add $key string $WANT"
+        defaults import com.apple.finder "$tmp"
+        echo changed
+      environment:
+        WANT: "{{ macos_desktop_arrange_by }}"
+      register: desktop_arrange
+      changed_when: "'changed' in desktop_arrange.stdout"
+      tags: [macos, defaults]
+
     - name: Configure security settings
       tags: [macos, security]
       block:

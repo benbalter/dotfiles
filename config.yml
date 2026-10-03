@@ -309,6 +309,12 @@ macos_defaults:
       domain: com.apple.screensaver
       key: idleTime
 
+# Desktop icons' Finder "Sort By" (#23): name, kind, dateAdded,
+# dateModified, dateCreated, size, label, grid (snap only) or none. It lives
+# in a nested dict that osx_defaults can't write, so the playbook sets it
+# with PlistBuddy instead of through macos_defaults.
+macos_desktop_arrange_by: name
+
 # Application Firewall policy. macOS defaults to auto-allowing any *downloaded*
 # signed (notarized) app to accept inbound connections, which quietly undoes
 # much of the point of turning the firewall on -- Dropbox, Spotify and friends
