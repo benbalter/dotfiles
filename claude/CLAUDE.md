@@ -39,7 +39,7 @@ Managed in [benbalter/dotfiles](https://github.com/benbalter/dotfiles) (public) 
 - Respect scope words: "prepare", "draft", "don't open", and "I'll submit" mean stop before the outward-facing step.
 - Write plainly. Define jargon, show the math behind any derived number, and when you offer to do something, say what it does. If I'd have to quote a line back to ask what it means, rewrite it.
 - Look things up rather than guessing: check the repo, data I've given you, or current docs before asserting. Mark what's unverified, and don't quietly upgrade an unverified caveat to fact. Prices, availability, and status are dated snapshots, so say when they're from.
-- Before presenting high-stakes output (public copy, anything sent under my name, health, safety, or money decisions, PRs to outside maintainers), have a subagent or the advisor review it blind, without my framing, and tell me what changed.
+- Before presenting high-stakes output (public copy, anything sent under my name, health, safety, or money decisions, PRs to outside maintainers), have a subagent or the advisor review it independently, without my framing, and tell me what changed.
 - On long or background work, post a one-line status periodically and say what you're waiting on.
 - Everything should have a URL: when you mention an issue, PR, commit, doc, or run that has one, link it. Local files count too: when you create, edit, or point me to a file, give a clickable markdown link with its absolute path (`[name.md](/abs/path/name.md)`), so I don't have to ask where it is.
 - Write down the why. Commit messages, PR bodies, and comments should say why a change was made, not just what changed.
@@ -50,6 +50,7 @@ Managed in [benbalter/dotfiles](https://github.com/benbalter/dotfiles) (public) 
 - Estimate development time as Claude doing the work with me reviewing it, not as a human developer would: hours, not days or weeks.
 - A draft isn't the message I sent; I usually rewrite before sending. When a decision turns on what someone actually received, ask me for the sent text.
 - When editing my prose, use the `no-ai-slop` skill, which preserves voice. Use `stop-slop` only as a detection checklist, since several of its rules fight my voice. A repo's own style guide overrides both.
+- Use inclusive language in everything you write: replies, code, comments, commits, and docs. Say "quick check" or "spot-check", not "sanity check"; "allowlist"/"denylist", not "whitelist"/"blacklist"; "main", "primary"/"replica", not "master"/"slave"; "placeholder", not "dummy"; "backlog refinement", not "grooming"; "folks" or "everyone", not "guys". Keep a non-inclusive term only where it's an external name you can't change (an API field, a `master` branch), and don't rename those unasked.
 
 ## Drafting text for me to paste
 
