@@ -68,7 +68,7 @@ sudo -v
 The playbook installs Homebrew and the `Brewfile`, Mac App Store apps, dotfile
 symlinks, oh-my-zsh, mise runtimes and CLIs, Claude Code settings, the Dock,
 system and user defaults, and security settings (firewall, Gatekeeper, TouchID
-for `sudo`, and FileVault). It is macOS-only; on Linux, use `install.sh`.
+for `sudo`, and FileVault). Setup then runs `up` (`script/update`) once. It is macOS-only; on Linux, use `install.sh`.
 
 To run part of the playbook, pass tags (`dotfiles`, `packages`, `homebrew`,
 `mise`, `claude`, `macos`, `defaults`, `dock`, `security`, `ohmyzsh`, …),

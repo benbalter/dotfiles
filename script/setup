@@ -13,3 +13,9 @@ script/bootstrap
 
 echo "==> Running Ansible playbook..."
 script/ansible
+
+# The playbook installs packages but doesn't run the rest of `up` (mas
+# upgrade, npm ci, bundle, pip, oh-my-zsh, tldr), so a new machine would
+# otherwise wait for the first nightly run to get them (#73).
+echo "==> Updating everything..."
+script/update
