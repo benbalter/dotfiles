@@ -33,31 +33,25 @@
 
 The `Brewfile` manages formulae, casks, Mac App Store apps, and VS Code extensions. Language runtimes and global npm CLIs are pinned in mise (`.config/mise/config.toml`). Highlights:
 
-| Category       | Examples                                                  |
-| -------------- | --------------------------------------------------------- |
-| Languages      | Ruby, Node, Python (pinned via mise), Go, Rust            |
-| Dev tools      | git, gh, delta, fzf, ripgrep, jq, mise, uv                |
-| Linters        | shellcheck, shfmt, actionlint, vale                       |
-| Infrastructure | tfsec, docker, act                                        |
-| Applications   | Ghostty, VS Code, 1Password, Chrome, and more             |
+| Category       | Examples                                       |
+| -------------- | ---------------------------------------------- |
+| Languages      | Ruby, Node, Python (pinned via mise), Go, Rust |
+| Dev tools      | git, gh, delta, fzf, ripgrep, jq, mise, uv     |
+| Linters        | shellcheck, shfmt, actionlint, vale            |
+| Infrastructure | tfsec, docker, act                             |
+| Applications   | Ghostty, VS Code, 1Password, Chrome, and more  |
 
 ## Setting up a new machine from scratch
 
-[MIGRATION.md](MIGRATION.md) has the full checklist for moving from an old
-machine. The short version:
+[MIGRATION.md](MIGRATION.md) has the full checklist for moving from an old machine. The short version:
 
 ### Before you start
 
-Install the Xcode Command Line Tools (`xcode-select --install`). Until then
-`git` and `python3` are stubs that just prompt for them. Sign in to the App
-Store too: the `Brewfile` installs Mac App Store apps through `mas`, and a
-failed `mas` install stops the playbook partway. Homebrew is installed by the
-playbook (or, on a Workbrew-managed Mac, left to Workbrew).
+Install the Xcode Command Line Tools (`xcode-select --install`). Until then `git` and `python3` are stubs that just prompt for them. Sign in to the App Store too: the `Brewfile` installs Mac App Store apps through `mas`, and a failed `mas` install stops the playbook partway. Homebrew is installed by the playbook (or, on a Workbrew-managed Mac, left to Workbrew).
 
 ### Install
 
-Keep an authenticated sudo session open while setup runs; it covers Homebrew
-and App Store installs.
+Keep an authenticated sudo session open while setup runs; it covers Homebrew and App Store installs.
 
 ```sh
 git clone https://github.com/benbalter/dotfiles ~/.files
@@ -65,14 +59,9 @@ sudo -v
 ~/.files/script/setup
 ```
 
-The playbook installs Homebrew and the `Brewfile`, Mac App Store apps, dotfile
-symlinks, oh-my-zsh, mise runtimes and CLIs, Claude Code settings, the Dock,
-system and user defaults, and security settings (firewall, Gatekeeper, TouchID
-for `sudo`, and FileVault). Setup then runs `up` (`script/update`) once. It is macOS-only; on Linux, use `install.sh`.
+The playbook installs Homebrew and the `Brewfile`, Mac App Store apps, dotfile symlinks, oh-my-zsh, mise runtimes and CLIs, Claude Code settings, the Dock, system and user defaults, and security settings (firewall, Gatekeeper, TouchID for `sudo`, and FileVault). Setup then runs `up` (`script/update`) once. It is macOS-only; on Linux, use `install.sh`.
 
-To run part of the playbook, pass tags (`dotfiles`, `packages`, `homebrew`,
-`mise`, `claude`, `macos`, `defaults`, `dock`, `security`, `ohmyzsh`, …),
-and add `--check --diff` to preview:
+To run part of the playbook, pass tags (`dotfiles`, `packages`, `homebrew`, `mise`, `claude`, `macos`, `defaults`, `dock`, `security`, `ohmyzsh`, …), and add `--check --diff` to preview:
 
 ```sh
 cd ~/.files && . env/bin/activate
@@ -81,39 +70,22 @@ ansible-playbook playbook.yml --tags dotfiles --ask-become-pass
 
 ### After setup
 
-- **Log out and back in.** FileVault is enabled at logout, and the launch
-  agents (nightly `up`, Downloads cleanup) load at login.
-- **1Password:** sign in, then turn on Settings → Developer → **Use the SSH
-  agent** and **Integrate with 1Password CLI**. Git signs commits with the
-  1Password SSH key and SSH uses its agent, so both fail until this is done.
+- **Log out and back in.** FileVault is enabled at logout, and the launch agents (nightly `up`, Downloads cleanup) load at login.
+- **1Password:** sign in, then turn on Settings → Developer → **Use the SSH agent** and **Integrate with 1Password CLI**. Git signs commits with the 1Password SSH key and SSH uses its agent, so both fail until this is done.
 - **GitHub:** `gh auth login`. Git uses it as its HTTPS credential helper.
 - Run `script/doctor` to confirm everything is linked and healthy.
 
 ## GitHub Codespaces
 
-These dotfiles are automatically applied to new Codespaces when configured in
-your [GitHub settings](https://github.com/settings/codespaces). The `install.sh`
-script symlinks dotfiles, installs essential CLI tools (`delta`, `zoxide`, `fzf`)
-with mise, sets up oh-my-zsh, and sets zsh as the default shell. macOS-specific
-configuration (SSH, GPG agent, Homebrew, commit signing through 1Password,
-etc.) is skipped, so Codespaces' own commit signing and credentials apply. The
-same path works in any Linux container; it's the only Linux target.
+These dotfiles are automatically applied to new Codespaces when configured in your [GitHub settings](https://github.com/settings/codespaces). The `install.sh` script symlinks dotfiles, installs essential CLI tools (`delta`, `zoxide`, `fzf`) with mise, sets up oh-my-zsh, and sets zsh as the default shell. macOS-specific configuration (SSH, GPG agent, Homebrew, commit signing through 1Password, etc.) is skipped, so Codespaces' own commit signing and credentials apply. The same path works in any Linux container; it's the only Linux target.
 
 ## Development
 
 ### Updating
 
-Run `up` (alias for `script/update`). It pulls this repo (when the tree is
-clean), upgrades Homebrew and installs any new `Brewfile` entries, upgrades
-Mac App Store apps, mise tools (including global npm CLIs), oh-my-zsh,
-and tldr pages, refreshes this repo's npm/gem/Python/Ansible dependencies, and
-lists pending macOS updates without installing them.
+Run `up` (alias for `script/update`). It pulls this repo (when the tree is clean), upgrades Homebrew and installs any new `Brewfile` entries, upgrades Mac App Store apps, mise tools (including global npm CLIs), oh-my-zsh, and tldr pages, refreshes this repo's npm/gem/Python/Ansible dependencies, and lists pending macOS updates without installing them.
 
-A launch agent also runs it nightly at midnight, logging to
-`~/Library/Logs/dotfiles-update.log`. With no terminal attached, it skips
-anything that needs a human: cask and App Store upgrades, installing new casks
-and App Store apps, the `git pull`, `script/audit-casks`, and mole. A failed step doesn't stop the rest, but the
-run exits non-zero, and `script/doctor` reports which steps failed.
+A launch agent also runs it nightly at midnight, logging to `~/Library/Logs/dotfiles-update.log`. With no terminal attached, it skips anything that needs a human: cask and App Store upgrades, installing new casks and App Store apps, the `git pull`, `script/audit-casks`, and mole. A failed step doesn't stop the rest, but the run exits non-zero, and `script/doctor` reports which steps failed.
 
 ### Testing
 
@@ -131,9 +103,7 @@ Tests cover config file validation, script syntax, permissions and strict-mode h
 script/lint
 ```
 
-Needs `script/bootstrap` (ansible-lint and yamllint run from the venv),
-`npm ci` (remark), and `bundle install` (rubocop). Runs all seven linters, even
-after one fails, then lists the ones that failed:
+Needs `script/bootstrap` (ansible-lint and yamllint run from the venv), `npm ci` (remark), and `bundle install` (rubocop). Runs all seven linters, even after one fails, then lists the ones that failed:
 
 | Linter       | What it checks           |
 | ------------ | ------------------------ |
