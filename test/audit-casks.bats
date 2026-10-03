@@ -92,7 +92,9 @@ teardown() {
 run_audit() {
 	# Named explicitly: with neither variable set, audit-casks reads the repo's
 	# own Brewfile.
-	run env -u HOMEBREW_BUNDLE_FILE HOME="$TEST_HOME" PATH="$STUB_BIN:$PATH" \
+	# AUDIT_KEEP is unset unless a test passes it, so a value exported in the
+	# caller's shell can't leak in.
+	run env -u HOMEBREW_BUNDLE_FILE -u AUDIT_KEEP ${AUDIT_KEEP:+AUDIT_KEEP="$AUDIT_KEEP"} HOME="$TEST_HOME" PATH="$STUB_BIN:$PATH" \
 		HOMEBREW_BUNDLE_FILE_GLOBAL="$TEST_HOME/.Brewfile" AUDIT_STALE_DAYS=14 \
 		"$REPO_ROOT/script/audit-casks" "$@"
 }
@@ -161,6 +163,36 @@ run_audit() {
 	[ "$status" -eq 0 ] || fail "exited $status: $output"
 	grep -qxF "cask 'zz-stale'" "$TEST_HOME/dotfiles/Brewfile" ||
 		fail "running app proposed: $(cat "$TEST_HOME/dotfiles/Brewfile")"
+}
+
+@test "audit-casks only counts processes inside the bundle itself" {
+	# A same-named bundle elsewhere, or a sibling whose name starts the same,
+	# says nothing about this one.
+	cat >"$TEST_HOME/running" <<-EOF
+		/elsewhere$TEST_HOME/Applications/Zz Stale.app/Contents/MacOS/zz
+		$TEST_HOME/Applications/Zz Stale Pro.app/Contents/MacOS/zz
+	EOF
+	run_audit --comment
+	[ "$status" -eq 0 ] || fail "exited $status: $output"
+	grep -q "^# cask 'zz-stale' # PROPOSED REMOVAL" "$TEST_HOME/dotfiles/Brewfile" ||
+		fail "unrelated process kept zz-stale: $(cat "$TEST_HOME/dotfiles/Brewfile")"
+}
+
+@test "audit-casks report labels running and kept casks" {
+	echo "$TEST_HOME/Applications/Zz Stale.app/Contents/MacOS/zz" >"$TEST_HOME/running"
+	AUDIT_KEEP=zz-pkg run_audit
+	[ "$status" -eq 0 ] || fail "exited $status: $output"
+	echo "$output" | grep -q 'zz-stale .*running now' || fail "$output"
+	echo "$output" | grep -q 'zz-pkg .*kept (AUDIT_KEEP)' || fail "$output"
+}
+
+@test "audit-casks keeps steam by default" {
+	# Steam's /Applications bundle is only a bootstrapper, so its last-opened
+	# date goes stale while the client is in regular use.
+	sed -i.orig "s/^cask 'zz-stale'$/cask 'steam'/" "$TEST_HOME/dotfiles/Brewfile"
+	run_audit
+	[ "$status" -eq 0 ] || fail "exited $status: $output"
+	echo "$output" | grep -q 'steam .*kept (AUDIT_KEEP)' || fail "$output"
 }
 
 @test "audit-casks never proposes casks in AUDIT_KEEP" {

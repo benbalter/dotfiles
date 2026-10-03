@@ -1,7 +1,8 @@
 #!/usr/bin/env bats
-# Test script/update's headless (nightly launchd) behavior with every external
-# command stubbed out, so nothing is actually upgraded.
+# Test script/update headless (nightly launchd) and from a terminal, with every
+# external command stubbed out, so nothing is actually upgraded.
 # shellcheck disable=SC2016 # stub bodies expand when they run, not here
+# shellcheck disable=SC2030,SC2031 # each test extends STUBS for itself alone
 
 load test_helper
 
@@ -55,6 +56,15 @@ run_update() {
 	# `run` captures stdout, so [ -t 1 ] is false: the headless nightly path.
 	run env -u ZSH -u XDG_CACHE_HOME -u XDG_STATE_HOME HOME="$FAKE_ROOT" DOTFILES_ROOT="$FAKE_ROOT" \
 		LOG="$LOG" STUB_STATUS="$1" STUBS="$STUBS" \
+		sh -c 'eval "$STUBS"; . "$0"' "$REPO_ROOT/script/update"
+}
+
+run_update_tty() {
+	# Under a pseudo-terminal, [ -t 1 ] is true: the path a manual `up` takes.
+	# DOTFILES_UPDATE_PULLED skips the self-update pull, which needs a real repo.
+	run env -u ZSH -u XDG_CACHE_HOME -u XDG_STATE_HOME HOME="$FAKE_ROOT" DOTFILES_ROOT="$FAKE_ROOT" \
+		LOG="$LOG" STUB_STATUS="$1" STUBS="$STUBS" DOTFILES_UPDATE_PULLED=1 \
+		python3 -c 'import pty, sys; sys.exit(pty.spawn(sys.argv[1:]) >> 8)' \
 		sh -c 'eval "$STUBS"; . "$0"' "$REPO_ROOT/script/update"
 }
 
@@ -214,4 +224,20 @@ refute_called() {
 	'
 	run_update 0
 	grep -q '^brew upgrade.* (no-ask)$' "$LOG" || fail "brew upgrade ran without HOMEBREW_NO_ASK: $(cat "$LOG")"
+	# The interactive run is the one that actually stopped at the prompt.
+	: >"$LOG"
+	run_update_tty 0
+	[ "$status" -eq 0 ] || fail "update exited $status: $output"
+	grep -qxF 'brew upgrade (no-ask)' "$LOG" || fail "interactive brew upgrade ran without HOMEBREW_NO_ASK: $(cat "$LOG")"
+}
+
+@test "interactive update runs the terminal-only steps" {
+	run_update_tty 0
+	[ "$status" -eq 0 ] || fail "update exited $status: $output"
+	# Casks upgrade too, not just formulae.
+	assert_called "brew upgrade"
+	refute_called '^brew upgrade --formula'
+	assert_called "audit-casks --comment"
+	assert_called "mas upgrade"
+	assert_called "mole clean"
 }

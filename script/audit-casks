@@ -137,7 +137,9 @@ cask_probe() {
 		return
 	fi
 
-	if printf '%s\n' "$RUNNING" | grep -qF "$path/"; then
+	# Anchored at the start, so ~/Applications/Foo.app/… doesn't count as
+	# /Applications/Foo.app in use. The trailing slash keeps "Foo Pro.app" out.
+	if printf '%s\n' "$RUNNING" | awk -v p="$path/" 'index($0, p) == 1 { found = 1 } END { exit !found }'; then
 		printf '%d %s\n' 0 "running now"
 		return
 	fi
