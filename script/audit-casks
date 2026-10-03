@@ -24,6 +24,13 @@ set -eu
 
 STALE_DAYS="${AUDIT_STALE_DAYS:-14}"
 
+# Casks Spotlight can't date honestly, so they're never proposed. Steam's
+# /Applications bundle is only a bootstrapper: the client runs from
+# ~/Library/Application Support/Steam/Steam.AppBundle, so the bundle's
+# last-opened date went 50 days stale while Steam was in regular use. Set
+# AUDIT_KEEP (space-separated tokens) to override.
+KEEP="${AUDIT_KEEP:-steam}"
+
 MODE=report
 case "${1:-}" in
 	--comment | --propose) MODE=comment ;;
@@ -51,6 +58,13 @@ BREWFILE="${HOMEBREW_BUNDLE_FILE:-${HOMEBREW_BUNDLE_FILE_GLOBAL:-$(cd "$(dirname
 }
 
 now=$(date +%s)
+
+# Executables of every running process, one full path per line (BSD ps prints
+# the path for comm). Spotlight only bumps an app's last-opened date when it's
+# launched from Finder, the Dock or `open`, so an app that lives in the
+# background via its login-item agent (OpenLogi) read as weeks idle while
+# running all day. Anything executing from inside a bundle counts as in use.
+RUNNING=$(ps -axo comm= 2>/dev/null || true)
 
 list_casks() { sed -n "s/^cask '\\([^']*\\)'.*/\\1/p" "$BREWFILE"; }
 
@@ -93,9 +107,16 @@ find_app() {
 }
 
 # Echo "<days> <label>". days is the first token; -1 means unmeasurable
-# (app-less, not installed, or no recorded open date) and must never be pruned.
+# (app-less, not installed, or no recorded open date) or kept, and must never
+# be pruned.
 cask_probe() {
 	cask="$1"
+	case " $KEEP " in
+		*" $cask "*)
+			printf '%d %s\n' -1 "kept (AUDIT_KEEP)"
+			return
+			;;
+	esac
 	app=$(app_for "$cask")
 	if [ -z "$app" ]; then
 		# No app on record: guess from the display name, as-is ("Google
@@ -113,6 +134,11 @@ cask_probe() {
 		fi
 	elif ! path=$(find_app "$app"); then
 		printf '%d %s\n' -1 "(not installed)"
+		return
+	fi
+
+	if printf '%s\n' "$RUNNING" | grep -qF "$path/"; then
+		printf '%d %s\n' 0 "running now"
 		return
 	fi
 

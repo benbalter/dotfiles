@@ -39,6 +39,12 @@ setup() {
 		cat "$HOME/lastused/$(basename "$last")"
 	EOF
 
+	# ps lists whatever executables the test records as running.
+	cat >"$STUB_BIN/ps" <<-'EOF'
+		#!/bin/sh
+		cat "$HOME/running" 2>/dev/null || true
+	EOF
+
 	# BSD `date -j -f fmt "T-<days>" +%s` → NOW minus that many days;
 	# `date +%s` → NOW.
 	cat >"$STUB_BIN/date" <<-EOF
@@ -145,6 +151,26 @@ run_audit() {
 	[ "$status" -eq 0 ] || fail "exited $status: $output"
 	echo "$output" | grep -q 'nothing to propose' || fail "$output"
 	[ "$(cat "$TEST_HOME/dotfiles/Brewfile")" = "$before" ] || fail "Brewfile changed"
+}
+
+@test "audit-casks counts an app with a running helper as in use" {
+	# A login-item agent inside the bundle keeps running, but Spotlight's
+	# last-opened date never moves (OpenLogi).
+	echo "$TEST_HOME/Applications/Zz Stale.app/Contents/Library/LoginItems/Agent.app/Contents/MacOS/agent" >"$TEST_HOME/running"
+	run_audit --comment
+	[ "$status" -eq 0 ] || fail "exited $status: $output"
+	grep -qxF "cask 'zz-stale'" "$TEST_HOME/dotfiles/Brewfile" ||
+		fail "running app proposed: $(cat "$TEST_HOME/dotfiles/Brewfile")"
+}
+
+@test "audit-casks never proposes casks in AUDIT_KEEP" {
+	AUDIT_KEEP="zz-stale zz-pkg" run_audit --comment
+	[ "$status" -eq 0 ] || fail "exited $status: $output"
+	brewfile="$TEST_HOME/dotfiles/Brewfile"
+	for cask in zz-stale zz-pkg; do
+		grep -qxF "cask '$cask'" "$brewfile" || fail "kept $cask proposed: $(cat "$brewfile")"
+	done
+	grep -q "^# cask 'zz-named' # PROPOSED REMOVAL" "$brewfile" || fail "keep list leaked: $(cat "$brewfile")"
 }
 
 @test "audit-casks rejects unknown arguments" {
