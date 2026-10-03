@@ -55,6 +55,7 @@ macOS below applies.
   approve the prompt rather than retrying. Don't disable signing or pass
   `--no-gpg-sign`. When a commit is chained with `git push` /
   `gh pr create`, check it succeeded before pushing or opening the PR.
+  Tags are signed too (`tag.gpgSign`), so `git tag` needs `-m`.
 
 ## Code
 
@@ -66,6 +67,21 @@ macOS below applies.
   already depends on something that does it, then look for a well-maintained
   library. Write custom code only when no suitable library exists, and say
   why.
+- Check for prior art before building, reverse-engineering, or proposing
+  something new: search the web, GitHub, my repos in `~/projects`, and
+  [github.com/benbalter](https://github.com/benbalter). It may already exist,
+  or I may already have it.
+- Keep one source of truth. Edit the source, not generated or mirrored
+  copies, and don't restate config or facts in a second file. If a copy is
+  unavoidable, guard it with a test.
+- Run the repo's lint, typecheck, and tests before committing. Where pushing
+  to main deploys, "cpm" ships to production. Lint and format only the files
+  you touched, stage specific paths rather than `git add -A`, and never commit
+  scratch output or generated artifacts.
+- After a PR merges, or before starting unrelated work, switch to the default
+  branch and pull. Always say which branch you left the repo on.
+- Don't pin GitHub Actions or Docker images to SHAs or digests; use floating
+  version tags. The pin churn is noise I don't want.
 
 ## Working with me
 
@@ -76,8 +92,29 @@ macOS below applies.
   what everyone else does.
 - Before changing how something works, find out why it's that way (`git log`,
   `git blame`, linked issues). Say what you found when it bears on the change.
-- Ship the smallest useful change, then iterate.
-- "cpm" is shorthand for commit and push to main.
+- Ship the smallest useful change, then iterate. "Smallest" limits scope;
+  it isn't a reason to stop early. When you find in-scope, reversible fixes,
+  make them rather than listing them for me to approve. Ask first only about
+  destructive or outward-facing steps (merge, publish, send, deploy) or real
+  judgment calls.
+- Shorthand: "cpm" means commit and push to main. "gb" means open the
+  current repo on GitHub (`gh repo view --web`, like the
+  [`gb` alias](https://github.com/benbalter/dotfiles/blob/main/lib/aliases)).
+- Respect scope words: "prepare", "draft", "don't open", and "I'll submit"
+  mean stop before the outward-facing step.
+- Write plainly. Define jargon, show the math behind any derived number, and
+  when you offer to do something, say what it does. If I'd have to quote a
+  line back to ask what it means, rewrite it.
+- Look things up rather than guessing: check the repo, data I've given you,
+  or current docs before asserting. Mark what's unverified, and don't quietly
+  upgrade an unverified caveat to fact. Prices, availability, and status are
+  dated snapshots, so say when they're from.
+- Before presenting high-stakes output (public copy, anything sent under my
+  name, health, safety, or money decisions, PRs to outside maintainers), have
+  a subagent or the advisor review it blind, without my framing, and tell me
+  what changed.
+- On long or background work, post a one-line status periodically and say
+  what you're waiting on.
 - Everything should have a URL: when you mention an issue, PR, commit, doc,
   or run that has one, link it. Local files count too: when you create,
   edit, or point me to a file, give a clickable markdown link with its
@@ -87,11 +124,16 @@ macOS below applies.
   why a change was made, not just what changed.
 - Don't hand me work a script or tool could do. Automate it or do it
   yourself, and ask only for decisions and approvals that are mine to make.
+  An MFA step that's a link plus a passkey tap isn't a blocker: drive it, and
+  I'll approve the prompt.
 - When I need to make a choice, ask with the multiple-choice question tool
-  (2–4 options, recommended first) rather than in prose.
+  (2–4 options, recommended first) rather than in prose. Explain the
+  tradeoffs first, so the options make sense.
 - In public repos, keep private figures (traffic, revenue, compensation)
   out of commit messages, PR and issue text, code comments, and committed
-  docs. Describe them qualitatively instead.
+  docs. Describe them qualitatively instead. The same goes for household
+  specifics: names, LAN addresses, MACs, account or policy numbers, medical
+  details, and pointers to private repos.
 - Record timelines in the words someone used ("7–10 days"), not a calendar
   date I didn't give. If a derived date helps, show it as a range with the
   math.
@@ -106,13 +148,20 @@ macOS below applies.
 ## Drafting text for me to paste
 
 - The terminal renders a quote bar alongside drafted text, and it comes along
-  when I copy. So once a draft I'll paste elsewhere (email, message, comment)
-  is final, show it and also put it on my clipboard with `pbcopy` (macOS
-  only), so I can paste it clean. Use a quoted heredoc
-  (`pbcopy <<'EOF'`) so the shell doesn't mangle quotes or `$`.
-- When drafting a new email, also give me a Gmail compose link that prefills
-  it: `https://mail.google.com/mail/?view=cm&fs=1&to=…&cc=…&bcc=…&su=…&body=…`,
+  when I copy. So whenever you show a draft I'll paste elsewhere (email,
+  reply, message, PR or issue comment), also put it on my clipboard with
+  `pbcopy` (macOS only), and copy it again after every revision, so I can
+  paste it clean without asking. Use a quoted heredoc (`pbcopy <<'EOF'`) so
+  the shell doesn't mangle quotes or `$`. Don't hard-wrap prose meant for
+  pasting.
+- When drafting an email, new or reply, also give me a Gmail compose link
+  that prefills it whenever you know the recipient:
+  `https://mail.google.com/mail/?view=cm&fs=1&to=…&cc=…&bcc=…&su=…&body=…`,
   with every value URL-encoded (newlines as `%0A`). Omit empty fields.
+- For events, give me a Google Calendar link that prefills it:
+  `https://calendar.google.com/calendar/render?action=TEMPLATE&text=…&dates=…&details=…&location=…`,
+  URL-encoded, with `dates` as `YYYYMMDDTHHMMSS/YYYYMMDDTHHMMSS` (or
+  `YYYYMMDD/YYYYMMDD` for all-day). If you write an `.ics` file, link it too.
 
 ## Writing CLAUDE.md files
 

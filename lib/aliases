@@ -100,6 +100,14 @@ alias clean="$DOTFILES_ROOT/script/clean"
 # Misc
 alias p="cd ~/projects"
 
+# oh-my-zsh's common-aliases makes rm, cp and mv interactive (-i). Claude
+# Code's shell inherits these aliases but has no TTY to answer the prompt, so
+# its commands hung until it learned to type `command rm`. Keep the safety net
+# for me, and drop it only under Claude Code.
+if [ -n "${CLAUDECODE-}" ]; then
+	unalias rm cp mv 2>/dev/null || true
+fi
+
 if [ "$(uname)" = "Darwin" ]; then
 	alias flushdns="sudo dscacheutil -flushcache;sudo killall -HUP mDNSResponder; echo 'Flushed DNS, btw here is your hosts file just in case:'; cat /etc/hosts"
 	# Sleep the display, which locks the screen. The old CGSession -suspend
