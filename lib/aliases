@@ -99,6 +99,7 @@ alias clean="$DOTFILES_ROOT/script/clean"
 
 # Misc
 alias p="cd ~/projects"
+alias c="claude"
 
 # oh-my-zsh's common-aliases makes rm, cp and mv interactive (-i). Claude
 # Code's shell inherits these aliases but has no TTY to answer the prompt, so
