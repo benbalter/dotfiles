@@ -106,3 +106,18 @@ if [ "$(uname)" = "Darwin" ]; then
 	# binary no longer exists.
 	alias afk="pmset displaysleepnow"
 fi
+
+# .npmrc reads the registry token from $NPM_TOKEN rather than storing it in
+# this public repo. Fetch it from 1Password only for commands that need auth,
+# so everyday installs don't trigger a Touch ID prompt.
+npm() {
+	if [ -z "${NPM_TOKEN-}" ] && command -v op >/dev/null 2>&1; then
+		case "${1-}" in
+			publish | unpublish | deprecate | dist-tag | owner | access | token | whoami)
+				NPM_TOKEN="$(op read 'op://Private/npm token/credential')" command npm "$@"
+				return
+				;;
+		esac
+	fi
+	command npm "$@"
+}

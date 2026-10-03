@@ -56,6 +56,13 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 		fail "claude/settings.json must not contain autoMode or permissions"
 }
 
+@test ".npmrc has no literal credentials" {
+	# ~/.npmrc links into this public repo, and `npm login` writes its token
+	# there. Credentials must come from ${ENV_VARS} instead.
+	! grep -En '(_authToken|_auth|_password)=[^$]' "$REPO_ROOT/.npmrc" ||
+		fail ".npmrc contains a literal credential; use \${NPM_TOKEN?} instead"
+}
+
 @test "private_directories are all created by directories_to_create" {
 	# The playbook sets these to 0700; a private dir missing from
 	# directories_to_create would only ever be created 0755 by a dotfile task.
