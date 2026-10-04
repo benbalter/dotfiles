@@ -41,3 +41,4 @@ ruby = "3.4"
 # Claude Code's chrome-devtools MCP server; installed here rather than run via
 # `npx chrome-devtools-mcp@latest`, which re-resolves on every session start
 "npm:chrome-devtools-mcp" = "latest"
+tflint = "latest"
