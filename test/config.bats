@@ -120,3 +120,27 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 		plutil -lint "$plist" >/dev/null || fail "$(basename "$plist") is not a valid plist"
 	done
 }
+
+@test ".gitconfig leaves signing and credential helpers to .gitconfig.macos" {
+	# Set in the shared .gitconfig, they overrode Codespaces' own signing and
+	# credentials, and every commit there failed.
+	keys=$(git config -f "$REPO_ROOT/.gitconfig" --name-only --list |
+		grep -iE '^(commit\.gpgsign|tag\.gpgsign|user\.signingkey|gpg\.format|gpg\.([a-z0-9]+\.)?program|credential\.)') || true
+	[ -z "$keys" ] || fail ".gitconfig sets macOS-only keys: $keys"
+}
+
+@test "Brewfile has no npm entries" {
+	# Global npm CLIs belong in mise: Brewfile npm entries ran into Workbrew's
+	# workbrew-owned node prefix and failed with EACCES.
+	! grep -nE '^[[:space:]]*npm[[:space:]]' "$REPO_ROOT/Brewfile" ||
+		fail "move these to npm: entries in .config/mise/config.toml"
+}
+
+@test "claude/CLAUDE.md links are full URLs" {
+	# It's read through the ~/.claude/CLAUDE.md symlink, where a relative link
+	# resolves against the wrong directory. Code spans hold examples, not links.
+	# shellcheck disable=SC2016
+	links=$(sed 's/`[^`]*`//g' "$REPO_ROOT/claude/CLAUDE.md" |
+		grep -oE '\]\([^)]*\)' | grep -vE '^\]\(https?://') || true
+	[ -z "$links" ] || fail "relative links in claude/CLAUDE.md: $links"
+}

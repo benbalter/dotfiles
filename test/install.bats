@@ -117,3 +117,24 @@ teardown() {
 	[ "$(cat "$TEST_HOME/.config/mise/config.toml.bak")" = mine ] ||
 		fail "mise config was replaced without a backup"
 }
+
+@test "install.sh is safe to run twice" {
+	# Codespaces can rerun the dotfiles install; a second pass must leave the
+	# links in place without backing up its own symlinks.
+	# shellcheck disable=SC2016
+	script='
+		uname() { echo Linux; }; export -f uname
+		git() { for d; do :; done; mkdir -p "$d"; }; export -f git
+		sudo() { :; }; export -f sudo
+		. "'"$REPO_ROOT"'/install.sh"
+	'
+	run env HOME="$TEST_HOME" DOTFILES_SKIP_TOOLS=1 bash -c "$script"
+	[ "$status" -eq 0 ] || fail "$output"
+	before=$(cd "$TEST_HOME" && find . -type l -exec readlink {} \; -print | sort)
+	run env HOME="$TEST_HOME" DOTFILES_SKIP_TOOLS=1 bash -c "$script"
+	[ "$status" -eq 0 ] || fail "$output"
+	after=$(cd "$TEST_HOME" && find . -type l -exec readlink {} \; -print | sort)
+	[ "$before" = "$after" ] || fail "links changed on the second run"
+	baks=$(find "$TEST_HOME" -name '*.bak*')
+	[ -z "$baks" ] || fail "second run made backups: $baks"
+}
