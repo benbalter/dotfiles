@@ -27,13 +27,13 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@v7
         with:
           # Nothing here pushes, so don't leave the token in .git/config.
           persist-credentials: false
 
       - name: Ansible cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        uses: actions/cache@v6
         with:
           path: ~/.ansible
           key: ${{ runner.os }}-ansible-${{ hashFiles('requirements.yml') }}
@@ -41,7 +41,7 @@ jobs:
       # Cache pip's wheels, not the venv: a cached venv points at the runner
       # image's Python, and breaks once the image moves to a new one.
       - name: Pip cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        uses: actions/cache@v6
         with:
           path: ~/Library/Caches/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
@@ -92,7 +92,7 @@ jobs:
       # ~/.config/mise/config.toml above (verified earlier), so installing from
       # $HOME picks up that global config.
       - name: mise cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        uses: actions/cache@v6
         with:
           path: ~/.local/share/mise
           key: ${{ runner.os }}-mise-${{ hashFiles('.config/mise/config.toml') }}
@@ -137,20 +137,20 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@v7
         with:
           # Nothing here pushes, so don't leave the token in .git/config.
           persist-credentials: false
 
       - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        uses: actions/setup-python@v7
         with:
           python-version: "3.14"
           cache: pip
           cache-dependency-path: requirements.txt
 
       - name: Set up Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
@@ -158,13 +158,13 @@ jobs:
       # bundler-cache runs `bundle install`, so script/lint's `bundle exec
       # rubocop` gets the Gemfile's pinned version.
       - name: Set up Ruby
-        uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
+        uses: ruby/setup-ruby@v1
         with:
           ruby-version: "4.0"
           bundler-cache: true
 
       - name: Ansible cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        uses: actions/cache@v6
         with:
           path: ~/.ansible
           key: ${{ runner.os }}-ansible-${{ hashFiles('requirements.yml') }}
@@ -189,7 +189,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@v7
         with:
           # Nothing here pushes, so don't leave the token in .git/config.
           persist-credentials: false
@@ -212,7 +212,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@v7
         with:
           # Nothing here pushes, so don't leave the token in .git/config.
           persist-credentials: false
