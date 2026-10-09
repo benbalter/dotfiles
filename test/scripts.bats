@@ -6,7 +6,9 @@ load test_helper
 REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 
 @test "scripts are executable" {
-	for script in "$REPO_ROOT"/script/*; do
+	# Hooks too: Claude Code runs them by path, and a missing exec bit makes
+	# every hook call error out.
+	for script in "$REPO_ROOT"/script/* "$REPO_ROOT"/.claude/hooks/* "$REPO_ROOT"/claude/hooks/*; do
 		[ -x "$script" ] || fail "$(basename "$script") is not executable"
 	done
 }
@@ -33,7 +35,8 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 @test "scripts use set -eu and pipefail" {
 	# The repo's convention (CLAUDE.md): POSIX sh that stops on errors and
 	# unset variables, including failures inside pipelines.
-	for script in "$REPO_ROOT"/script/* "$REPO_ROOT/install.sh" "$REPO_ROOT/.devcontainer/post-create.sh"; do
+	for script in "$REPO_ROOT"/script/* "$REPO_ROOT/install.sh" "$REPO_ROOT/.devcontainer/post-create.sh" \
+		"$REPO_ROOT"/.claude/hooks/* "$REPO_ROOT"/claude/hooks/*; do
 		grep -qx 'set -eu' "$script" || fail "$script lacks 'set -eu'"
 		grep -qxF '(set -o pipefail) 2>/dev/null && set -o pipefail || true' "$script" ||
 			fail "$script lacks the pipefail idiom"

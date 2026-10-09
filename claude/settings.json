@@ -19,5 +19,18 @@
   "theme": "auto",
   "switchModelsOnFlag": true,
   "remoteControlAtStartup": false,
-  "agentPushNotifEnabled": true
+  "agentPushNotifEnabled": true,
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$HOME\"/.files/claude/hooks/guard-bash"
+          }
+        ]
+      }
+    ]
+  }
 }

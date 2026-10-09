@@ -1,0 +1,72 @@
+#!/bin/sh
+# Claude Code PostToolUse hook: lint the one file Claude just edited, with the
+# same flags script/lint uses, so a mistake surfaces on the edit that made it
+# rather than in CI. Exit 2 hands the output back to Claude to fix.
+# Usage: (Claude Code passes the hook's JSON on stdin)
+
+set -eu
+# shellcheck disable=SC3040
+(set -o pipefail) 2>/dev/null && set -o pipefail || true
+
+# Every linter is optional: Codespaces gets install.sh, which installs none of
+# them, and a missing tool shouldn't block an edit.
+command -v jq >/dev/null || exit 0
+
+root=${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "$0")/../.." && pwd)}
+file=$(jq -r '.tool_input.file_path // empty')
+[ -n "$file" ] && [ -f "$file" ] || exit 0
+rel=${file#"$root"/}
+# Outside the repo: not ours to lint.
+[ "$rel" != "$file" ] || exit 0
+cd "$root"
+
+out=""
+# check <command>...: run a linter if it's installed, collecting its output on
+# failure so every check runs and they're all reported together.
+check() {
+	command -v "$1" >/dev/null || return 0
+	if ! result=$("$@" 2>&1); then
+		out="$out
+==> $*
+$result"
+	fi
+}
+
+# Mirrors SHELL_FILES in script/lint. shfmt rewrites in place: formatting is
+# deterministic, so there's nothing for Claude to decide.
+case "$rel" in
+	script/* | install.sh | lib/* | test/*.bats | test/test_helper.bash | \
+		.devcontainer/post-create.sh | .claude/hooks/* | claude/hooks/*)
+		check shfmt -w -i 0 -ci "$rel"
+		check shellcheck "$rel"
+		;;
+esac
+
+# ShellCheck can't parse zsh, and .zshrc sources lib/.
+case "$rel" in
+	.zshrc | .zprofile | .zshenv | lib/*) check zsh -n "$rel" ;;
+esac
+
+case "$rel" in
+	.github/workflows/*) check actionlint "$rel" ;;
+esac
+
+case "$rel" in
+	*.yml | *.yaml | .yamllint | .ansible-lint) check yamllint "$rel" ;;
+	*.json) check jq empty "$rel" ;;
+	# The venv's Python, for tomllib: macOS's system python3 predates it.
+	*.toml)
+		check "$root/env/bin/python3" -c '
+import sys, tomllib
+with open(sys.argv[1], "rb") as fh:
+    tomllib.load(fh)
+' "$rel"
+		;;
+	.gitconfig*) check git config -f "$rel" --list ;;
+	Brewfile) check ruby -c "$rel" ;;
+esac
+
+if [ -n "$out" ]; then
+	printf 'lint-file: %s failed:%s\n' "$rel" "$out" >&2
+	exit 2
+fi

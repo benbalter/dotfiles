@@ -50,6 +50,9 @@ script/doctor      # read-only health check: symlinks, .bak files, brew wrapper,
 - `settings.json` is *merged* into `~/.claude/settings.json` by the playbook's `claude` tag. It isn't symlinked because Claude Code replaces the file when it saves.
 - Keep `autoMode` and `permissions` out of `claude/settings.json`. They name private hosts and this repo is public; a test enforces it.
 - The folder is `claude/`, not `.claude/`, so it isn't also loaded as this repo's project config.
+- `claude/hooks/guard-bash` is a global PreToolUse hook, wired up in `claude/settings.json` by its `~/.files` path. It denies the Bash commands the global CLAUDE.md forbids (`/opt/homebrew/bin/brew`, `sudo brew`, `npm install -g`, disabling signing, `git add -A`). The playbook's merge replaces lists, so a hook event array here overwrites any local-only hooks for that event.
+
+**`.claude/`** is this repo's own project config, and its hooks fire only when working in this repo. `.claude/hooks/lint-file` (PostToolUse) runs `script/lint`'s per-file checks on each edited file, and fixes shfmt formatting in place. `.claude/hooks/check-drift` (Stop) runs `test/config.bats` when `config.yml`, `install.sh`, `claude/` or `.claude/` changed. `test/hooks.bats` covers all three hooks.
 
 ## Conventions
 

@@ -1,0 +1,53 @@
+#!/bin/sh
+# Claude Code PreToolUse hook for Bash: deny the commands claude/CLAUDE.md
+# forbids, so those rules hold even when the instruction is missed. Each
+# denial names the alternative, so Claude can retry the right way.
+# Usage: (Claude Code passes the hook's JSON on stdin)
+
+set -eu
+# shellcheck disable=SC3040
+(set -o pipefail) 2>/dev/null && set -o pipefail || true
+
+# Without jq there's no safe way to read the command; never break Bash over it.
+command -v jq >/dev/null || exit 0
+
+cmd=$(jq -r '.tool_input.command // empty')
+
+# matches <grep -E args>...: whether the command matches.
+matches() {
+	printf '%s\n' "$cmd" | grep -Eq "$@"
+}
+
+deny() {
+	jq -n --arg reason "$1" '{hookSpecificOutput: {
+		hookEventName: "PreToolUse",
+		permissionDecision: "deny",
+		permissionDecisionReason: $reason
+	}}'
+	exit 0
+}
+
+# Start of a command: line start, or after a separator or subshell. Every
+# pattern is anchored here so prose that mentions a rule, like a commit message
+# about this hook, isn't denied.
+start='(^|[;&|(`]|\$\()[[:space:]]*'
+
+# Only when run, not mentioned: `ls -l /opt/homebrew/bin/brew` is a fine check.
+if matches "$start(sudo[[:space:]]+)?/opt/homebrew/bin/brew([[:space:]]|$)"; then
+	deny "Homebrew is wrapped by Workbrew here: run brew (the /opt/workbrew/bin/brew wrapper), never /opt/homebrew/bin/brew, which fails with a wrapper-conflict error."
+fi
+if matches "${start}sudo[[:space:]]+([^[:space:]]+[[:space:]]+)*([^[:space:]]*/)?brew([[:space:]]|$)"; then
+	deny "Never run brew with sudo: Workbrew runs brew as the workbrew user. Ownership or lock errors usually trace back to Workbrew, not a broken install."
+fi
+if matches "${start}(sudo[[:space:]]+)?chown[[:space:]][^;&|]*/opt/homebrew"; then
+	deny "Everything under /opt/homebrew must stay owned by the workbrew user; don't chown it. Ownership errors there trace back to Workbrew."
+fi
+if matches "${start}npm[[:space:]]+(install|i|add)[[:space:]]([^;&|]*[[:space:]])?(-g|--global)([[:space:]]|$)"; then
+	deny "Global npm CLIs are managed by mise: add \"npm:<pkg>\" = \"latest\" under [tools] in ~/.config/mise/config.toml and run mise install."
+fi
+if matches -i "${start}git[[:space:]][^;&|]*(--no-gpg-sign|(commit|tag)\.gpgsign[[:space:]=]+false)"; then
+	deny "Don't disable commit or tag signing. If 1Password's signing prompt timed out, rerun the same command once so it prompts again; if that times out too, stop and say the commit is waiting on 1Password."
+fi
+if matches "${start}git[[:space:]]+add[[:space:]]+(-A|--all|\.)([[:space:]]|$|[;&|])"; then
+	deny "Stage specific paths (git add <file>...) rather than everything, so scratch output and generated artifacts stay out of commits."
+fi

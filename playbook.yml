@@ -374,6 +374,9 @@
         # Recursive combine only adds and overrides keys. Deleting one from
         # claude/settings.json leaves it in place locally, so to turn a plugin
         # off, set it to false rather than removing it.
+        # Lists aren't merged, they're replaced: a hooks event array in
+        # claude/settings.json (hooks.PreToolUse) overwrites any local-only
+        # hooks for that event.
         - name: Merge repo Claude Code settings
           ansible.builtin.copy:
             content: "{{ ((claude_settings_current.content | default('e30=') | b64decode | from_json) | combine(claude_settings_repo, recursive=true)) | to_nice_json(indent=2, sort_keys=false, ensure_ascii=false) }}\n"

@@ -22,8 +22,9 @@ lint() {
     $desc"
 }
 
-# Shell files: scripts, the libs sourced by .zshrc, and the BATS suite.
-SHELL_FILES="script/* install.sh lib/* test/*.bats test/test_helper.bash .devcontainer/post-create.sh"
+# Shell files: scripts, the libs sourced by .zshrc, the BATS suite, and the
+# Claude Code hooks.
+SHELL_FILES="script/* install.sh lib/* test/*.bats test/test_helper.bash .devcontainer/post-create.sh .claude/hooks/* claude/hooks/*"
 
 # zsh_syntax <file>...: zsh -n each file (given several, zsh -n would parse
 # only the first and treat the rest as its arguments).
