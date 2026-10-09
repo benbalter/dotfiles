@@ -48,6 +48,7 @@ script/doctor      # read-only health check: symlinks, .bak files, brew wrapper,
 
 - `CLAUDE.md` is symlinked to `~/.claude/CLAUDE.md`.
 - `settings.json` is *merged* into `~/.claude/settings.json` by the playbook's `claude` tag. It isn't symlinked because Claude Code replaces the file when it saves.
+- Install third-party skills as plugins when they ship one: add them to `enabledPlugins` and `extraKnownMarketplaces` in `claude/settings.json`, and the playbook installs them while `script/update` keeps them current. Vendor installers like `npx impeccable install` copy files into `~/.claude` that nothing tracks or updates, and write their hooks into whichever project you ran them from.
 - Keep `autoMode` and `permissions` out of `claude/settings.json`. They name private hosts and this repo is public; a test enforces it.
 - The folder is `claude/`, not `.claude/`, so it isn't also loaded as this repo's project config.
 - `claude/hooks/guard-bash` is a global PreToolUse hook, wired up in `claude/settings.json` by its `~/.files` path. It denies the Bash commands the global CLAUDE.md forbids (`/opt/homebrew/bin/brew`, `sudo brew`, `npm install -g`, disabling signing, `git add -A`). The playbook's merge replaces lists, so a hook event array here overwrites any local-only hooks for that event.

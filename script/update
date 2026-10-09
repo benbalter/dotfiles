@@ -200,6 +200,17 @@ if command -v mise >/dev/null; then
 	step mise upgrade
 fi
 
+# Claude Code doesn't refresh third-party marketplaces on its own (cloudflare's
+# sat months behind), so pull every marketplace, then update each enabled
+# plugin. After mise, which upgrades claude itself. Updates apply on restart.
+if command -v claude >/dev/null && command -v jq >/dev/null; then
+	echo "==> Updating Claude Code plugins..."
+	step claude plugin marketplace update
+	for plugin in $(claude plugin list --json | jq -r '.[] | select(.enabled) | .id'); do
+		step claude plugin update "$plugin"
+	done
+fi
+
 if command -v npm >/dev/null; then
 	# `npm ci`, not `npm update`: these are only the repo's lint tools, and
 	# update rewrote the tracked package-lock.json nightly, leaving a dirty tree

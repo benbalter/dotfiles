@@ -24,6 +24,12 @@ setup() {
 			eval "$cmd() { echo \"$cmd \$*\" >>\"\$LOG\"; return \$STUB_STATUS; }"
 		done
 		uname() { echo "${UNAME:-Darwin}"; }
+		claude() {
+			echo "claude $*" >>"$LOG"
+			[ "$*" != "plugin list --json" ] ||
+				echo "[{\"id\":\"on@market\",\"enabled\":true},{\"id\":\"off@market\",\"enabled\":false}]"
+			return $STUB_STATUS
+		}
 	'
 
 	# The venv's commands (hyphenated ansible-galaxy can't be a POSIX function)
@@ -88,6 +94,8 @@ refute_called() {
 	assert_called "brew cleanup"
 	assert_called "defaults write com.microsoft.autoupdate2 HowToCheck Manual"
 	assert_called "mise upgrade"
+	assert_called "claude plugin marketplace update"
+	assert_called "claude plugin update on@market"
 	assert_called "npm ci"
 	assert_called "bundle update"
 	assert_called "uv pip install --upgrade -r requirements.txt"
@@ -229,6 +237,14 @@ refute_called() {
 	run_update_tty 0
 	[ "$status" -eq 0 ] || fail "update exited $status: $output"
 	grep -qxF 'brew upgrade (no-ask)' "$LOG" || fail "interactive brew upgrade ran without HOMEBREW_NO_ASK: $(cat "$LOG")"
+}
+
+@test "update updates only enabled Claude Code plugins" {
+	run_update 0
+	[ "$status" -eq 0 ] || fail "update exited $status: $output"
+	assert_called "claude plugin marketplace update"
+	assert_called "claude plugin update on@market"
+	refute_called '^claude plugin update off@market'
 }
 
 @test "interactive update runs the terminal-only steps" {
