@@ -62,6 +62,13 @@ bash_decision() {
 	[ "$status" -eq 2 ] || fail "expected exit 2, got $status: $output"
 }
 
+@test "lint-file accepts JSONC editor settings" {
+	mkdir -p "$PROJECT/.vscode"
+	printf '{\n  // a comment\n  "a": 1\n}\n' >"$PROJECT/.vscode/settings.json"
+	run edit "$PROJECT/.vscode/settings.json"
+	[ "$status" -eq 0 ] || fail "expected exit 0, got $status: $output"
+}
+
 @test "check-drift lets Claude stop when a stop hook is already active" {
 	run sh -c "echo '{\"stop_hook_active\": true}' | CLAUDE_PROJECT_DIR='$PROJECT' '$CHECK_DRIFT'"
 	[ "$status" -eq 0 ] || fail "expected exit 0, got $status: $output"
@@ -122,6 +129,7 @@ npm ls -g
 git add script/lint
 git add .claude/hooks/lint-file
 git log --show-signature
+sudo -v && brew upgrade
 EOF
 }
 

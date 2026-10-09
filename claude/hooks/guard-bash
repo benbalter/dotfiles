@@ -36,7 +36,7 @@ start='(^|[;&|(`]|\$\()[[:space:]]*'
 if matches "$start(sudo[[:space:]]+)?/opt/homebrew/bin/brew([[:space:]]|$)"; then
 	deny "Homebrew is wrapped by Workbrew here: run brew (the /opt/workbrew/bin/brew wrapper), never /opt/homebrew/bin/brew, which fails with a wrapper-conflict error."
 fi
-if matches "${start}sudo[[:space:]]+([^[:space:]]+[[:space:]]+)*([^[:space:]]*/)?brew([[:space:]]|$)"; then
+if matches "${start}sudo[[:space:]]+([^;&|[:space:]]+[[:space:]]+)*([^[:space:]]*/)?brew([[:space:]]|$)"; then
 	deny "Never run brew with sudo: Workbrew runs brew as the workbrew user. Ownership or lock errors usually trace back to Workbrew, not a broken install."
 fi
 if matches "${start}(sudo[[:space:]]+)?chown[[:space:]][^;&|]*/opt/homebrew"; then

@@ -53,6 +53,8 @@ esac
 
 case "$rel" in
 	*.yml | *.yaml | .yamllint | .ansible-lint) check yamllint "$rel" ;;
+	# Editor settings are JSONC, with comments jq rejects.
+	.config/zed/* | .zed/* | "Library/Application Support/Code/"* | .vscode/*) ;;
 	*.json) check jq empty "$rel" ;;
 	# The venv's Python, for tomllib: macOS's system python3 predates it.
 	*.toml)
