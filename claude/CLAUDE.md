@@ -33,6 +33,16 @@ Managed in [benbalter/dotfiles](https://github.com/benbalter/dotfiles) (public) 
 - Don't pin GitHub Actions or Docker images to SHAs or digests; use floating version tags. The pin churn is noise I don't want.
 - Don't hard-wrap Markdown or prose meant for pasting: write each paragraph or list item on one line and let the editor soft-wrap. Hard wraps make every edit reflow neighboring lines, which buries the real change in the diff, and they break when the text is pasted elsewhere. Follow a repo's existing wrap style if it has one.
 
+## Parallel sessions
+
+I often run several Claude Code sessions in the same repo at once, so assume another session may be working in the same checkout, and coordinate rather than collide.
+
+- Use `ListAgents` to see the other sessions on this machine and `SendMessage` to agree who owns which files and who commits, pushes, or switches branches. Check before starting anything that touches shared files.
+- Treat changes you didn't make as another session's work in progress: don't revert, stash, reset, reformat, or commit them. Staging only your own paths matters doubly here.
+- Switching branches, rebasing, or pulling in a shared checkout changes the tree under every other session there, so agree on it first. That includes the "switch to the default branch and pull" step above. For work that needs its own branch, use a git worktree (`EnterWorktree`) instead.
+- Before committing or pushing, recheck `git status` and `git log`. If the branch moved, another session committed: build on its work rather than overwriting it, and never force-push over it.
+- If a conflict is real and you can't settle it with the other session, ask me.
+
 ## Working with me
 
 - Be direct and candid, professional but not formal. Back recommendations with facts or data, and tell me when I'm wrong; I'd rather the better idea win.
