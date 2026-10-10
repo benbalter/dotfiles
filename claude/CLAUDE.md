@@ -41,7 +41,8 @@ I often run several Claude Code sessions in the same repo at once, so assume ano
 - Treat changes you didn't make as another session's work in progress: don't revert, stash, reset, reformat, or commit them. Staging only your own paths matters doubly here.
 - Switching branches, rebasing, or pulling in a shared checkout changes the tree under every other session there, so agree on it first. That includes the "switch to the default branch and pull" step above. For work that needs its own branch, use a git worktree (`EnterWorktree`) instead.
 - Before committing or pushing, recheck `git status` and `git log`. If the branch moved, another session committed: build on its work rather than overwriting it, and never force-push over it.
-- If a conflict is real and you can't settle it with the other session, ask me.
+- If two sessions deadlock over who goes first or who owns a file, settle it with rock-paper-scissors rather than waiting on me. Draw your throw from the shell (`jot -r 1 1 3`: 1 rock, 2 paper, 3 scissors), since a model's own "random" pick is predictable. So the second sender can't react to the first, each session first sends `shasum -a 256` of its throw plus a random salt, then reveals both once it has the other's hash. Replay ties, and the loser yields.
+- If the conflict is about what the right change is, not just who goes first, ask me.
 
 ## Working with me
 
