@@ -68,7 +68,6 @@ dotfiles_files_macos:
   - .config/mole/whitelist_optimize
   - .gitconfig.macos
   - .gnupg/gpg-agent.conf
-  - .mackup.cfg
   - .ssh/config
   - Library/Application Support/Code/User/settings.json
   - Library/Application Support/Code/User/keybindings.json
@@ -90,6 +89,14 @@ dotfile_links_common:
     dest: .config/ghostty/themes/catppuccin-mocha.conf
 
 dotfiles_files: "{{ dotfiles_files_common + dotfiles_files_macos }}"
+
+# Dotfiles the repo no longer ships. The playbook removes each $HOME link, but
+# only while it still points into this repo, so a real file put there by hand
+# survives. Removing the file from the repo alone left a dangling symlink.
+dotfiles_retired:
+  # Mackup's Dropbox backup went stale for years, and a `mackup restore`
+  # would replace repo-managed links (.pryrc, .npmrc) with old copies.
+  - .mackup.cfg
 
 dotfile_root_dirs:
   - ""

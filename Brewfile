@@ -122,8 +122,6 @@ brew 'just'
 brew 'languagetool', restart_service: :changed
 # Fast, async, resource-friendly link checker
 brew 'lychee'
-# Keep your Mac's application settings in sync
-brew 'mackup'
 # Deep clean and optimize your Mac
 brew 'mole'
 # Mac App Store command-line interface

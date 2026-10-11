@@ -158,6 +158,23 @@
           loop_control:
             label: "{{ item.dest }}"
 
+        - name: Stat retired dotfiles
+          ansible.builtin.stat:
+            path: "{{ ansible_facts['user_dir'] }}/{{ item }}"
+          loop: "{{ dotfiles_retired }}"
+          register: dotfiles_retired_stat
+
+        - name: Remove links to retired dotfiles
+          ansible.builtin.file:
+            path: "{{ item.stat.path }}"
+            state: absent
+          loop: "{{ dotfiles_retired_stat.results }}"
+          loop_control:
+            label: "{{ item.item }}"
+          when:
+            - item.stat.islnk | default(false)
+            - item.stat.lnk_source.startswith(playbook_dir ~ '/')
+
     # Symlinking a plist into ~/Library/LaunchAgents doesn't load it until the
     # next login, so on a fresh machine the nightly update never ran until
     # script/doctor flagged it. Bootstrap only jobs that aren't loaded:

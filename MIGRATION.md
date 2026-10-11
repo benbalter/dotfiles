@@ -19,8 +19,7 @@ A checklist for setting up a new Mac from these dotfiles. Re-runnable: every ste
   git push
   ```
 - [ ] Verify 1Password vault is fully synced (Settings → status indicator). All SSH keys and the git commit-signing key live here.
-- [ ] Verify Dropbox is fully synced (Mackup syncs via `~/Dropbox/mackup`).
-- [ ] Run Mackup backup if not already up to date: `mackup backup`.
+- [ ] Verify Dropbox is fully synced.
 - [ ] (Optional) Export GPG secret keys — only if you still use GPG for email/encryption. Git commit signing uses SSH via 1Password and does not need this.
   ```sh
   gpg --export-secret-keys --armor > ~/gpg-secret-keys.asc
@@ -32,8 +31,8 @@ A checklist for setting up a new Mac from these dotfiles. Re-runnable: every ste
   ```sh
   grep -v '^#' /etc/hosts | grep -vE '^(127\.|255\.|::1)' > ~/hosts-custom.txt
   ```
-  Known custom entry: `192.168.1.36 dns.balter.com`.
-- [ ] Confirm **VS Code Settings Sync** is enabled (Settings → Settings Sync, signed in with GitHub). The playbook installs extensions but not user settings/keybindings.
+  Expect one for the home DNS server.
+- [ ] Nothing to do for VS Code: the playbook installs extensions and links `settings.json`, `keybindings.json` and `mcp.json`. Snippets and UI state aren't tracked; turn on Settings Sync if you want those.
 
 ## 2. On the new machine — prerequisites
 
@@ -50,7 +49,7 @@ These cannot be automated by the playbook because they require GUI sign-in or mu
   - Settings → Developer → **Use the SSH agent** ✓
   - Settings → Developer → **Integrate with 1Password CLI** ✓
   - Install the **1Password browser extension** in your default browser.
-- [ ] Install **Dropbox**, sign in, and let it fully sync `~/Dropbox/mackup` before running Mackup restore.
+- [ ] Install **Dropbox** and sign in.
 
 ## 3. Clone and run setup
 
@@ -98,11 +97,6 @@ What to expect:
 
 These are **not** managed by the playbook — copy or restore as needed.
 
-- [ ] **Mackup restore** (zsh history, app-specific prefs):
-  ```sh
-  mackup restore
-  ```
-  Note: as of last audit, `~/Dropbox/mackup` had not been updated in ~6 months. Run `mackup backup` on the old machine first, or accept that whatever's there is what you'll restore.
 - [ ] **`/etc/hosts` custom entries** — append from `~/hosts-custom.txt`:
   ```sh
   sudo sh -c "cat ~/hosts-custom.txt >> /etc/hosts"
