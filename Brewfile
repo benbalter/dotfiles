@@ -226,6 +226,8 @@ cask '1password-cli'
 cask 'adguard'
 # Inspect application bundles
 cask 'apparency'
+# Tool to flash OS images to SD cards & USB drives
+cask 'balenaetcher'
 # Utility that prevents the system from going to sleep
 cask 'caffeine'
 # Screen capturing tool
@@ -242,6 +244,8 @@ cask 'elgato-camera-hub'
 cask 'elgato-control-center'
 # Assign keys, and then decorate and label them
 cask 'elgato-stream-deck'
+# Web browser
+cask 'firefox'
 cask 'font-hack-nerd-font'
 # Terminal emulator that uses platform-native UI and GPU acceleration
 cask 'ghostty'
@@ -253,8 +257,12 @@ cask 'github@beta'
 cask 'google-chrome'
 # Client for the Google Drive storage service
 cask 'google-drive'
+# Desktop automation application
+cask 'hammerspoon'
 # Grammar checker for developers
 cask 'harper-desktop'
+# Reverse engineering tool that lets you disassemble, decompile and debug your app
+cask 'hopper-disassembler'
 # Keyboard customiser
 cask 'karabiner-elements'
 # Preview and audit Kindle eBooks
@@ -265,12 +273,16 @@ cask 'languagetool-desktop'
 cask 'mitmproxy'
 # Toggle mute, video, record, share, and leave a meeting in a call app
 cask 'mutedeck'
+# Get up and running with large language models locally
+cask 'ollama-app'
 # Local-first alternative to Logitech Options+ for HID++ devices
 cask 'openlogi'
 # Extracts pages, splits, merges, mixes and rotates PDF files
 cask 'pdfsam-basic'
 # Quick Look generator for Markdown files
 cask 'qlmarkdown'
+# Move and resize windows using keyboard shortcuts or snap areas
+cask 'rectangle'
 # Instant messaging application focusing on security
 cask 'signal'
 # Team communication and collaboration software
@@ -283,12 +295,16 @@ cask 'steam'
 cask 'suspicious-package'
 # Quicklook extension for source files
 cask 'syntax-highlight'
+# Teleprompter that highlights scripts in real time as you speak
+cask 'textream'
 # Menu bar manager
 cask 'thaw'
 # Mutes your keyboard while you type
 cask 'unclack'
 # Open-source code editor
 cask 'visual-studio-code'
+# Multimedia player
+cask 'vlc'
 # Menu bar app for USB-C cable diagnostics
 cask 'whatcable'
 # Full-featured companion app to the YubiKey
