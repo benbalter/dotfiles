@@ -68,6 +68,9 @@ dotfiles_files_macos:
   - .config/mole/whitelist_optimize
   - .gitconfig.macos
   - .gnupg/gpg-agent.conf
+  # The directory, not karabiner.json: Karabiner saves by replacing the file,
+  # which would swap a file symlink for a regular file.
+  - .config/karabiner
   - .ssh/config
   - Library/Application Support/Code/User/settings.json
   - Library/Application Support/Code/User/keybindings.json
