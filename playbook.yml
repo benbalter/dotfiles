@@ -590,6 +590,33 @@
       when: not is_ci and not ansible_check_mode
       tags: [macos, defaults]
 
+    # Login items were only ever added through each app's own prompt. The
+    # first run asks to let the terminal control System Events. An app that
+    # isn't installed (a failed mas install, say) is skipped, not added as a
+    # broken item.
+    - name: Add login items
+      ansible.builtin.shell:
+        cmd: |
+          set -eu -o pipefail
+          [ -d "$APP" ] || { echo "skipped: $APP is not installed"; exit 0; }
+          # Read the whole list first: grep -q exiting early could SIGPIPE
+          # the pipeline and make a present item look missing.
+          items="$(osascript -e 'tell application "System Events" to get the path of every login item')"
+          if printf '%s\n' "$items" | tr ',' '\n' | sed 's/^ *//' | grep -xF "$APP" >/dev/null; then
+            exit 0
+          fi
+          osascript -e 'on run argv' \
+            -e 'tell application "System Events" to make login item at end with properties {path:(item 1 of argv), hidden:false}' \
+            -e 'end run' "$APP" >/dev/null
+          echo changed
+      environment:
+        APP: "{{ item }}"
+      loop: "{{ login_items }}"
+      register: login_items_added
+      changed_when: "'changed' in login_items_added.stdout"
+      when: not is_ci and not ansible_check_mode
+      tags: [macos, defaults]
+
     - name: Configure security settings
       tags: [macos, security]
       block:

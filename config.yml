@@ -327,6 +327,20 @@ macos_defaults:
 # with PlistBuddy instead of through macos_defaults.
 macos_desktop_arrange_by: name
 
+# Apps that open at login, by path. The playbook adds any that are missing
+# and never removes one, so an item added by hand survives until it's
+# listed here or removed in System Settings.
+login_items:
+  - /Applications/Caffeine.app
+  - /Applications/CleanShot X.app
+  - /Applications/Dropbox.app
+  - /Applications/Elgato Control Center.app
+  - /Applications/MuteDeck/MuteDeck.app
+  - /Applications/On Air Mode.app
+  - /Applications/Thaw.app
+  - /Applications/Unclack.app
+  - /Applications/WhatCable.app
+
 # Default apps, by bundle ID: URL schemes and file types (UTIs). Applied with
 # utiluti only where they differ, since macOS asks to confirm each change.
 # Setting http also sets https and public.html, which can't be set directly.
