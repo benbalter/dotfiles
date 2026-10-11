@@ -10,13 +10,14 @@
 
 - `script/setup` — Set up all the things (bootstrap + Ansible playbook)
 - `script/update` — Update all the things (see [Updating](#updating)); aliased to `up`
-- `script/doctor` — Read-only health check: symlinks and leftover `.bak` files, the brew wrapper, launch agents, the last update run, missing Brewfile and mise packages, macOS security settings, and whether the repo is ready for `up`
+- `script/doctor` — Read-only health check: symlinks and leftover `.bak` files, the brew wrapper, launch agents, the last update run, missing Brewfile and mise packages, macOS security settings and `config.yml` defaults, and whether the repo is ready for `up`
 - `script/bootstrap` — Install Python venv and Ansible dependencies
 - `script/ansible` — Run the playbook (prompts for sudo)
 - `script/audit-casks` — Report casks whose apps haven't been opened lately; `--comment` proposes removals in the `Brewfile`
 - `script/update-brewfile` — Sync the `Brewfile` with what's installed
 - `script/clean` — Uninstall everything not in the `Brewfile` (`brew bundle cleanup --force`; destructive); aliased to `clean`
 - `script/install-tools` — Install delta, zoxide and fzf on Linux without Homebrew (Codespaces, devcontainer)
+- `script/github-settings` — Apply this repo's GitHub settings and `main` branch protection from `.github/settings/`; `--check` shows drift without changing anything
 - `script/lint` — Run all linters (see [Linting](#linting))
 - `script/test` — Run the BATS test suite
 - `install.sh` — Codespaces entry point; runs `script/setup` on macOS, a symlink-only install on Linux

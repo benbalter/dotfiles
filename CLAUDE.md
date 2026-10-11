@@ -12,7 +12,8 @@ script/setup       # bootstrap + run the full playbook (prompts for sudo)
 script/update      # update everything; aliased to `up`, also runs nightly headless
 script/lint        # ansible-lint, yamllint, shellcheck, shfmt, actionlint, rubocop, remark
 script/test        # the whole BATS suite (bats test/)
-script/doctor      # read-only health check: symlinks, .bak files, brew wrapper, launch agents, last update, packages, security
+script/doctor      # read-only health check: symlinks, .bak files, brew wrapper, launch agents, last update, packages, security, defaults
+script/github-settings  # apply .github/settings/ (repo options, main branch protection) via gh; --check diffs only
 ```
 
 - Run one test file: `bats test/config.bats`. Run one test by name: `bats test/install.bats -f 'install.sh links'`.

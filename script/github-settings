@@ -1,0 +1,77 @@
+#!/bin/sh
+# Apply this repo's GitHub settings from .github/settings/: repository options
+# and main's branch protection. They used to be set by hand in the web UI, where
+# CI's unit-test and install-linux jobs were never made required, so a PR could
+# merge with either one failing.
+# Changing them takes repo admin, which CI's token doesn't have, so this runs
+# from a laptop. --check shows the drift without changing anything.
+# Usage: script/github-settings [--check]
+
+set -eu
+# shellcheck disable=SC3040
+(set -o pipefail) 2>/dev/null && set -o pipefail || true
+
+cd "$(dirname "$0")/.."
+
+SETTINGS=.github/settings
+repo=$(gh repo view --json nameWithOwner --jq .nameWithOwner)
+
+# The GET responses nest each flag as {"enabled": bool} and add URLs and other
+# read-only fields; reshape them into the request bodies kept in the repo, so
+# the two can be compared.
+# Required checks are pinned to an app (`checks`, with app_id 15368, GitHub
+# Actions) rather than listed by name (`contexts`, deprecated), so another app
+# can't satisfy them by posting a status with the same name.
+live_repository() {
+	gh api "repos/$repo" | jq -S --argjson want "$(cat "$SETTINGS/repository.json")" \
+		'with_entries(select(.key | IN($want | keys[])))'
+}
+live_protection() {
+	gh api "repos/$repo/branches/main/protection" | jq -S '{
+		required_status_checks: {
+			strict: .required_status_checks.strict,
+			checks: (.required_status_checks.checks | sort_by(.context))
+		},
+		enforce_admins: .enforce_admins.enabled,
+		required_pull_request_reviews: (.required_pull_request_reviews
+			| del(.url) | del(.dismissal_restrictions) | del(.bypass_pull_request_allowances)),
+		restrictions: .restrictions,
+		required_linear_history: .required_linear_history.enabled,
+		allow_force_pushes: .allow_force_pushes.enabled,
+		allow_deletions: .allow_deletions.enabled,
+		block_creations: .block_creations.enabled,
+		required_conversation_resolution: .required_conversation_resolution.enabled,
+		lock_branch: .lock_branch.enabled,
+		allow_fork_syncing: .allow_fork_syncing.enabled
+	}'
+}
+drift=0
+# compare <description> <settings file> <live JSON>: show a diff, record drift.
+compare() {
+	live=$(mktemp)
+	want=$(mktemp)
+	printf '%s\n' "$3" >"$live"
+	jq -S 'if .required_status_checks then .required_status_checks.checks |= sort_by(.context) else . end' \
+		"$2" >"$want"
+	if diff -u --label "$1 on GitHub" --label "$2" "$live" "$want"; then
+		echo "==> $1 match $2"
+	else
+		drift=1
+	fi
+	rm -f "$live" "$want"
+}
+
+compare "Repository settings" "$SETTINGS/repository.json" "$(live_repository)"
+compare "main branch protection" "$SETTINGS/main-protection.json" "$(live_protection)"
+
+if [ "${1:-}" = --check ]; then
+	exit "$drift"
+fi
+if [ "$drift" -eq 0 ]; then
+	exit 0
+fi
+
+echo "==> Applying $SETTINGS to $repo"
+gh api -X PATCH "repos/$repo" --input "$SETTINGS/repository.json" >/dev/null
+gh api -X PUT "repos/$repo/branches/main/protection" --input "$SETTINGS/main-protection.json" >/dev/null
+echo "==> Done"
