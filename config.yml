@@ -327,6 +327,18 @@ macos_defaults:
 # with PlistBuddy instead of through macos_defaults.
 macos_desktop_arrange_by: name
 
+# Default apps, by bundle ID: URL schemes and file types (UTIs). Applied with
+# utiluti only where they differ, since macOS asks to confirm each change.
+# Setting http also sets https and public.html, which can't be set directly.
+# App-registered schemes (zoomphonecall, steam, ...) are left to their apps.
+default_apps:
+  urls:
+    http: com.google.Chrome
+    mailto: com.google.Chrome
+    webcal: com.google.Chrome
+  types:
+    public.unix-executable: com.mitchellh.ghostty
+
 # Application Firewall policy. macOS defaults to auto-allowing any *downloaded*
 # signed (notarized) app to accept inbound connections, which quietly undoes
 # much of the point of turning the firewall on -- Dropbox, Spotify and friends

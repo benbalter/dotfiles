@@ -192,6 +192,8 @@ brew 'tfsec'
 brew 'tmpreaper'
 # Very fast implementation of tldr in Rust
 brew 'tealdeer'
+# Read and set default URL scheme and file type handlers
+brew 'utiluti'
 # Extremely fast Python package installer and resolver, written in Rust
 brew 'uv'
 # GNU diction and style

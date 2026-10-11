@@ -565,6 +565,31 @@
       changed_when: "'changed' in desktop_arrange.stdout"
       tags: [macos, defaults]
 
+    # Hand-set in System Settings and each app's prompt until now. Skips CI,
+    # where brew bundle (and so utiluti and the apps) never runs.
+    - name: Set default apps
+      ansible.builtin.shell:
+        cmd: |
+          set -eu -o pipefail
+          have="$(utiluti "$KIND" get "$NAME" --bundle-id 2>/dev/null || true)"
+          # LaunchServices may report a bundle ID in a different case.
+          [ "$(echo "$have" | tr '[:upper:]' '[:lower:]')" != "$(echo "$WANT" | tr '[:upper:]' '[:lower:]')" ] || exit 0
+          utiluti "$KIND" set "$NAME" "$WANT"
+          echo changed
+      environment:
+        KIND: "{{ item.kind }}"
+        NAME: "{{ item.key }}"
+        WANT: "{{ item.value }}"
+      loop: >-
+        {{ default_apps.urls | dict2items | map('combine', {'kind': 'url'}) | list
+           + default_apps.types | dict2items | map('combine', {'kind': 'type'}) | list }}
+      loop_control:
+        label: "{{ item.key }}"
+      register: default_apps_set
+      changed_when: "'changed' in default_apps_set.stdout"
+      when: not is_ci and not ansible_check_mode
+      tags: [macos, defaults]
+
     - name: Configure security settings
       tags: [macos, security]
       block:
