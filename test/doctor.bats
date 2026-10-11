@@ -46,9 +46,19 @@ STUB
 	stub PMSET " womp                 0" pmset
 	stub SOCKETFILTERFW "State = 1; stealth mode is on" socketfilterfw
 	echo "auth sufficient pam_tid.so" >"$STUB_BIN/sudo_local"
-	# `defaults read ... autoLoginUser` fails when the key is absent.
-	# shellcheck disable=SC2016 # expands when the stub runs
-	printf '#!/bin/sh\nexit "${DEFAULTS_STATUS:-1}"\n' >"$STUB_BIN/defaults"
+	echo "auth       include        sudo_local" >"$STUB_BIN/pam_sudo"
+	# `defaults read <domain> <key>` answers from defaults.db, a tab-separated
+	# copy of config.yml's macos_defaults (so they all match until a test edits
+	# it). autoLoginUser isn't in it: reading it fails, as when the key is
+	# absent, unless DEFAULTS_STATUS says otherwise.
+	yq -r '(.macos_defaults.system[], .macos_defaults.user[]) | [.domain, .key, .value] | @tsv' \
+		"$REPO_ROOT/config.yml" | sed "s|{{ ansible_facts\['user_dir'\] }}|$TEST_HOME|" >"$STUB_BIN/defaults.db"
+	cat >"$STUB_BIN/defaults" <<STUB
+#!/bin/sh
+[ "\$1" != -currentHost ] || shift
+[ "\$3" != autoLoginUser ] || exit "\${DEFAULTS_STATUS:-1}"
+awk -F '\t' -v d="\$2" -v k="\$3" '\$1 == d && \$2 == k { print \$3; found = 1 } END { exit !found }' "$STUB_BIN/defaults.db"
+STUB
 	chmod +x "$STUB_BIN/defaults"
 
 	# Link everything install.sh would.
@@ -69,6 +79,7 @@ teardown() {
 run_doctor() {
 	run env HOME="$TEST_HOME" DOTFILES_ROOT="$REPO_ROOT" PATH="$STUB_BIN:$PATH" \
 		SOCKETFILTERFW="$STUB_BIN/socketfilterfw" SUDO_LOCAL="$STUB_BIN/sudo_local" \
+		PAM_SUDO="$STUB_BIN/pam_sudo" \
 		"$REPO_ROOT/script/doctor"
 	# Per-section slices: the Homebrew and security checks depend on the host.
 	links_output=$(echo "$output" | sed -n '/^==> Dotfile symlinks/,/^==> /p')
@@ -76,6 +87,7 @@ run_doctor() {
 	agents_output=$(echo "$output" | sed -n '/^==> Launch agents/,/^==> /p')
 	packages_output=$(echo "$output" | sed -n '/^==> Packages/,/^==> /p')
 	security_output=$(echo "$output" | sed -n '/^==> Security/,/^==> /p')
+	defaults_output=$(echo "$output" | sed -n '/^==> macOS defaults/,/^==> /p')
 }
 
 # write_status <line>...: a fake script/update status file, one per line.
@@ -245,4 +257,37 @@ write_status() {
 		"automatic update checks is off"; do
 		echo "$security_output" | grep -q "FAIL  $want" || fail "missing '$want': $security_output"
 	done
+}
+
+@test "doctor flags sudo no longer including sudo_local" {
+	# An OS update replaces /etc/pam.d/sudo, which would leave Touch ID for
+	# sudo configured in sudo_local but never read.
+	echo "auth       sufficient     pam_smartcard.so" >"$STUB_BIN/pam_sudo"
+	UNAME=Darwin run_doctor
+	echo "$security_output" | grep -q "FAIL  sudo reads sudo_local is off" || fail "$security_output"
+}
+
+@test "doctor passes macOS defaults that match config.yml" {
+	UNAME=Darwin run_doctor
+	echo "$defaults_output" | grep -q "ok    com.apple.dock autohide" || fail "$defaults_output"
+	echo "$defaults_output" | grep -q "ok    com.apple.screencapture location" || fail "$defaults_output"
+	! echo "$defaults_output" | grep -Eq 'FAIL|warn' || fail "$defaults_output"
+}
+
+@test "doctor fails a drifted system default but only warns on a user one" {
+	t=$'\t'
+	sed -i.orig -e "s/${t}GuestEnabled${t}false\$/${t}GuestEnabled${t}1/" \
+		-e "s/${t}autohide${t}true\$/${t}autohide${t}0/" "$STUB_BIN/defaults.db"
+	UNAME=Darwin run_doctor
+	[ "$status" -ne 0 ] || fail "doctor should exit non-zero"
+	echo "$defaults_output" | grep -q "FAIL  /Library/Preferences/com.apple.loginwindow GuestEnabled is 1, expected false" ||
+		fail "$defaults_output"
+	echo "$defaults_output" | grep -q "warn  com.apple.dock autohide is 0, expected true" || fail "$defaults_output"
+}
+
+@test "doctor reports a missing default as unset" {
+	t=$'\t'
+	sed -i.orig "/${t}ShowPathbar${t}/d" "$STUB_BIN/defaults.db"
+	UNAME=Darwin run_doctor
+	echo "$defaults_output" | grep -q "warn  com.apple.finder ShowPathbar is unset, expected true" || fail "$defaults_output"
 }

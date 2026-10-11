@@ -3,8 +3,8 @@
 # points into the repo, no stale .bak files are left from setup, Homebrew
 # resolves to the right binary, every launch agent is loaded and healthy, the
 # last update run succeeded and isn't hung, nothing in the Brewfile or mise
-# config is missing, macOS security settings are still on, and the repo is
-# ready for `up` (venv present, tree clean).
+# config is missing, macOS security settings and config.yml's defaults are
+# still in place, and the repo is ready for `up` (venv present, tree clean).
 # Read-only; exits non-zero if anything needs attention.
 # Usage: script/doctor
 
@@ -229,6 +229,10 @@ if [ "$(uname)" = "Darwin" ]; then
 	check_security "FileVault" "FileVault is On" fdesetup status
 	check_security "automatic update checks" "turned on" softwareupdate --schedule
 	check_security "TouchID for sudo" "pam_tid.so" cat "$sudo_local"
+	# sudo_local survives OS updates, but only takes effect while
+	# /etc/pam.d/sudo, which updates replace, still includes it.
+	check_security "sudo reads sudo_local" "^auth[[:space:]]*include[[:space:]]*sudo_local" \
+		cat "${PAM_SUDO:-/etc/pam.d/sudo}"
 	# -g custom: every power source, not just the current one.
 	if pmset -g custom | grep -Eq 'womp[[:space:]]+1'; then
 		bad "wake for network access is on (re-run: script/ansible --tags security)"
@@ -240,6 +244,48 @@ if [ "$(uname)" = "Darwin" ]; then
 	else
 		ok "automatic login off"
 	fi
+fi
+
+if [ "$(uname)" = "Darwin" ] && command -v yq >/dev/null; then
+	echo "==> macOS defaults"
+	# Read back every macos_defaults entry. The playbook verifies them only
+	# when it runs, and an OS update, a System Settings click or the app
+	# itself can change one at any time. System entries fail, as the
+	# playbook's own read-back does; user entries only warn, since several
+	# are documented as best-effort (macOS may defer them to System Settings).
+	# check_default <system|user> <domain> <key> <value> [currentHost]
+	check_default() {
+		# The one templated value is the screenshot folder under $HOME.
+		want=$(printf '%s' "$4" | sed "s|{{ ansible_facts\['user_dir'\] }}|$HOME|")
+		if [ -n "${5:-}" ]; then
+			got=$(defaults -currentHost read "$2" "$3" 2>/dev/null || true)
+		else
+			got=$(defaults read "$2" "$3" 2>/dev/null || true)
+		fi
+		# Booleans read back as 1/0 or true/false, depending on how they
+		# were written; compare case-insensitively, like the playbook.
+		want_lc=$(printf '%s' "$want" | tr '[:upper:]' '[:lower:]')
+		got_lc=$(printf '%s' "$got" | tr '[:upper:]' '[:lower:]')
+		case "$want_lc" in
+			true | 1) case "$got_lc" in true | 1) got_lc=$want_lc ;; esac ;;
+			false | 0) case "$got_lc" in false | 0) got_lc=$want_lc ;; esac ;;
+		esac
+		if [ "$got_lc" = "$want_lc" ]; then
+			ok "$2 $3"
+		elif [ "$1" = system ]; then
+			bad "$2 $3 is ${got:-unset}, expected $want (re-run: script/ansible --tags defaults)"
+		else
+			warn "$2 $3 is ${got:-unset}, expected $want (re-run: script/ansible --tags defaults)"
+		fi
+	}
+	defaults_rows=$(yq -r '(.macos_defaults.system[] | ["system", .domain, .key, .value, (.host // "")] | @tsv),
+		(.macos_defaults.user[] | ["user", .domain, .key, .value, (.host // "")] | @tsv)' "$CONFIG")
+	tab=$(printf '\t')
+	while IFS="$tab" read -r scope domain key value host; do
+		check_default "$scope" "$domain" "$key" "$value" "$host"
+	done <<EOF
+$defaults_rows
+EOF
 fi
 
 echo "==> Dotfiles repo"
