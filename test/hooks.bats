@@ -104,9 +104,8 @@ bash_decision() {
 	while IFS= read -r cmd; do
 		[ "$(bash_decision "$cmd")" = deny ] || fail "allowed: $cmd"
 	done <<'EOF'
-/opt/homebrew/bin/brew list
 sudo brew install wget
-sudo -E /opt/workbrew/bin/brew upgrade
+sudo -E /opt/homebrew/bin/brew upgrade
 sudo chown -R me /opt/homebrew
 npm install -g typescript
 npm i --global typescript
@@ -123,6 +122,7 @@ EOF
 		[ -z "$(bash_decision "$cmd")" ] || fail "denied: $cmd"
 	done <<'EOF'
 brew upgrade
+/opt/homebrew/bin/brew list
 ls -l /opt/homebrew/bin/brew
 npm install
 npm ls -g

@@ -22,8 +22,9 @@
     "diagnostics": false,
     "metrics": false
   },
-  // App is installed & updated via Homebrew cask (see Brewfile). The bundle is
-  // owned by the workbrew user, so Zed's self-updater can't write in place.
+  // App is installed & updated via Homebrew cask (see Brewfile). Letting Zed
+  // update itself too would leave brew's recorded version stale. (It was also
+  // owned by the workbrew user while this Mac ran Workbrew, so it couldn't.)
   "auto_update": false,
   "minimap": {
     "show": "never"

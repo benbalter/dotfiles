@@ -26,9 +26,9 @@ export HOMEBREW_BUNDLE_FILE="$PWD/Brewfile"
 
 # Resolve mise-managed runtimes (ruby, node, …) ahead of Homebrew's. This
 # non-interactive script never runs mise's shell hook, so without the shims
-# `bundle`/`npm` fall back to Homebrew's Ruby/Node, whose gem and package dirs
-# are owned by Workbrew and not user-writable (bundle install then fails with
-# Bundler::PermissionError). Shims only shadow installed tools, so `brew` still
+# `bundle`/`npm` fall back to Homebrew's Ruby/Node instead of the versions
+# mise pins. Under Workbrew those dirs aren't even user-writable (bundle
+# install then fails with Bundler::PermissionError). Shims only shadow installed tools, so `brew` still
 # resolves to the wrapper above.
 [ -d "$HOME/.local/share/mise/shims" ] && PATH="$HOME/.local/share/mise/shims:$PATH"
 export PATH

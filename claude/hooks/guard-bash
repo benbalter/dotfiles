@@ -32,15 +32,13 @@ deny() {
 # about this hook, isn't denied.
 start='(^|[;&|(`]|\$\()[[:space:]]*'
 
-# Only when run, not mentioned: `ls -l /opt/homebrew/bin/brew` is a fine check.
-if matches "$start(sudo[[:space:]]+)?/opt/homebrew/bin/brew([[:space:]]|$)"; then
-	deny "Homebrew is wrapped by Workbrew here: run brew (the /opt/workbrew/bin/brew wrapper), never /opt/homebrew/bin/brew, which fails with a wrapper-conflict error."
-fi
+# Homebrew refuses to run as root, and anything sudo leaves in its prefix
+# belongs to root, which breaks every later brew run as the user.
 if matches "${start}sudo[[:space:]]+([^;&|[:space:]]+[[:space:]]+)*([^[:space:]]*/)?brew([[:space:]]|$)"; then
-	deny "Never run brew with sudo: Workbrew runs brew as the workbrew user. Ownership or lock errors usually trace back to Workbrew, not a broken install."
+	deny "Never run brew with sudo: Homebrew must run as you, and files sudo leaves under /opt/homebrew end up owned by root. Fix the specific path brew complains about instead."
 fi
 if matches "${start}(sudo[[:space:]]+)?chown[[:space:]][^;&|]*/opt/homebrew"; then
-	deny "Everything under /opt/homebrew must stay owned by the workbrew user; don't chown it. Ownership errors there trace back to Workbrew."
+	deny "Don't chown /opt/homebrew: it's owned by you and should stay that way. Ownership errors there mean something ran brew as another user; ask before changing ownership."
 fi
 if matches "${start}npm[[:space:]]+(install|i|add)[[:space:]]([^;&|]*[[:space:]])?(-g|--global)([[:space:]]|$)"; then
 	deny "Global npm CLIs are managed by mise: add \"npm:<pkg>\" = \"latest\" under [tools] in ~/.config/mise/config.toml and run mise install."

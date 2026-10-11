@@ -43,8 +43,12 @@ fi
 # Workbrew installs apps (e.g. Docker.app) as the `workbrew` user, so their
 # bundled completion files are owned by workbrew rather than us. compinit's
 # audit flags those as insecure and skips them. They are trusted local files,
-# so disable the audit (oh-my-zsh's sanctioned escape hatch for this case).
-ZSH_DISABLE_COMPFIX="true"
+# so disable the audit (oh-my-zsh's sanctioned escape hatch for this case) --
+# only under Workbrew: elsewhere the audit catches completion dirs that really
+# are writable by someone else.
+if [ -x /opt/workbrew/bin/brew ]; then
+	ZSH_DISABLE_COMPFIX="true"
+fi
 
 # script/update runs oh-my-zsh's upgrade nightly. Left on, the built-in check
 # ran a `git pull` as a new shell started, which could race that job.
