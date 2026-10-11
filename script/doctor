@@ -4,7 +4,8 @@
 # resolves to the right binary, every launch agent is loaded and healthy, the
 # last update run succeeded and isn't hung, nothing in the Brewfile or mise
 # config is missing, macOS security settings and config.yml's defaults are
-# still in place, and the repo is ready for `up` (venv present, tree clean).
+# still in place, tracked app preferences haven't drifted, and the repo is
+# ready for `up` (venv present, tree clean).
 # Read-only; exits non-zero if anything needs attention.
 # Usage: script/doctor
 
@@ -286,6 +287,14 @@ if [ "$(uname)" = "Darwin" ] && command -v yq >/dev/null; then
 	done <<EOF
 $defaults_rows
 EOF
+fi
+
+if [ "$(uname)" = "Darwin" ]; then
+	echo "==> App preferences"
+	# Warn only: these apps rewrite their own preferences, and a change made in
+	# the app may be one to copy into app-preferences/ rather than undo.
+	"$DOTFILES_ROOT/script/app-preferences" --check 2>&1 |
+		sed 's/^  drift \(.*\)/  warn  \1 differ from app-preferences\/ (script\/app-preferences applies them)/' || true
 fi
 
 echo "==> Dotfiles repo"

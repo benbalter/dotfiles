@@ -88,6 +88,7 @@ run_doctor() {
 	packages_output=$(echo "$output" | sed -n '/^==> Packages/,/^==> /p')
 	security_output=$(echo "$output" | sed -n '/^==> Security/,/^==> /p')
 	defaults_output=$(echo "$output" | sed -n '/^==> macOS defaults/,/^==> /p')
+	app_prefs_output=$(echo "$output" | sed -n '/^==> App preferences/,/^==> /p')
 }
 
 # write_status <line>...: a fake script/update status file, one per line.
@@ -290,4 +291,12 @@ write_status() {
 	sed -i.orig "/${t}ShowPathbar${t}/d" "$STUB_BIN/defaults.db"
 	UNAME=Darwin run_doctor
 	echo "$defaults_output" | grep -q "warn  com.apple.finder ShowPathbar is unset, expected true" || fail "$defaults_output"
+}
+
+@test "doctor only warns about drifted app preferences" {
+	# The stubbed defaults has no domains, so every tracked app has drifted.
+	UNAME=Darwin run_doctor
+	echo "$app_prefs_output" | grep -q "warn  pl.maketheweb.cleanshotx: .* differ from app-preferences/" ||
+		fail "$app_prefs_output"
+	! echo "$app_prefs_output" | grep -q FAIL || fail "$app_prefs_output"
 }

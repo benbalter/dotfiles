@@ -43,6 +43,8 @@ script/github-settings  # apply .github/settings/ (repo options, main branch pro
 
 **macOS defaults.** `macos_defaults.system` entries run with `become: true`, so they must use an absolute domain path like `/Library/Preferences/com.apple.foo`. A bare domain writes to root's preferences and has no effect, yet the task still reports success. The playbook reads back each system default and fails unless it matches `config.yml`, which catches this. Unlike other system changes, these deliberately run in CI so that read-back is exercised. Some keys are stripped by their daemon after the write (`AutomaticCheckEnabled`); drive those through their CLI instead. Firewall settings go through `socketfilterfw`, not `defaults`, and automatic update checks through `softwareupdate --schedule`.
 
+**App preferences.** Third-party app settings that `osx_defaults` can't write (nested arrays, data blobs, keys with dots) live as curated XML plists in `app-preferences/<domain>.plist`, merged in by `script/app-preferences` (playbook `defaults` tag; `--check` in doctor). Track only keys chosen on purpose, never window frames, license keys or account state; `test/app-preferences.bats` enforces that, since the repo is public.
+
 **`lib/`** (`globals`, `aliases`, `auto-complete`) is sourced by interactive `.zshrc`, so never add `set -e` or `set -u` there.
 
 **`claude/`** holds the global Claude Code config:

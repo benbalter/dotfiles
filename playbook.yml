@@ -516,6 +516,16 @@
         label: "{{ item.name }}"
       tags: [macos, defaults]
 
+    # Third-party apps' settings that osx_defaults can't write (nested arrays,
+    # data blobs, keys with dots); see script/app-preferences.
+    - name: Apply app preferences
+      ansible.builtin.command:
+        cmd: "{{ playbook_dir }}/script/app-preferences"
+      register: app_preferences
+      changed_when: "'  set ' in app_preferences.stdout"
+      when: not ansible_check_mode
+      tags: [macos, defaults]
+
     # Read per-host values back from the ByHost domain, as the system defaults
     # are verified above. Skipped in check mode, where nothing was written.
     - name: Verify MacOS per-host user defaults applied

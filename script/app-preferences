@@ -1,0 +1,50 @@
+#!/bin/sh
+# Merge the preferences kept in app-preferences/<domain>.plist into each app's
+# defaults domain, leaving every other key alone. Those apps' settings used to
+# exist only on this Mac (CleanShot X's capture shortcuts, Thaw's menu bar
+# layout), so a new machine started from scratch.
+# Usage: script/app-preferences [--check]
+#   --check: list drifted keys and exit 1 if any, without writing.
+#
+# Python for plistlib: the values include nested arrays, data blobs and keys
+# with dots in them, which `defaults write` and plutil keypaths can't address.
+# Only add keys you chose on purpose, never window frames, license keys or
+# account state: this repo is public.
+
+set -eu
+# shellcheck disable=SC3040
+(set -o pipefail) 2>/dev/null && set -o pipefail || true
+
+PREFS_DIR="${APP_PREFERENCES_DIR:-$(cd "$(dirname "$0")/.." && pwd)/app-preferences}"
+
+exec python3 -I - "$PREFS_DIR" "$@" <<'PY'
+import plistlib
+import subprocess
+import sys
+from pathlib import Path
+
+prefs_dir, check = Path(sys.argv[1]), "--check" in sys.argv[2:]
+drifted = False
+
+for frag in sorted(prefs_dir.glob("*.plist")):
+    domain = frag.stem
+    want = plistlib.loads(frag.read_bytes())
+    # An app that has never run has no domain yet; export then fails.
+    out = subprocess.run(["defaults", "export", domain, "-"], capture_output=True)
+    have = plistlib.loads(out.stdout) if out.returncode == 0 and out.stdout.strip() else {}
+    changed = sorted(k for k, v in want.items() if have.get(k) != v)
+    if not changed:
+        print(f"  ok    {domain}")
+        continue
+    drifted = True
+    if check:
+        print(f"  drift {domain}: {', '.join(changed)}")
+        continue
+    # Import the whole merged domain: one write through cfprefsd, so it takes
+    # every type, where `defaults write` handles only flat values.
+    have.update(want)
+    subprocess.run(["defaults", "import", domain, "-"], input=plistlib.dumps(have), check=True)
+    print(f"  set   {domain}: {', '.join(changed)}")
+
+sys.exit(1 if check and drifted else 0)
+PY

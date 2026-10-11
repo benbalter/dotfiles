@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>LAVAtakeAllInOne</key>
+	<data>
+	eyJjYXJib25LZXkiOjIzLCJjYXJib25Nb2RpZmllcnMiOjc2OH0=
+	</data>
+	<key>LAVAtakeArea</key>
+	<data>
+	eyJjYXJib25LZXkiOjIxLCJjYXJib25Nb2RpZmllcnMiOjc2OH0=
+	</data>
+	<key>LAVAtakeFullscreen</key>
+	<data>
+	eyJjYXJib25LZXkiOjIwLCJjYXJib25Nb2RpZmllcnMiOjc2OH0=
+	</data>
+	<key>analyticsAllowed</key>
+	<false/>
+	<key>captureWithoutDesktopIcons</key>
+	<true/>
+	<key>deletePopupAfterDragging</key>
+	<true/>
+	<key>overlayType</key>
+	<integer>3</integer>
+	<key>popupAskForDestinationWhenSaving</key>
+	<false/>
+	<key>popupSize</key>
+	<integer>2</integer>
+	<key>snapInAnnotateCrop</key>
+	<true/>
+</dict>
+</plist>
