@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>KeyboardShortcuts_Correction_Open</key>
+	<string>{"carbonKeyCode":8,"carbonModifiers":6144}</string>
+	<key>KeyboardShortcuts_OpenInEditorShortcut</key>
+	<string>{"carbonModifiers":2816,"carbonKeyCode":37}</string>
+	<key>KeyboardShortcuts_Paraphrasing_Open</key>
+	<string>{"carbonKeyCode":35,"carbonModifiers":6144}</string>
+</dict>
+</plist>
