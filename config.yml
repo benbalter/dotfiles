@@ -308,6 +308,37 @@ macos_defaults:
       key: NSAutomaticPeriodSubstitutionEnabled
       type: bool
       value: true
+    # Choices made in System Settings that differ from the macOS defaults.
+    - name: Dark mode
+      domain: NSGlobalDomain
+      key: AppleInterfaceStyle
+      type: string
+      value: Dark
+    - name: Liquid Glass tint
+      domain: NSGlobalDomain
+      key: NSGlassTintAmount
+      type: float
+      value: 0.5
+    - name: No swipe between pages
+      domain: NSGlobalDomain
+      key: AppleEnableSwipeNavigateWithScrolls
+      type: bool
+      value: false
+    - name: Hide the menu bar in full screen
+      domain: NSGlobalDomain
+      key: AppleMenuBarVisibleInFullscreen
+      type: bool
+      value: false
+    - name: List view in Open dialogs
+      domain: NSGlobalDomain
+      key: NavPanelFileListModeForOpenMode
+      type: integer
+      value: 2
+    - name: Dock icon size
+      domain: com.apple.dock
+      key: tilesize
+      type: float
+      value: 64
   # Keys that were written to the wrong domain for years. Removing them keeps a
   # stale value from shadowing the correct one if Apple ever starts reading it.
   absent:

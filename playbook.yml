@@ -526,6 +526,18 @@
       when: not ansible_check_mode
       tags: [macos, defaults]
 
+    # A changed keyboard shortcut (com.apple.symbolichotkeys) otherwise waits
+    # for the next login; until then macOS keeps ⌘⇧3/4/5 for its own
+    # screenshots instead of CleanShot.
+    - name: Activate keyboard shortcut changes
+      ansible.builtin.command:
+        cmd: /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
+      changed_when: true
+      when:
+        - not is_ci and not ansible_check_mode
+        - "'set   com.apple.symbolichotkeys' in app_preferences.stdout"
+      tags: [macos, defaults]
+
     # Read per-host values back from the ByHost domain, as the system defaults
     # are verified above. Skipped in check mode, where nothing was written.
     - name: Verify MacOS per-host user defaults applied
