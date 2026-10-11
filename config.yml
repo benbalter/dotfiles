@@ -71,6 +71,8 @@ dotfiles_files_macos:
   - .mackup.cfg
   - .ssh/config
   - Library/Application Support/Code/User/settings.json
+  - Library/Application Support/Code/User/keybindings.json
+  - Library/Application Support/Code/User/mcp.json
   - Library/Application Support/com.mitchellh.ghostty/config
   - Library/Application Support/com.mitchellh.ghostty/shaders/bloom.glsl
   - Library/Spelling/LocalDictionary
