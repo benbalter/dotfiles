@@ -1,0 +1,6 @@
+{
+  "AutoStart": false,
+  "EnableDockerAI": true,
+  "MemoryMiB": 15872,
+  "UseContainerdSnapshotter": true
+}

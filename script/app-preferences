@@ -1,8 +1,11 @@
 #!/bin/sh
-# Merge the preferences kept in app-preferences/<domain>.plist into each app's
-# defaults domain, leaving every other key alone. Those apps' settings used to
-# exist only on this Mac (CleanShot X's capture shortcuts, Thaw's menu bar
-# layout), so a new machine started from scratch.
+# Merge the preferences kept in app-preferences/ into each app's settings,
+# leaving every other key alone. Those apps' settings used to exist only on
+# this Mac (CleanShot X's capture shortcuts, Thaw's menu bar layout, Docker
+# Desktop's memory), so a new machine started from scratch.
+#   app-preferences/<domain>.plist  merged into that defaults domain
+#   app-preferences/json/<path>     merged into ~/<path>, for apps that keep
+#                                   settings in a JSON file they also rewrite
 # Usage: script/app-preferences [--check]
 #   --check: list drifted keys and exit 1 if any, without writing.
 #
@@ -18,6 +21,8 @@ set -eu
 PREFS_DIR="${APP_PREFERENCES_DIR:-$(cd "$(dirname "$0")/.." && pwd)/app-preferences}"
 
 exec python3 -I - "$PREFS_DIR" "$@" <<'PY'
+import json
+import os
 import plistlib
 import subprocess
 import sys
@@ -26,25 +31,48 @@ from pathlib import Path
 prefs_dir, check = Path(sys.argv[1]), "--check" in sys.argv[2:]
 drifted = False
 
+
+def report(name, changed, apply):
+    """Print one line for name; apply() writes the merge unless --check."""
+    global drifted
+    if not changed:
+        print(f"  ok    {name}")
+        return
+    drifted = True
+    if check:
+        print(f"  drift {name}: {', '.join(changed)}")
+        return
+    apply()
+    print(f"  set   {name}: {', '.join(changed)}")
+
+
 for frag in sorted(prefs_dir.glob("*.plist")):
     domain = frag.stem
     want = plistlib.loads(frag.read_bytes())
     # An app that has never run has no domain yet; export then fails.
     out = subprocess.run(["defaults", "export", domain, "-"], capture_output=True)
     have = plistlib.loads(out.stdout) if out.returncode == 0 and out.stdout.strip() else {}
-    changed = sorted(k for k, v in want.items() if have.get(k) != v)
-    if not changed:
-        print(f"  ok    {domain}")
-        continue
-    drifted = True
-    if check:
-        print(f"  drift {domain}: {', '.join(changed)}")
-        continue
     # Import the whole merged domain: one write through cfprefsd, so it takes
     # every type, where `defaults write` handles only flat values.
-    have.update(want)
-    subprocess.run(["defaults", "import", domain, "-"], input=plistlib.dumps(have), check=True)
-    print(f"  set   {domain}: {', '.join(changed)}")
+    report(domain, sorted(k for k, v in want.items() if have.get(k) != v),
+           lambda: subprocess.run(["defaults", "import", domain, "-"],
+                                  input=plistlib.dumps({**have, **want}), check=True))
+
+json_dir = prefs_dir / "json"
+for frag in sorted(json_dir.rglob("*.json")) if json_dir.is_dir() else []:
+    rel = frag.relative_to(json_dir)
+    target = Path.home() / rel
+    want = json.loads(frag.read_text())
+    have = json.loads(target.read_text()) if target.exists() else {}
+
+    def write(target=target, merged={**have, **want}):
+        # Write beside it and rename, so the app never reads a half-written file.
+        target.parent.mkdir(parents=True, exist_ok=True)
+        tmp = target.with_name(target.name + ".tmp")
+        tmp.write_text(json.dumps(merged, indent=2) + "\n")
+        os.replace(tmp, target)
+
+    report(f"~/{rel}", sorted(k for k, v in want.items() if have.get(k) != v), write)
 
 sys.exit(1 if check and drifted else 0)
 PY
