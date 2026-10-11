@@ -327,6 +327,15 @@ macos_defaults:
 # with PlistBuddy instead of through macos_defaults.
 macos_desktop_arrange_by: name
 
+# This Mac's names, set with scutil. ComputerName is the one shown in
+# Finder, AirDrop and Find My; LocalHostName is the Bonjour name (.local).
+# macOS appends -2 to LocalHostName when it sees another Mac using the name,
+# which had stuck after a migration. HostName stays unset, so macOS keeps
+# deriving it from the network.
+computer_names:
+  ComputerName: "Ben’s MacBook Pro"
+  LocalHostName: Bens-MacBook-Pro
+
 # Apps that open at login, by path. The playbook adds any that are missing
 # and never removes one, so an item added by hand survives until it's
 # listed here or removed in System Settings.

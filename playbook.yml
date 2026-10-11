@@ -590,6 +590,27 @@
       when: not is_ci and not ansible_check_mode
       tags: [macos, defaults]
 
+    - name: Set computer names
+      ansible.builtin.shell:
+        cmd: |
+          set -eu
+          [ "$(scutil --get "$KEY" 2>/dev/null || true)" != "$WANT" ] || exit 0
+          scutil --set "$KEY" "$WANT"
+          [ "$(scutil --get "$KEY")" = "$WANT" ] || { echo "$KEY did not stick" >&2; exit 1; }
+          echo changed
+      environment:
+        KEY: "{{ item.key }}"
+        WANT: "{{ item.value }}"
+      loop: "{{ computer_names | dict2items }}"
+      loop_control:
+        label: "{{ item.key }}"
+      become: true
+      register: computer_names_set
+      changed_when: "'changed' in computer_names_set.stdout"
+      # A runner's name isn't ours to change.
+      when: not is_ci and not ansible_check_mode
+      tags: [macos, defaults]
+
     # Login items were only ever added through each app's own prompt. The
     # first run asks to let the terminal control System Events. An app that
     # isn't installed (a failed mas install, say) is skipped, not added as a
