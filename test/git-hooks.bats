@@ -53,3 +53,45 @@ stage_token() {
 	PATH=/usr/bin:/bin run "$HOOK"
 	[ "$status" -eq 0 ] || fail "missing gitleaks should not block commits: $output"
 }
+
+@test "install-git-hooks copies the template into a repo without hooks" {
+	run "$REPO_ROOT/script/install-git-hooks" "$REPO"
+	[ "$status" -eq 0 ] || fail "$output"
+	cmp -s "$HOOK" "$REPO/.git/hooks/pre-commit" || fail "hook not installed: $output"
+	[ -f "$REPO/.git/info/exclude" ] || fail "info/exclude not installed: $output"
+}
+
+@test "install-git-hooks leaves core.filemode alone" {
+	git config core.filemode false
+	run "$REPO_ROOT/script/install-git-hooks" "$REPO"
+	[ "$(git config core.filemode)" = false ] || fail "core.filemode was rewritten"
+}
+
+@test "install-git-hooks refreshes a stale copy of its own hook" {
+	mkdir -p .git/hooks
+	printf '#!/bin/sh\n# old\ngitleaks git --pre-commit --staged\n' >.git/hooks/pre-commit
+	run "$REPO_ROOT/script/install-git-hooks" "$REPO"
+	cmp -s "$HOOK" "$REPO/.git/hooks/pre-commit" || fail "stale hook not refreshed: $output"
+	[[ $output == *"refreshed"* ]] || fail "$output"
+}
+
+@test "install-git-hooks leaves another tool's hook alone" {
+	mkdir -p .git/hooks
+	printf '#!/bin/sh\nlefthook run pre-commit\n' >.git/hooks/pre-commit
+	run "$REPO_ROOT/script/install-git-hooks" "$REPO"
+	grep -q lefthook .git/hooks/pre-commit || fail "foreign hook overwritten"
+	[[ $output == *"has its own pre-commit hook"* ]] || fail "$output"
+}
+
+@test "install-git-hooks skips repos with their own core.hooksPath" {
+	git config core.hooksPath .husky
+	run "$REPO_ROOT/script/install-git-hooks" "$REPO"
+	[ ! -e .git/hooks/pre-commit ] || fail "installed where git won't run it"
+	[[ $output == *"core.hooksPath"* ]] || fail "$output"
+}
+
+@test "install-git-hooks ignores folders that aren't repo roots" {
+	mkdir sub
+	run "$REPO_ROOT/script/install-git-hooks" "$REPO/sub"
+	[ ! -e .git/hooks/pre-commit ] || fail "installed into the parent repo"
+}

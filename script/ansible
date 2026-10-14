@@ -26,8 +26,9 @@ elif sudo -n true 2>/dev/null; then
 	ansible-playbook playbook.yml "$@"
 else
 	echo "==> No terminal to prompt for your sudo password." >&2
-	echo "    Run script/ansible from a terminal, or point" >&2
-	echo "    ANSIBLE_BECOME_PASSWORD_FILE at a file holding it." >&2
+	echo "    Run script/ansible from a terminal tab (Claude Code's ! prefix" >&2
+	echo "    doesn't give it one), or point ANSIBLE_BECOME_PASSWORD_FILE at a" >&2
+	echo "    file holding it." >&2
 	exit 1
 fi
 

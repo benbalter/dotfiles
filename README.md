@@ -15,6 +15,7 @@
 - `script/ansible` — Run the playbook (prompts for sudo)
 - `script/audit-defaults` — Flag `config.yml` Apple defaults keys that no system binary contains anymore (likely dead); run it before adding a key
 - `script/bench-shell` — Time zsh's startup and per-command lag with [zsh-bench](https://github.com/romkatv/zsh-bench) and flag anything past its noticeable thresholds
+- `script/install-git-hooks` — Copy the gitleaks pre-commit hook into existing repos (`~/projects/*` by default); new clones get it through `init.templateDir`. Leaves other tools' hooks alone
 - `script/audit-casks` — Report casks whose apps haven't been opened lately; `--comment` proposes removals in the `Brewfile`
 - `script/update-brewfile` — Sync the `Brewfile` with what's installed
 - `script/clean` — Uninstall everything not in the `Brewfile` (`brew bundle cleanup --force`; destructive); aliased to `clean`

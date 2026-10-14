@@ -1,0 +1,53 @@
+#!/bin/sh
+# Copy the git template (.config/git/template: the gitleaks pre-commit hook
+# and info/exclude) into existing repos. init.templateDir only reaches new
+# clones. Not `git init`, which also copies missing template files but
+# re-probes and rewrites core.filemode, undoing a repo that set it to false.
+#
+# Per file: copied where missing; a pre-commit hook that's a stale copy of
+# ours (it runs `gitleaks git --pre-commit`) is refreshed; any other hook
+# (lefthook, pre-commit) is left alone and reported. So is a repo with its own
+# core.hooksPath (husky), where git never looks in .git/hooks.
+# Usage: script/install-git-hooks [repo...]   (default: ~/projects/* and this repo)
+
+set -eu
+# shellcheck disable=SC3040
+(set -o pipefail) 2>/dev/null && set -o pipefail || true
+
+DOTFILES_ROOT="${DOTFILES_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
+TEMPLATE="$DOTFILES_ROOT/.config/git/template"
+MARKER="gitleaks git --pre-commit"
+
+[ "$#" -gt 0 ] || set -- "$HOME"/projects/* "$DOTFILES_ROOT"
+
+installed=0 refreshed=0 foreign=0
+for repo in "$@"; do
+	# Only repo roots: git -C on a plain folder inside a repo finds the parent.
+	[ -e "$repo/.git" ] || continue
+	if hooks_path=$(git -C "$repo" config --local core.hooksPath); then
+		echo "  skipped    $repo: hooks live in $hooks_path (core.hooksPath)"
+		foreign=$((foreign + 1))
+		continue
+	fi
+	# The common dir, so linked worktrees share their main repo's hooks.
+	gitdir=$(git -C "$repo" rev-parse --path-format=absolute --git-common-dir 2>/dev/null) || continue
+	for rel in $(cd "$TEMPLATE" && find . -type f | sed 's|^\./||'); do
+		src="$TEMPLATE/$rel" dest="$gitdir/$rel"
+		if [ ! -e "$dest" ]; then
+			mkdir -p "$(dirname "$dest")"
+			cp -p "$src" "$dest"
+			echo "  installed  $repo: $rel"
+			installed=$((installed + 1))
+		elif cmp -s "$src" "$dest"; then
+			:
+		elif [ "$rel" = hooks/pre-commit ] && grep -qF "$MARKER" "$dest"; then
+			cp -p "$src" "$dest"
+			echo "  refreshed  $repo: $rel"
+			refreshed=$((refreshed + 1))
+		elif [ "$rel" = hooks/pre-commit ]; then
+			echo "  skipped    $repo: has its own pre-commit hook"
+			foreign=$((foreign + 1))
+		fi
+	done
+done
+echo "$installed files installed, $refreshed hooks refreshed, $foreign repos skipped for their own hooks (gitleaks doesn't run there)."

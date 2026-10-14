@@ -1,7 +1,7 @@
 #!/bin/sh
 # Scan staged changes for secrets before every commit. init.templateDir
-# (.gitconfig.macos) copies this into each new clone's .git/hooks; run
-# `git init` in an existing repo to add it there. A global core.hooksPath
+# (.gitconfig.macos) copies this into each new clone's .git/hooks;
+# script/install-git-hooks adds it to existing repos. A global core.hooksPath
 # would cover every repo at once, but it disables each repo's own .git/hooks,
 # and `git lfs install` then writes into the shared directory instead, so LFS
 # objects stop being pushed.

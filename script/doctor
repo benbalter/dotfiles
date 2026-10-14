@@ -287,6 +287,15 @@ if [ "$(uname)" = "Darwin" ] && command -v yq >/dev/null; then
 	done <<EOF
 $defaults_rows
 EOF
+
+	# A read-back passes for a key macOS no longer reads at all, which tends
+	# to happen after an OS upgrade. Warn only: the search can miss a key
+	# built at runtime, so confirm one before removing it. Silent when the
+	# audit can't run (no ripgrep, no binaries to search).
+	if command -v rg >/dev/null; then
+		"$DOTFILES_ROOT/script/audit-defaults" 2>/dev/null |
+			sed -n 's/^  dead? \([^:]*\):.*/  warn  \1 may be dead: no system binary reads it (script\/audit-defaults)/p' || true
+	fi
 fi
 
 if [ "$(uname)" = "Darwin" ]; then

@@ -53,6 +53,10 @@ STUB
 	# absent, unless DEFAULTS_STATUS says otherwise.
 	yq -r '(.macos_defaults.system[], .macos_defaults.user[]) | [.domain, .key, .value] | @tsv' \
 		"$REPO_ROOT/config.yml" | sed "s|{{ ansible_facts\['user_dir'\] }}|$TEST_HOME|" >"$STUB_BIN/defaults.db"
+	# audit-defaults searches this instead of the host's system binaries: every
+	# configured key, NUL-separated like a string table, so none look dead.
+	yq -r '(.macos_defaults.system[], .macos_defaults.user[]) | .key' "$REPO_ROOT/config.yml" |
+		tr '\n' '\0' >"$STUB_BIN/binary"
 	cat >"$STUB_BIN/defaults" <<STUB
 #!/bin/sh
 [ "\$1" != -currentHost ] || shift
@@ -79,7 +83,7 @@ teardown() {
 run_doctor() {
 	run env HOME="$TEST_HOME" DOTFILES_ROOT="$REPO_ROOT" PATH="$STUB_BIN:$PATH" \
 		SOCKETFILTERFW="$STUB_BIN/socketfilterfw" SUDO_LOCAL="$STUB_BIN/sudo_local" \
-		PAM_SUDO="$STUB_BIN/pam_sudo" \
+		PAM_SUDO="$STUB_BIN/pam_sudo" AUDIT_DEFAULTS_BINARIES="$STUB_BIN/binary" \
 		"$REPO_ROOT/script/doctor"
 	# Per-section slices: the Homebrew and security checks depend on the host.
 	links_output=$(echo "$output" | sed -n '/^==> Dotfile symlinks/,/^==> /p')
@@ -291,6 +295,15 @@ write_status() {
 	sed -i.orig "/${t}ShowPathbar${t}/d" "$STUB_BIN/defaults.db"
 	UNAME=Darwin run_doctor
 	echo "$defaults_output" | grep -q "warn  com.apple.finder ShowPathbar is unset, expected true" || fail "$defaults_output"
+}
+
+@test "doctor warns about a default no system binary reads" {
+	command -v rg >/dev/null || skip "needs ripgrep"
+	tr '\0' '\n' <"$STUB_BIN/binary" | grep -vx ShowPathbar | tr '\n' '\0' >"$STUB_BIN/binary.new"
+	mv "$STUB_BIN/binary.new" "$STUB_BIN/binary"
+	UNAME=Darwin run_doctor
+	echo "$defaults_output" | grep -q "warn  com.apple.finder ShowPathbar may be dead" || fail "$defaults_output"
+	! echo "$defaults_output" | grep -q "autohide may be dead" || fail "a present key was flagged: $defaults_output"
 }
 
 @test "doctor only warns about drifted app preferences" {
