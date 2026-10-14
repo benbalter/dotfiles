@@ -188,12 +188,5 @@
   "update.mode": "none",
   "extensions.autoCheckUpdates": false,
   "extensions.autoUpdate": "off",
-  "yaml.disableSchemaDetection": [
-    "**/.github/workflows/*.yml",
-    "**/.github/workflows/*.yaml",
-    "**/.gitea/workflows/*.yml",
-    "**/.gitea/workflows/*.yaml",
-    "**/.forgejo/workflows/*.yml",
-    "**/.forgejo/workflows/*.yaml"
-  ]
+  "yaml.disableSchemaDetection": []
 }
