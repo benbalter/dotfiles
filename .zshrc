@@ -142,6 +142,11 @@ bgnotify_threshold=8
 [[ -f $ZSH/plugins/history-substring-search/history-substring-search.plugin.zsh ]] &&
   source $ZSH/plugins/history-substring-search/history-substring-search.plugin.zsh
 
+# Untracked, per-machine settings that don't belong in this public repo. Last,
+# so it can override anything above; before the dedupe below, so its PATH
+# additions are deduplicated too.
+[[ -r ~/.zshrc.local ]] && source ~/.zshrc.local
+
 unfunction _cached_init
 
 # Apply -U to everything added through the PATH/FPATH scalars above.

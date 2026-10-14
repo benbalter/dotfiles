@@ -1,0 +1,80 @@
+#!/bin/sh
+# Look for config.yml defaults that nothing on this Mac reads anymore.
+#
+# The playbook and doctor read every value back, which catches a write that
+# didn't stick. They can't catch a write that sticks and does nothing, because
+# macOS no longer reads the key. This searches the system's binaries (the dyld
+# shared cache, which holds every framework and daemon, plus system apps and
+# daemons outside it) for each Apple key's name. Apple stores preference keys
+# as literal strings, so a key no binary contains is a strong candidate for
+# removal. Strong, not certain: a key built at runtime by concatenation would
+# also go unfound, so check one in the UI (or search for a fragment of it)
+# before deleting it. The search ignores domains, so it can't spot a live key
+# written to the wrong domain.
+#
+# Third-party domains are skipped: their apps often build keys at runtime, so
+# a miss there means nothing.
+#
+# Idea from kdeldycke/dotfiles tools/audit_defaults.py. Takes about a second.
+# Read-only; exits 1 if any key went unfound.
+# Usage: script/audit-defaults
+
+set -eu
+# shellcheck disable=SC3040
+(set -o pipefail) 2>/dev/null && set -o pipefail || true
+
+DOTFILES_ROOT="${DOTFILES_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
+CONFIG="$DOTFILES_ROOT/config.yml"
+
+# Only the arm64e cache: the x86_64 one beside it serves Rosetta and repeats
+# the same strings. /usr/libexec holds daemons outside the cache (amfid reads
+# DisableLibraryValidation). /Applications is left out: Apple's keys aren't
+# there, and its Electron apps alone added half a minute. Tests point this at
+# fixtures instead.
+AUDIT_DEFAULTS_BINARIES="${AUDIT_DEFAULTS_BINARIES:-/System/Volumes/Preboot/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_arm64e* /usr/libexec/* /usr/sbin/* /System/Applications/*.app/Contents/MacOS/* /System/Applications/Utilities/*.app/Contents/MacOS/* /System/Library/CoreServices/*.app/Contents/MacOS/*}"
+
+for tool in yq rg; do
+	command -v "$tool" >/dev/null || {
+		echo "audit-defaults: needs $tool (brew bundle installs it)" >&2
+		exit 2
+	}
+done
+
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+
+# Apple domains only, whether bare (com.apple.dock) or absolute
+# (/Library/Preferences/com.apple.commerce). Not `absent` entries: they're
+# keys in the wrong domain, which a domain-blind search can't judge.
+yq -r '(.macos_defaults.system[], .macos_defaults.user[])
+	| select(.domain | test("^(/Library/Preferences/)?(com\\.apple\\.|NSGlobalDomain$)"))
+	| [.key, (.domain | sub("^/Library/Preferences/"; ""))] | @tsv' "$CONFIG" >"$tmp/entries"
+cut -f1 "$tmp/entries" | sort -u >"$tmp/keys"
+
+# One pass over every binary with all keys at once. -w matches whole words, so
+# a key inside a longer identifier doesn't count as found. ripgrep, not grep:
+# BSD grep took 40s per 131 MB cache file once a key had a hyphen
+# (show-recents); rg takes a tenth of a second. Directories and unreadable
+# files in the globs just error, hence --no-messages.
+# shellcheck disable=SC2086 # the globs must expand
+rg --no-messages -aoNwF --no-filename -f "$tmp/keys" $AUDIT_DEFAULTS_BINARIES | sort -u >"$tmp/found" || true
+
+[ -s "$tmp/found" ] || {
+	echo "audit-defaults: no keys found in any binary; is $AUDIT_DEFAULTS_BINARIES readable?" >&2
+	exit 2
+}
+
+missing=0
+while IFS="	" read -r key domain; do
+	if grep -qxF "$key" "$tmp/found"; then
+		echo "  ok    $domain $key"
+	else
+		echo "  dead? $domain $key: no system binary contains this key"
+		missing=$((missing + 1))
+	fi
+done <"$tmp/entries"
+
+if [ "$missing" -gt 0 ]; then
+	echo "$missing key(s) may be dead. Confirm in System Settings before removing them from config.yml."
+	exit 1
+fi

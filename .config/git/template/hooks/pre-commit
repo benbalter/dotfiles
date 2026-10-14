@@ -1,0 +1,22 @@
+#!/bin/sh
+# Scan staged changes for secrets before every commit. init.templateDir
+# (.gitconfig.macos) copies this into each new clone's .git/hooks; run
+# `git init` in an existing repo to add it there. A global core.hooksPath
+# would cover every repo at once, but it disables each repo's own .git/hooks,
+# and `git lfs install` then writes into the shared directory instead, so LFS
+# objects stop being pushed.
+#
+# Skip once with SKIP_GITLEAKS=1, or allow a false positive for good with a
+# `gitleaks:allow` comment on the line or a .gitleaksignore entry.
+
+set -eu
+
+# GUI git clients run hooks without Homebrew on PATH.
+PATH="$PATH:/opt/homebrew/bin"
+[ -z "${SKIP_GITLEAKS:-}" ] || exit 0
+command -v gitleaks >/dev/null 2>&1 || exit 0
+
+gitleaks git --pre-commit --staged --redact --no-banner --log-level warn --verbose || {
+	echo "gitleaks: possible secret staged (see above). If it's a false positive, add a gitleaks:allow comment, or commit with SKIP_GITLEAKS=1." >&2
+	exit 1
+}

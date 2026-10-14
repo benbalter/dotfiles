@@ -13,6 +13,8 @@
 - `script/doctor` — Read-only health check: symlinks and leftover `.bak` files, the brew wrapper, launch agents, the last update run, missing Brewfile and mise packages, macOS security settings and `config.yml` defaults, and whether the repo is ready for `up`
 - `script/bootstrap` — Install Python venv and Ansible dependencies
 - `script/ansible` — Run the playbook (prompts for sudo)
+- `script/audit-defaults` — Flag `config.yml` Apple defaults keys that no system binary contains anymore (likely dead); run it before adding a key
+- `script/bench-shell` — Time zsh's startup and per-command lag with [zsh-bench](https://github.com/romkatv/zsh-bench) and flag anything past its noticeable thresholds
 - `script/audit-casks` — Report casks whose apps haven't been opened lately; `--comment` proposes removals in the `Brewfile`
 - `script/update-brewfile` — Sync the `Brewfile` with what's installed
 - `script/clean` — Uninstall everything not in the `Brewfile` (`brew bundle cleanup --force`; destructive); aliased to `clean`

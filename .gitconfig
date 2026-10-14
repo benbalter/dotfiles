@@ -5,6 +5,8 @@
 	pager = delta
 	autocrlf = input
 	editor = code --wait
+	# Skip re-scanning directories whose mtime hasn't changed during `git status`.
+	untrackedCache = true
 
 [user]
 	name = Ben Balter
@@ -69,6 +71,8 @@
 	tool = difftastic
 	colorMoved = default
 	algorithm = histogram
+	# Detect copies as well as renames, so a copied file diffs against its source.
+	renames = copies
 
 # `git diff` still uses delta (see core.pager); difftastic is opt-in via
 # `git difftool` / `git dft`. VS Code remains available with `-t default-difftool`.
@@ -126,6 +130,18 @@
 [tag]
 	sort = version:refname
 
+# With tag.sort above, list pre-releases before their release (v2.0.0-rc1
+# before v2.0.0) instead of after it.
+[versionsort]
+	suffix = -alpha
+	suffix = -beta
+	suffix = -pre
+	suffix = -rc
+
+# Offer to run the command a typo most likely meant, instead of just failing.
+[help]
+	autocorrect = prompt
+
 [column]
 	ui = auto
 
@@ -139,3 +155,9 @@
 # socket").
 [include]
 	path = ~/.gitconfig.macos
+
+# Untracked, per-machine settings (a work email, a host-specific credential
+# helper) that shouldn't go in this public repo. Last, so it overrides
+# everything above; git skips it if it doesn't exist.
+[include]
+	path = ~/.gitconfig.local

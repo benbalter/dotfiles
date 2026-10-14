@@ -1,0 +1,33 @@
+#!/bin/sh
+# Measure how fast zsh starts and responds, with romkatv/zsh-bench. It drives
+# a real interactive login shell through a pseudo-terminal, so it times what
+# you'd feel (first prompt, lag after each command, typing lag) rather than
+# just `zsh -i -c exit`. Run it before and after a .zshrc change; timings vary
+# with machine load, so it isn't a CI gate.
+# zsh-bench isn't packaged anywhere, so the first run clones it into
+# ~/.cache/zsh-bench and later runs fast-forward it. Arguments pass through
+# (e.g. --iters 32).
+# Usage: script/bench-shell [zsh-bench options]
+
+set -eu
+# shellcheck disable=SC3040
+(set -o pipefail) 2>/dev/null && set -o pipefail || true
+
+dir="${XDG_CACHE_HOME:-$HOME/.cache}/zsh-bench"
+if [ -d "$dir/.git" ]; then
+	git -C "$dir" pull -q --ff-only 2>/dev/null || echo "bench-shell: couldn't update $dir; using the copy there" >&2
+else
+	git clone -q --depth 1 https://github.com/romkatv/zsh-bench "$dir"
+fi
+
+out=$("$dir/zsh-bench" "$@")
+echo "$out"
+
+# The largest value of each latency its author couldn't tell apart from zero
+# in a blind test (zsh-bench's README); above it, the shell feels sluggish.
+echo
+echo "Noticeable above: first_prompt_lag 50ms, first_command_lag 150ms, command_lag 10ms, input_lag 20ms."
+echo "$out" | awk -F= '
+	BEGIN { t["first_prompt_lag_ms"] = 50; t["first_command_lag_ms"] = 150; t["command_lag_ms"] = 10; t["input_lag_ms"] = 20 }
+	($1 in t) && $2 + 0 > t[$1] { printf "  slow  %s is %.0fms, %.1fx the threshold\n", $1, $2, $2 / t[$1] }
+'

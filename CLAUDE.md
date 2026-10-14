@@ -14,6 +14,8 @@ script/lint        # ansible-lint, yamllint, shellcheck, shfmt, actionlint, rubo
 script/test        # the whole BATS suite (bats test/)
 script/doctor      # read-only health check: symlinks, .bak files, brew wrapper, launch agents, last update, packages, security, defaults
 script/github-settings  # apply .github/settings/ (repo options, main branch protection) via gh; --check diffs only
+script/audit-defaults   # flag config.yml Apple defaults keys that no system binary contains (likely dead)
+script/bench-shell      # time zsh startup and command lag with zsh-bench, against its noticeable thresholds
 ```
 
 - Run one test file: `bats test/config.bats`. Run one test by name: `bats test/install.bats -f 'install.sh links'`.
@@ -41,11 +43,13 @@ script/github-settings  # apply .github/settings/ (repo options, main branch pro
 
 **`script/update` runs headless** from a nightly launchd job with a minimal `PATH` and no TTY. Anything interactive (sudo prompts, cask upgrades, `script/audit-casks`, mole) must be guarded with `[ -t 1 ]`. Wrap each step in `step`, which records a failure without stopping the rest; the run exits 1 with a list of failed steps, and records the run in `~/.local/state/dotfiles/update-status` for `script/doctor`.
 
-**macOS defaults.** `macos_defaults.system` entries run with `become: true`, so they must use an absolute domain path like `/Library/Preferences/com.apple.foo`. A bare domain writes to root's preferences and has no effect, yet the task still reports success. The playbook reads back each system default and fails unless it matches `config.yml`, which catches this. Unlike other system changes, these deliberately run in CI so that read-back is exercised. Some keys are stripped by their daemon after the write (`AutomaticCheckEnabled`); drive those through their CLI instead. Firewall settings go through `socketfilterfw`, not `defaults`, and automatic update checks through `softwareupdate --schedule`.
+**macOS defaults.** `macos_defaults.system` entries run with `become: true`, so they must use an absolute domain path like `/Library/Preferences/com.apple.foo`. A bare domain writes to root's preferences and has no effect, yet the task still reports success. The playbook reads back each system default and fails unless it matches `config.yml`, which catches this. Unlike other system changes, these deliberately run in CI so that read-back is exercised. Some keys are stripped by their daemon after the write (`AutomaticCheckEnabled`); drive those through their CLI instead. Firewall settings go through `socketfilterfw`, not `defaults`, and automatic update checks through `softwareupdate --schedule`. A read-back can't tell when macOS has stopped reading a key altogether; `script/audit-defaults` checks for that (run it before adding a key).
 
 **App preferences.** Third-party app settings that `osx_defaults` can't write (nested arrays, data blobs, keys with dots) live as curated XML plists in `app-preferences/<domain>.plist`, and settings an app keeps in a JSON file it also rewrites (Docker Desktop) live in `app-preferences/json/<path under $HOME>`. Both are merged key by key by `script/app-preferences` (playbook `defaults` tag; `--check` in doctor). Track only keys chosen on purpose, never window frames, license keys or account state; `test/app-preferences.bats` enforces that, since the repo is public.
 
 **`lib/`** (`globals`, `aliases`, `auto-complete`) is sourced by interactive `.zshrc`, so never add `set -e` or `set -u` there.
+
+**Per-machine settings** that shouldn't be in this public repo go in untracked `~/.zshrc.local` and `~/.gitconfig.local`, which `.zshrc` and `.gitconfig` load last.
 
 **`claude/`** holds the global Claude Code config:
 

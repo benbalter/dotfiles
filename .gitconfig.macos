@@ -31,3 +31,22 @@
 # remains the default on Linux and in Codespaces
 [core]
 	editor = zed --wait
+
+# fsmonitor runs a per-repo daemon that watches for file changes, so `git
+# status` stops walking the whole tree. macOS only: git's built-in daemon
+# doesn't support Linux (Codespaces).
+[core]
+	fsmonitor = true
+
+# Clickable file names in delta's diffs (Ghostty supports OSC 8 links; less
+# needs -R, which LESS sets). zed:// opens the file at that line in Zed rather
+# than handing a bare file:// to Finder.
+[delta]
+	hyperlinks = true
+	hyperlinks-file-link-format = "zed://file{path}:{line}"
+
+# Hooks copied into every new clone; see the pre-commit hook for why this
+# isn't a global core.hooksPath. Gitleaks is a macOS (Brewfile) tool, so this
+# lives here rather than in .gitconfig.
+[init]
+	templateDir = ~/.config/git/template
