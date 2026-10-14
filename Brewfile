@@ -227,7 +227,7 @@ cask 'adguard'
 # Inspect application bundles
 cask 'apparency'
 # Tool to flash OS images to SD cards & USB drives
-cask 'balenaetcher'
+# cask 'balenaetcher' # PROPOSED REMOVAL: last opened 63 days ago
 # Utility that prevents the system from going to sleep
 cask 'caffeine'
 # Screen capturing tool
@@ -239,13 +239,13 @@ cask 'docker-desktop'
 # Client for the Dropbox cloud storage service
 cask 'dropbox'
 # Elgato FACECAM configuration tool
-cask 'elgato-camera-hub'
+# cask 'elgato-camera-hub' # PROPOSED REMOVAL: last opened 15 days ago
 # Control your Elgato key lights
 cask 'elgato-control-center'
 # Assign keys, and then decorate and label them
-cask 'elgato-stream-deck'
+# cask 'elgato-stream-deck' # PROPOSED REMOVAL: last opened 15 days ago
 # Web browser
-cask 'firefox'
+# cask 'firefox' # PROPOSED REMOVAL: last opened 54 days ago
 cask 'font-hack-nerd-font'
 # Terminal emulator that uses platform-native UI and GPU acceleration
 cask 'ghostty'
@@ -304,7 +304,7 @@ cask 'unclack'
 # Open-source code editor
 cask 'visual-studio-code'
 # Multimedia player
-cask 'vlc'
+# cask 'vlc' # PROPOSED REMOVAL: last opened 47 days ago
 # Menu bar app for USB-C cable diagnostics
 cask 'whatcable'
 # Full-featured companion app to the YubiKey
