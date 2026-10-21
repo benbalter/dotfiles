@@ -22,6 +22,16 @@
         "custom.regex"
       ],
       "automerge": false
+    },
+    {
+      "description": "ansible-core can't import on Python 3.15 (dataclasses._is_type is gone). Hold the Python Ansible runs on until a release supports it.",
+      "matchDepNames": [
+        "python"
+      ],
+      "matchFileNames": [
+        ".python-version"
+      ],
+      "allowedVersions": "<3.15"
     }
   ]
 }
