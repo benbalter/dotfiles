@@ -46,6 +46,14 @@ jobs:
           path: ~/Library/Caches/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
 
+      # The runner's python3 moved to 3.15, which ansible-core 2.21 can't
+      # import under (dataclasses._is_type is gone), so Bootstrap failed.
+      # uv and mise read the same .python-version locally.
+      - name: Python
+        uses: actions/setup-python@v7
+        with:
+          python-version-file: .python-version
+
       - name: Bootstrap
         run: script/bootstrap
 
