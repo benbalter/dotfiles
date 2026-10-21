@@ -59,6 +59,8 @@ if command -v eza >/dev/null; then
 	alias lc='eza -la --git --group-directories-first'
 	alias lt='eza --tree --level=2'
 else
+	alias ll='ls -lh'
+	alias la='ls -lAh'
 	alias lc='ls -lA'
 fi
 if command -v xh >/dev/null; then
@@ -101,12 +103,13 @@ alias clean="$DOTFILES_ROOT/script/clean"
 alias p="cd ~/projects"
 alias c="claude"
 
-# oh-my-zsh's common-aliases makes rm, cp and mv interactive (-i). Claude
-# Code's shell inherits these aliases but has no TTY to answer the prompt, so
-# its commands hung until it learned to type `command rm`. Keep the safety net
-# for me, and drop it only under Claude Code.
-if [ -n "${CLAUDECODE-}" ]; then
-	unalias rm cp mv 2>/dev/null || true
+# Make rm, cp and mv interactive (-i) as a safety net, but not under Claude
+# Code: its shell inherits these aliases but has no TTY to answer the prompt,
+# so its commands hung until it learned to type `command rm`.
+if [ -z "${CLAUDECODE-}" ]; then
+	alias rm='rm -i'
+	alias cp='cp -i'
+	alias mv='mv -i'
 fi
 
 if [ "$(uname)" = "Darwin" ]; then

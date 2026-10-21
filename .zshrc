@@ -17,15 +17,12 @@ plugins=(
   bgnotify
   colored-man-pages
   command-not-found
-  common-aliases
+  copyfile
+  copypath
   cp
-  dotenv
   extract
-  zoxide
   gem
   git
-  golang
-  node
   npm
   safe-paste
   sudo
@@ -55,11 +52,6 @@ fi
 zstyle ':omz:update' mode disabled
 
 source "$ZSH/oh-my-zsh.sh"
-
-# common-aliases opens notes.txt and friends with '$EDITOR', which zsh doesn't
-# word-split, so EDITOR="code --wait" failed with "command not found: code
-# --wait". ${=EDITOR} splits it.
-(( ${+_editor_fts} )) && for ft in $_editor_fts; do alias -s $ft='${=EDITOR}'; done
 
 # shellcheck source=lib/auto-complete
 source "$DOTFILES_ROOT/lib/auto-complete"
@@ -141,6 +133,11 @@ bgnotify_threshold=8
 [[ -f $HOMEBREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] && source $HOMEBREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 [[ -f $ZSH/plugins/history-substring-search/history-substring-search.plugin.zsh ]] &&
   source $ZSH/plugins/history-substring-search/history-substring-search.plugin.zsh
+
+# zoxide (`z`, and `j` in lib/aliases). Last of the inits, as its README asks,
+# so nothing after it replaces its chpwd hook. It was oh-my-zsh's plugin,
+# which ran `zoxide init` on every start instead of using the cache.
+_cached_init zoxide zoxide init zsh
 
 # Untracked, per-machine settings that don't belong in this public repo. Last,
 # so it can override anything above; before the dedupe below, so its PATH

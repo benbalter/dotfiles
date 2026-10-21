@@ -42,9 +42,9 @@ echo "==> Installing$missing via mise..."
 # shellcheck disable=SC2086 # $missing is a space-separated tool list
 "$MISE" use --path "$HOME/.config/mise/conf.d/install-tools.toml" $missing
 
-# Link the shims onto the system PATH. zsh loads oh-my-zsh's zoxide plugin
-# before `mise activate` runs, and the plugin only initializes if zoxide is
-# already on PATH. Shims resolve the current version at run time, so these
+# Link the shims onto the system PATH. .zshrc initializes zoxide and fzf
+# only if they are on PATH when it runs. Shims resolve the current version
+# at run time, so these
 # links survive upgrades.
 # Plain ln where /usr/local/bin is writable (a root container may have no
 # sudo), else sudo only if it needs no password: under set -e a sudo prompt
@@ -55,7 +55,7 @@ elif command -v sudo >/dev/null && sudo -n true 2>/dev/null; then
 	LN="sudo -n ln"
 else
 	LN=""
-	echo "Warning: can't write /usr/local/bin; zoxide's oh-my-zsh plugin may not load" >&2
+	echo "Warning: can't write /usr/local/bin; zoxide and fzf may not load" >&2
 fi
 if [ -n "$LN" ]; then
 	for tool in $missing; do
