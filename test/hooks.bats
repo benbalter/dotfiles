@@ -109,6 +109,9 @@ sudo -E /opt/homebrew/bin/brew upgrade
 sudo chown -R me /opt/homebrew
 npm install -g typescript
 npm i --global typescript
+npm login
+npm adduser --registry https://registry.npmjs.org
+npm config set //registry.npmjs.org/:_authToken abc
 git commit --no-gpg-sign -m x
 git -c commit.gpgsign=false commit -m x
 git add -A
@@ -126,6 +129,8 @@ brew upgrade
 ls -l /opt/homebrew/bin/brew
 npm install
 npm ls -g
+npm config get registry
+npm whoami
 git add script/lint
 git add .claude/hooks/lint-file
 git log --show-signature

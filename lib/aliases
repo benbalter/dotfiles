@@ -123,6 +123,24 @@ fi
 # this public repo. Fetch it from 1Password only for commands that need auth,
 # so everyday installs don't trigger a Touch ID prompt.
 npm() {
+	# `npm login` and `npm config set` save tokens to ~/.npmrc, which links
+	# into this public repo, so a login left a live token one `git add` away
+	# from being published (twice). `command npm` bypasses this.
+	case "${1-}" in
+		login | adduser | add-user)
+			echo "npm: ~/.npmrc links into the public dotfiles repo, so npm $1 would write a token there." >&2
+			echo "Create a token at https://www.npmjs.com (Access Tokens) and save it to 1Password's npmjs.com item instead; npm() reads it from there." >&2
+			return 1
+			;;
+		config | c)
+			case "$*" in
+				*_auth* | *_password*)
+					echo "npm: ~/.npmrc links into the public dotfiles repo; keep credentials in 1Password, not npm config." >&2
+					return 1
+					;;
+			esac
+			;;
+	esac
 	if [ -z "${NPM_TOKEN-}" ] && command -v op >/dev/null 2>&1; then
 		case "${1-}" in
 			publish | unpublish | deprecate | dist-tag | owner | access | token | whoami)

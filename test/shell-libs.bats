@@ -91,3 +91,18 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 	! grep -nE '^[[:space:]]*set -[a-zA-Z]*[eu]' "$REPO_ROOT"/lib/* ||
 		fail "lib/ must not use set -e or set -u"
 }
+
+@test "npm() refuses to save credentials into the linked .npmrc" {
+	# A stub npm records whether the wrapper let the call through.
+	bin=$(mktemp -d)
+	printf '#!/bin/sh\necho "ran npm $*"\n' >"$bin/npm"
+	chmod +x "$bin/npm"
+	for args in login adduser 'config set //registry.npmjs.org/:_authToken=abc'; do
+		run bash -c "PATH='$bin':\$PATH; NPM_TOKEN=x; . '$REPO_ROOT/lib/aliases'; npm $args"
+		[ "$status" -eq 1 ] || fail "npm $args: expected 1, got $status: $output"
+		case "$output" in *"ran npm"*) fail "npm $args reached npm: $output" ;; esac
+	done
+	run bash -c "PATH='$bin':\$PATH; NPM_TOKEN=x; . '$REPO_ROOT/lib/aliases'; npm config get registry"
+	rm -rf "$bin"
+	[ "$output" = "ran npm config get registry" ] || fail "$output"
+}

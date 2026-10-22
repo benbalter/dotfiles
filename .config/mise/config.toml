@@ -21,8 +21,12 @@ ruby = "3.4"
 "npm:tsx" = "latest"
 # claude-code ships a stub `bin/claude.exe` that its postinstall replaces with the
 # ~200MB native binary. mise installs npm tools with --ignore-scripts=true, so
-# without this the CLI is a stub that errors out after every upgrade.
-"npm:@anthropic-ai/claude-code" = { version = "latest", npm_args = "--ignore-scripts=false" }
+# without this the CLI is a stub that errors out after every upgrade. The binary
+# itself comes from an optional dependency (claude-code-darwin-arm64); an upgrade
+# to 2.1.306 skipped it and left `claude` failing with "native binary not
+# installed", so --include=optional forces it. npm 11 warns that postinstall
+# scripts need an allowScripts entry, and --allow-scripts keeps them running.
+"npm:@anthropic-ai/claude-code" = { version = "latest", npm_args = "--ignore-scripts=false --include=optional --allow-scripts=@anthropic-ai/claude-code" }
 "npm:@github/copilot" = "latest"
 "npm:npm-check-updates" = "latest"
 "npm:serve" = "latest"
