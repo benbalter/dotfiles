@@ -97,7 +97,7 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 	bin=$(mktemp -d)
 	printf '#!/bin/sh\necho "ran npm $*"\n' >"$bin/npm"
 	chmod +x "$bin/npm"
-	for args in login adduser 'config set //registry.npmjs.org/:_authToken=abc'; do
+	for args in login adduser 'config set //registry.npmjs.org/:_authToken=abc' 'set //registry.npmjs.org/:_authToken=abc'; do
 		run bash -c "PATH='$bin':\$PATH; NPM_TOKEN=x; . '$REPO_ROOT/lib/aliases'; npm $args"
 		[ "$status" -eq 1 ] || fail "npm $args: expected 1, got $status: $output"
 		case "$output" in *"ran npm"*) fail "npm $args reached npm: $output" ;; esac

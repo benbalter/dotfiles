@@ -112,6 +112,7 @@ npm i --global typescript
 npm login
 npm adduser --registry https://registry.npmjs.org
 npm config set //registry.npmjs.org/:_authToken abc
+npm set //registry.npmjs.org/:_authToken=abc
 git commit --no-gpg-sign -m x
 git -c commit.gpgsign=false commit -m x
 git add -A

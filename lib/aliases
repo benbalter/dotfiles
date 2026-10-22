@@ -132,7 +132,7 @@ npm() {
 			echo "Create a token at https://www.npmjs.com (Access Tokens) and save it to 1Password's npmjs.com item instead; npm() reads it from there." >&2
 			return 1
 			;;
-		config | c)
+		config | c | set)
 			case "$*" in
 				*_auth* | *_password*)
 					echo "npm: ~/.npmrc links into the public dotfiles repo; keep credentials in 1Password, not npm config." >&2

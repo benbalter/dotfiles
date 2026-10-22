@@ -46,7 +46,7 @@ fi
 # ~/.npmrc links into the public dotfiles repo, so a saved token is one
 # `git add` away from being published.
 if matches "${start}npm[[:space:]]+(login|adduser|add-user)([[:space:]]|$)" ||
-	matches "${start}npm[[:space:]]+(config|c)[[:space:]]+set[[:space:]][^;&|]*(_auth|_password)"; then
+	matches "${start}npm[[:space:]]+((config|c)[[:space:]]+)?set[[:space:]][^;&|]*(_auth|_password)"; then
 	deny "Don't save npm credentials: ~/.npmrc links into the public dotfiles repo. The token lives in 1Password, and the npm() wrapper in lib/aliases reads it for commands that need auth."
 fi
 if matches -i "${start}git[[:space:]][^;&|]*(--no-gpg-sign|(commit|tag)\.gpgsign[[:space:]=]+false)"; then
