@@ -29,6 +29,11 @@
   "switchModelsOnFlag": true,
   "remoteControlAtStartup": false,
   "agentPushNotifEnabled": true,
+  "inputNeededNotifEnabled": true,
+  "attribution": {
+    "pr": "",
+    "sessionUrl": false
+  },
   "hooks": {
     "PreToolUse": [
       {
