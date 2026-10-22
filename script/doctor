@@ -311,7 +311,14 @@ echo "==> Dotfiles repo"
 # skips them silently otherwise. Only macOS needs it: install.sh never creates
 # it on Linux, where the playbook doesn't run, so this failed every Codespace.
 if [ -f "$DOTFILES_ROOT/env/bin/activate" ]; then
-	ok "Python venv present"
+	# ansible-core breaks on a Python newer than .python-version allows (3.15
+	# removed dataclasses._is_type), so flag a venv built on anything else.
+	want=$(cat "$DOTFILES_ROOT/.python-version" 2>/dev/null || true)
+	have=$(sed -n 's/^version\(_info\)\{0,1\} = //p' "$DOTFILES_ROOT/env/pyvenv.cfg" 2>/dev/null | head -1)
+	case "$have" in
+		"$want" | "$want".*) ok "Python venv present (Python $have)" ;;
+		*) warn "Python venv uses Python ${have:-unknown}, but .python-version says $want (run script/bootstrap)" ;;
+	esac
 elif [ "$(uname)" = "Darwin" ]; then
 	bad "no Python venv at $DOTFILES_ROOT/env (run script/bootstrap)"
 else
