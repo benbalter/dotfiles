@@ -46,3 +46,5 @@ ruby = "3.4"
 # `npx chrome-devtools-mcp@latest`, which re-resolves on every session start
 "npm:chrome-devtools-mcp" = "latest"
 tflint = "latest"
+# Cloud-to-cloud file copies (used for the Dropbox -> Google Drive migration)
+rclone = "latest"

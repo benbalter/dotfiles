@@ -236,8 +236,6 @@ cask 'cleanshot'
 cask 'displaylink'
 # App to build and share containerised applications and microservices
 cask 'docker-desktop'
-# Client for the Dropbox cloud storage service
-cask 'dropbox'
 # Elgato FACECAM configuration tool
 # cask 'elgato-camera-hub' # PROPOSED REMOVAL: last opened 15 days ago
 # Control your Elgato key lights
