@@ -270,11 +270,16 @@ macos_defaults:
       key: DSDontWriteNetworkStores
       type: bool
       value: true
-    - name: Show all filename extensions
+    # Off, the macOS default: on, it also overrides each app's hidden-extension
+    # flag, so Finder, Spotlight and Open dialogs showed "Slack.app". There's no
+    # apps-only exception. Gatekeeper and notarization already stop most
+    # "invoice.pdf.app" disguises, and Finder's Kind column still says
+    # Application.
+    - name: Respect per-file hidden extensions
       domain: NSGlobalDomain
       key: AppleShowAllExtensions
       type: bool
-      value: true
+      value: false
     - name: Finder path bar
       domain: com.apple.finder
       key: ShowPathbar
