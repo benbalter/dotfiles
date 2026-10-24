@@ -40,3 +40,25 @@ dotfiles_bundle_skip() {
 	done
 	unset _skip_list _type _names _var _have
 }
+
+# Record a profile in the env file, replacing any DOTFILES_PROFILE line already
+# there and keeping the rest (a CA bundle, say). script/setup --work calls it,
+# so a new work Mac can't run setup on the personal profile by mistake.
+# Usage: dotfiles_set_profile <personal|work>
+dotfiles_set_profile() {
+	case "$1" in
+		personal | work) ;;
+		*)
+			echo "dotfiles_set_profile: unknown profile '$1' (personal or work)" >&2
+			return 1
+			;;
+	esac
+	mkdir -p "${DOTFILES_ENV_FILE%/*}"
+	if [ -f "$DOTFILES_ENV_FILE" ]; then
+		grep -v '^\(export \)\{0,1\}DOTFILES_PROFILE=' "$DOTFILES_ENV_FILE" >"$DOTFILES_ENV_FILE.tmp" || true
+		mv "$DOTFILES_ENV_FILE.tmp" "$DOTFILES_ENV_FILE"
+	fi
+	echo "DOTFILES_PROFILE=$1" >>"$DOTFILES_ENV_FILE"
+	DOTFILES_PROFILE=$1
+	export DOTFILES_PROFILE
+}

@@ -38,6 +38,8 @@ Setting up an employer-managed Mac alongside the personal one, rather than repla
 
 ## 2. On the new machine — prerequisites
 
+On a work Mac, do the [Work Mac](#work-mac) "Before `script/setup`" steps first. A work Mac skips this section's Apple ID, App Store and Google Drive steps.
+
 These cannot be automated by the playbook because they require GUI sign-in or must exist before `script/setup` runs.
 
 - [ ] Sign in to **Apple ID / iCloud** (System Settings → top of sidebar).
@@ -58,13 +60,15 @@ These cannot be automated by the playbook because they require GUI sign-in or mu
 ```sh
 git clone https://github.com/benbalter/dotfiles ~/.files
 cd ~/.files
-script/setup
+sudo -v               # keep a sudo session open for Homebrew and App Store installs
+script/setup          # personal Mac
+script/setup --work   # employer-managed Mac: do the Work Mac "Before setup" steps first
 ```
 
 What to expect:
 
 - Bootstrap creates a Python venv and installs Ansible.
-- Ansible installs every formula, cask, Mac App Store app, and VS Code extension from `Brewfile`. **First run takes 20–60 minutes.**
+- Ansible installs every formula, cask, Mac App Store app, and VS Code extension from `Brewfile` (a work Mac skips `Brewfile.work-skip` and every App Store app). **First run takes 20–60 minutes.**
 - You will be prompted for `sudo` (system defaults, firewall) and may see App Store prompts if any `mas` app needs review.
 - Re-running is safe — every task is idempotent.
 
@@ -80,7 +84,7 @@ What to expect:
   ```sh
   gh auth status
   ```
-- [ ] **Mac App Store apps installed**:
+- [ ] **Mac App Store apps installed** (personal Mac; a work Mac skips them):
   ```sh
   mas list | wc -l   # expect ~25
   ```
@@ -129,17 +133,14 @@ These are **not** managed by the playbook — copy or restore as needed.
 An employer-managed Mac runs the same playbook with `DOTFILES_PROFILE=work` ([`lib/profile`](lib/profile)). That profile:
 
 - Skips the [`Brewfile.work-skip`](Brewfile.work-skip) entries: personal apps, network filters, Docker Desktop and every Mac App Store app.
-- Leaves security, update policy, the login window and the computer name to the MDM. On a work Mac, `script/doctor` only warns about those settings.
+- Leaves the firewall, FileVault, remote-access and System Settings lockdowns, update policy, the login window and the computer name to the MDM, and `script/doctor` only warns about them. Gatekeeper, TouchID for `sudo`, and turning off automatic login and wake for network access still apply.
+- Switches back with `script/setup --personal`.
 - Refuses `script/update-brewfile`, because a dump would delete the skipped entries from the shared Brewfile.
 
 ### Before `script/setup`
 
 - [ ] Check for admin rights (`sudo -v`). The playbook needs sudo. If IT grants it only for a while at a time, elevate just before running setup.
-- [ ] Set the profile:
-  ```sh
-  mkdir -p ~/.config/dotfiles
-  echo 'DOTFILES_PROFILE=work' >> ~/.config/dotfiles/env
-  ```
+- [ ] Run setup as `~/.files/script/setup --work` (in section 3), which writes `DOTFILES_PROFILE=work` to `~/.config/dotfiles/env` before anything else runs. Plain `script/setup` would apply the personal profile's security and update settings over the MDM's.
 - [ ] Skip section 2's App Store sign-in, Apple ID and Google Drive steps. Use the managed Apple Account if IT issues one.
 - [ ] Decide where the SSH and commit-signing keys come from. The tracked config uses the personal 1Password SSH agent and signing key. If policy keeps personal keys off this Mac, override `user.signingkey` in `~/.gitconfig.local` and add the key to GitHub.
 
@@ -170,5 +171,5 @@ An employer-managed Mac runs the same playbook with `DOTFILES_PROFILE=work` ([`l
 - [ ] Use Colima for containers (`colima start`). The docker CLI then talks to its VM, with no Docker Desktop license needed.
 - [ ] If IT installs Workbrew, nothing changes: the playbook and scripts detect its wrapper.
 - [ ] Don't copy `~/.claude.json` or `~/.claude/` from the personal Mac. They hold personal MCP servers and their tokens. The playbook sets up the shared Claude Code config.
-- [ ] Run `script/doctor`. Anything it warns is "managed by IT" is the MDM's call. Ask IT before changing it.
+- [ ] Run `script/doctor`. Anything it flags as managed by IT's MDM is the MDM's call. Ask IT before changing it.
 

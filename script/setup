@@ -8,6 +8,22 @@ set -eu
 # `setup` alias both exec this from wherever the caller happens to be.
 cd "$(dirname "$0")/.."
 
+# --work marks an employer-managed Mac before anything runs, so the playbook
+# never applies the personal profile's security and update settings over the
+# MDM's; --personal switches back. See MIGRATION.md#work-mac.
+# shellcheck source=lib/profile
+. lib/profile
+case "${1:-}" in
+	--work) dotfiles_set_profile work ;;
+	--personal) dotfiles_set_profile personal ;;
+	"") ;;
+	*)
+		echo "Usage: script/setup [--work | --personal]" >&2
+		exit 1
+		;;
+esac
+echo "==> Profile: $DOTFILES_PROFILE"
+
 echo "==> Bootstrapping environment..."
 script/bootstrap
 

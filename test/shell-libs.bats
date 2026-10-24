@@ -149,3 +149,19 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 		grep -q "^$type '$name'" "$REPO_ROOT/Brewfile" || fail "$type $name is not in the Brewfile"
 	done <"$REPO_ROOT/Brewfile.work-skip"
 }
+
+@test "dotfiles_set_profile replaces the profile and keeps the rest of the env file" {
+	home=$(mktemp -d)
+	mkdir -p "$home/.config/dotfiles"
+	printf 'export SSL_CERT_FILE=/ca.pem\nDOTFILES_PROFILE=personal\n' >"$home/.config/dotfiles/env"
+	run env -i HOME="$home" PATH="$PATH" sh -c "
+		. '$REPO_ROOT/lib/profile'
+		dotfiles_set_profile work && echo \"now=\$DOTFILES_PROFILE\"
+		dotfiles_set_profile bogus
+	"
+	env_file=$(cat "$home/.config/dotfiles/env")
+	rm -rf "$home"
+	[ "$status" -eq 1 ] || fail "a bogus profile should fail: $output"
+	echo "$output" | grep -qx 'now=work' || fail "$output"
+	[ "$env_file" = "$(printf 'export SSL_CERT_FILE=/ca.pem\nDOTFILES_PROFILE=work')" ] || fail "$env_file"
+}

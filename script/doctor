@@ -252,7 +252,7 @@ if [ "$(uname)" = "Darwin" ]; then
 	# file existed, and the security setters fought the MDM.
 	if [ "$DOTFILES_PROFILE" != work ] &&
 		profiles status -type enrollment 2>/dev/null | grep -q 'Enrolled via DEP: Yes'; then
-		warn "this Mac's MDM enrolled it at setup, like an employer's, but the profile is $DOTFILES_PROFILE (put DOTFILES_PROFILE=work in $DOTFILES_ENV_FILE; see MIGRATION.md#work-mac)"
+		warn "this Mac's MDM enrolled it at setup, like an employer's, but the profile is $DOTFILES_PROFILE (re-run script/setup --work; see MIGRATION.md#work-mac)"
 	fi
 	check_security "firewall" "State = 1" "$fw" --getglobalstate
 	check_security "firewall stealth mode" "stealth mode is on" "$fw" --getstealthmode
