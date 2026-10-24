@@ -73,6 +73,7 @@ Install the Xcode Command Line Tools (`xcode-select --install`). Until then `git
 Keep an authenticated sudo session open while setup runs; it covers Homebrew and App Store installs.
 
 ```sh
+xcode-select --install         # wait for its installer window to finish first
 git clone https://github.com/benbalter/dotfiles ~/.files
 sudo -v
 ~/.files/script/setup          # personal Mac
