@@ -44,6 +44,7 @@ STUB
 	stub FDESETUP "FileVault is On." fdesetup
 	stub SOFTWAREUPDATE "Automatic checking for updates is turned on" softwareupdate
 	stub PMSET " womp                 0" pmset
+	stub PROFILES "Enrolled via DEP: No" profiles
 	stub SOCKETFILTERFW "State = 1; stealth mode is on" socketfilterfw
 	echo "auth sufficient pam_tid.so" >"$STUB_BIN/sudo_local"
 	echo "auth       include        sudo_local" >"$STUB_BIN/pam_sudo"
@@ -252,6 +253,13 @@ write_status() {
 	UNAME=Darwin run_doctor
 	echo "$security_output" | grep -q "ok    automatic update checks" || fail "$security_output"
 	! echo "$security_output" | grep -q FAIL || fail "$security_output"
+}
+
+@test "doctor warns when an employer-style MDM enrollment has no work profile" {
+	UNAME=Darwin PROFILES_OUT="Enrolled via DEP: Yes" run_doctor
+	echo "$security_output" | grep -q "warn  this Mac's MDM enrolled it at setup" || fail "$security_output"
+	UNAME=Darwin PROFILES_OUT="Enrolled via DEP: Yes" DOTFILES_PROFILE=work run_doctor
+	! echo "$security_output" | grep -q "enrolled it at setup" || fail "$security_output"
 }
 
 @test "doctor flags macOS security settings that were turned off" {

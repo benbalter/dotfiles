@@ -138,6 +138,21 @@ jobs:
           [ "$(recap changed)" = "0" ] || { echo "FAIL: re-run reported changed=$(recap changed) (expected 0)"; exit 1; }
           echo "Playbook re-run was idempotent"
 
+      # Nothing else here takes the work profile's path (lib/profile), and an
+      # untested path rots, as Workbrew's did. System defaults are the skip CI
+      # can see: the security setters already skip on every runner.
+      - name: Dry-run the playbook as a work Mac
+        env:
+          DOTFILES_PROFILE: work
+        run: |
+          output=$(script/ansible --check --skip-tags dock 2>&1)
+          echo "$output"
+          recap() { echo "$output" | awk -v k="$1=" '/^localhost/ { for (i=1; i<=NF; i++) if (index($i, k) == 1) print substr($i, length(k) + 1) }'; }
+          [ "$(recap failed)" = "0" ] || { echo "FAIL: work dry run reported failed=$(recap failed)"; exit 1; }
+          echo "$output" | grep -A1 'TASK \[Set MacOS system defaults\]' | grep -q '^skipping' ||
+            { echo "FAIL: the work profile didn't skip system defaults"; exit 1; }
+          echo "Work profile dry run skipped system defaults"
+
   # Nothing in lint needs macOS, and an Ubuntu runner starts faster.
   lint:
     runs-on: ubuntu-latest

@@ -4,26 +4,21 @@
 	<dict>
 		<key>Label</key>
 		<string>com.balter.ben.tmpreaper</string>
+		<!-- Through sh, which expands $HOME: launchd doesn't expand ~ or $HOME,
+		     so these paths named /Users/benbalter and broke under any other
+		     account name (launchd sets HOME for user agents).
+		     Age by mtime, not tmpreaper's default atime: macOS (Finder,
+		     QuickLook thumbnails) keeps bumping atime on everything in
+		     Downloads, so almost nothing ever looked 5 days old. mtime-dir does
+		     the same for directories, which walking into otherwise keeps fresh
+		     forever. The log is there because launchd otherwise discards the
+		     output, so there was no way to see that it deleted almost nothing. -->
 		<key>ProgramArguments</key>
 		<array>
-			<string>/opt/homebrew/sbin/tmpreaper</string>
-			<!-- Age by mtime, not tmpreaper's default atime: macOS (Finder,
-			     QuickLook thumbnails) keeps bumping atime on everything in
-			     Downloads, so almost nothing ever looked 5 days old. mtime-dir
-			     does the same for directories, which walking into otherwise
-			     keeps fresh forever. -->
-			<string>--mtime</string>
-			<string>--mtime-dir</string>
-			<string>--showdeleted</string>
-			<string>5d</string>
-			<string>/Users/benbalter/Downloads</string>
+			<string>/bin/sh</string>
+			<string>-c</string>
+			<string>exec /opt/homebrew/sbin/tmpreaper --mtime --mtime-dir --showdeleted 5d "$HOME/Downloads" >>"$HOME/Library/Logs/tmpreaper.log" 2&gt;&amp;1</string>
 		</array>
-		<!-- Without these, launchd discards the output, so there was no way to
-		     see that it deleted almost nothing. launchd doesn't expand ~. -->
-		<key>StandardOutPath</key>
-		<string>/Users/benbalter/Library/Logs/tmpreaper.log</string>
-		<key>StandardErrorPath</key>
-		<string>/Users/benbalter/Library/Logs/tmpreaper.log</string>
 		<key>StartCalendarInterval</key>
 		<dict>
 			<key>Hour</key>

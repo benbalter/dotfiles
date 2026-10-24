@@ -71,7 +71,8 @@ script/install-git-hooks # copy the gitleaks pre-commit hook (.config/git/templa
 - Ansible uses fully qualified module names (`ansible.builtin.*`), and tasks must be idempotent: use `creates:`, `changed_when`, or a stat/check task before a command.
 - BATS tests use the `fail()` from `test/test_helper.bash`. bats-support/bats-assert are deliberately not vendored, so the suite runs the same under brew bats-core and apt bats.
 - Comments explain *why*, often citing the specific breakage that motivated a workaround. Keep that when editing nearby code.
-- CI (`.github/workflows/ci.yml`) runs the full playbook on macOS, lint on Ubuntu, BATS on macOS and Ubuntu, and the Codespaces path on Ubuntu (`install.sh`, then zsh loads and git can commit). It also runs weekly.
+- CI (`.github/workflows/ci.yml`) runs the full playbook on macOS (plus a `--check` run with `DOTFILES_PROFILE=work`), lint on Ubuntu, BATS on macOS and Ubuntu, and the Codespaces path on Ubuntu (`install.sh`, then zsh loads and git can commit). It also runs weekly.
+- Launch agents run through `/bin/sh -c` so the shell expands `$HOME`. launchd doesn't expand `~` or `$HOME` in a plist, and literal `/Users/<name>` paths broke under any other account name. A test rejects `/Users/` in them, and `script/doctor` finds each log from its `>>` redirect.
 - `script/lint` runs every linter and lists all failures; add new linters with its `lint` helper rather than a bare command, so one failure can't hide the rest.
 - `script/update`, `script/doctor` and `script/clean` read the repo's `Brewfile` directly (not `--global`), so they work before setup links `~/.Brewfile`. Headless, `update` skips casks and `mas` apps.
 - In `lib/aliases`, `clean` runs `script/clean`; the git merged-branch cleanup is `gclean`, and `git reset --hard` + `git clean` is `greset`.

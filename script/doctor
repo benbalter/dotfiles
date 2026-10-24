@@ -106,6 +106,17 @@ plist_string() {
 	sed -n "/<key>$2<\/key>/{n;s/.*<string>\(.*\)<\/string>.*/\1/p;}" "$1"
 }
 
+# plist_log <plist>: where a job's output goes. StandardOutPath, or the file
+# its `sh -c` command appends to: the repo's agents redirect in the shell,
+# since launchd doesn't expand $HOME in a plist.
+plist_log() {
+	plist_log=$(plist_string "$1" StandardOutPath)
+	# shellcheck disable=SC2016 # a literal $HOME, as the plist spells it
+	[ -n "$plist_log" ] ||
+		plist_log=$(sed -n 's/.*>>"\$HOME\/\([^"]*\)".*/\1/p' "$1" | sed "s|^|$HOME/|" | head -1)
+	echo "$plist_log"
+}
+
 if command -v launchctl >/dev/null; then
 	echo "==> Launch agents"
 	# Every agent the repo ships, not just the update job: tmpreaper once ran
@@ -114,7 +125,7 @@ if command -v launchctl >/dev/null; then
 	for plist in "$DOTFILES_ROOT"/Library/LaunchAgents/*.plist; do
 		[ -f "$plist" ] || continue
 		label=$(plist_string "$plist" Label)
-		log=$(plist_string "$plist" StandardOutPath)
+		log=$(plist_log "$plist")
 		job="gui/$(id -u)/$label"
 		if info=$(launchctl print "$job" 2>/dev/null); then
 			code=$(echo "$info" | sed -n 's/^[[:space:]]*last exit code = //p' | head -1)
@@ -125,7 +136,7 @@ if command -v launchctl >/dev/null; then
 		else
 			bad "$label is not loaded (launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/${plist##*/})"
 		fi
-		[ -n "$log" ] || warn "$label has no StandardOutPath; its output is discarded"
+		[ -n "$log" ] || warn "$label has no log (StandardOutPath or a >> redirect); its output is discarded"
 	done
 fi
 
@@ -235,6 +246,14 @@ if [ "$(uname)" = "Darwin" ]; then
 			bad "$desc is off (re-run: script/ansible --tags security)"
 		fi
 	}
+	# Employer Macs enroll in MDM through Automated Device Enrollment (DEP)
+	# at first boot; the personal Mac's anti-theft enrollment was by hand. So
+	# DEP without the work profile most likely means setup ran before the env
+	# file existed, and the security setters fought the MDM.
+	if [ "$DOTFILES_PROFILE" != work ] &&
+		profiles status -type enrollment 2>/dev/null | grep -q 'Enrolled via DEP: Yes'; then
+		warn "this Mac's MDM enrolled it at setup, like an employer's, but the profile is $DOTFILES_PROFILE (put DOTFILES_PROFILE=work in $DOTFILES_ENV_FILE; see MIGRATION.md#work-mac)"
+	fi
 	check_security "firewall" "State = 1" "$fw" --getglobalstate
 	check_security "firewall stealth mode" "stealth mode is on" "$fw" --getstealthmode
 	check_security "Gatekeeper" "assessments enabled" spctl --status

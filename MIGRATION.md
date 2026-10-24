@@ -134,7 +134,6 @@ An employer-managed Mac runs the same playbook with `DOTFILES_PROFILE=work` ([`l
 
 ### Before `script/setup`
 
-- [ ] Check the account name (`whoami`). The launch agent plists spell out `/Users/benbalter`, and the playbook stops if the home directory differs. If the name isn't `benbalter`, update the plists' paths first.
 - [ ] Check for admin rights (`sudo -v`). The playbook needs sudo. If IT grants it only for a while at a time, elevate just before running setup.
 - [ ] Set the profile:
   ```sh

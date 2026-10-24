@@ -133,10 +133,21 @@ refute_called() {
 
 @test "update trims the same log the launchd job writes" {
 	plist="$REPO_ROOT/Library/LaunchAgents/com.balter.ben.update.plist"
-	grep -q "<string>/Users/[^/]*/Library/Logs/dotfiles-update.log</string>" "$plist" ||
+	grep -qF '>>"$HOME/Library/Logs/dotfiles-update.log"' "$plist" ||
 		fail "plist log path changed; update UPDATE_LOG in script/update to match"
 	grep -qF 'UPDATE_LOG="${DOTFILES_UPDATE_LOG:-$HOME/Library/Logs/dotfiles-update.log}"' \
 		"$REPO_ROOT/script/update" || fail "script/update's log path drifted from the plist"
+}
+
+@test "launch agents don't hardcode a home directory" {
+	# launchd doesn't expand ~ or $HOME, so a literal /Users/<name> path only
+	# works under that one account name; the agents expand $HOME through sh.
+	for plist in "$REPO_ROOT"/Library/LaunchAgents/*.plist; do
+		! grep -n '<string>[^<]*/Users/' "$plist" || fail "${plist##*/} hardcodes a home directory"
+		if command -v plutil >/dev/null; then
+			plutil -lint -s "$plist" || fail "${plist##*/} is not a valid plist"
+		fi
+	done
 }
 
 @test "update skips when another run holds the lock" {

@@ -4,15 +4,18 @@
 	<dict>
 		<key>Label</key>
 		<string>com.balter.ben.update</string>
-		<key>Program</key>
-		<string>/Users/benbalter/.files/script/update</string>
-		<!-- Without these, launchd discards the job's output, so a failing
-		     nightly step leaves no trace. launchd doesn't expand ~ or $HOME,
-		     hence the absolute paths. -->
-		<key>StandardOutPath</key>
-		<string>/Users/benbalter/Library/Logs/dotfiles-update.log</string>
-		<key>StandardErrorPath</key>
-		<string>/Users/benbalter/Library/Logs/dotfiles-update.log</string>
+		<!-- launchd doesn't expand ~ or $HOME in a plist, so these paths were
+		     spelled out as /Users/benbalter and broke under any other account
+		     name. The shell expands them instead (launchd sets HOME for user
+		     agents). Without the log, launchd discards the job's output and a
+		     failing nightly step leaves no trace; >> opens it O_APPEND, as
+		     StandardOutPath did, which script/update's log trimming relies on. -->
+		<key>ProgramArguments</key>
+		<array>
+			<string>/bin/sh</string>
+			<string>-c</string>
+			<string>exec "$HOME/.files/script/update" >>"$HOME/Library/Logs/dotfiles-update.log" 2&gt;&amp;1</string>
+		</array>
 		<key>StartCalendarInterval</key>
 		<dict>
 			<key>Hour</key>

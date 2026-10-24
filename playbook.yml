@@ -216,18 +216,6 @@
         launch_agents: "{{ dotfiles_files_macos | select('match', '^Library/LaunchAgents/') | list }}"
         launch_agent_stamp_dir: "{{ ansible_facts['user_dir'] }}/.local/state/dotfiles/launchagents"
       block:
-        # launchd doesn't expand ~ or $HOME, so the plists spell out
-        # /Users/benbalter. Under any other account name they would load and
-        # then fail every night with nothing pointing at why.
-        - name: Require the home directory the launch agents name
-          ansible.builtin.assert:
-            that: lookup('ansible.builtin.file', playbook_dir + '/' + item) is search(ansible_facts['user_dir'] ~ '/')
-            fail_msg: >-
-              {{ item }} hardcodes another home directory, not {{ ansible_facts['user_dir'] }}.
-              Update its paths before loading it.
-            quiet: true
-          loop: "{{ launch_agents }}"
-
         - name: Check launch agent status
           ansible.builtin.command:
             cmd: "launchctl print gui/{{ ansible_facts['user_uid'] }}/{{ item | basename | splitext | first }}"

@@ -28,6 +28,10 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 }
 
 @test "gclean deletes merged branches but keeps main and the current branch" {
+	# Not the user's ~/.gitconfig: its commit signing goes through 1Password,
+	# so the fixture commit failed whenever the signing prompt timed out, and
+	# on a Mac without that 1Password account it could never pass.
+	export GIT_CONFIG_GLOBAL=/dev/null
 	repo=$(mktemp -d)
 	git -C "$repo" init -q -b main
 	git -C "$repo" -c user.name=t -c user.email=t@t commit -q --allow-empty -m init
