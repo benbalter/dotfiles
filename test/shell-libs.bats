@@ -1,6 +1,8 @@
 #!/usr/bin/env bats
 # Validate that shell library files source without errors.
 
+load test_helper
+
 REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 
 @test "lib/globals sources without error" {
@@ -105,4 +107,41 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 	run bash -c "PATH='$bin':\$PATH; NPM_TOKEN=x; . '$REPO_ROOT/lib/aliases'; npm config get registry"
 	rm -rf "$bin"
 	[ "$output" = "ran npm config get registry" ] || fail "$output"
+}
+
+@test "lib/profile defaults to personal and skips nothing" {
+	home=$(mktemp -d)
+	run env -i HOME="$home" PATH="$PATH" sh -c "
+		. '$REPO_ROOT/lib/profile'
+		dotfiles_bundle_skip '$REPO_ROOT'
+		echo \"\$DOTFILES_PROFILE|\${HOMEBREW_BUNDLE_CASK_SKIP:-}|\${HOMEBREW_BUNDLE_MAS_SKIP:-}\"
+	"
+	rm -rf "$home"
+	[ "$status" -eq 0 ] || fail "$output"
+	[ "$output" = "personal||" ] || fail "$output"
+}
+
+@test "lib/profile reads the env file and skips Brewfile.work-skip on a work Mac" {
+	home=$(mktemp -d) root=$(mktemp -d)
+	mkdir -p "$home/.config/dotfiles"
+	echo 'DOTFILES_PROFILE=work' >"$home/.config/dotfiles/env"
+	printf "cask 'kept'\ncask 'game'\nmas 'App', id: 1_234_567\n" >"$root/Brewfile"
+	printf '# comment\ncask game # why\nmas *\n' >"$root/Brewfile.work-skip"
+	run env -i HOME="$home" PATH="$PATH" HOMEBREW_BUNDLE_CASK_SKIP=already sh -c "
+		. '$REPO_ROOT/lib/profile'
+		dotfiles_bundle_skip '$root'
+		echo \"\$DOTFILES_PROFILE|\$HOMEBREW_BUNDLE_CASK_SKIP|\$HOMEBREW_BUNDLE_MAS_SKIP\"
+	"
+	rm -rf "$home" "$root"
+	[ "$status" -eq 0 ] || fail "$output"
+	# Whitespace is irrelevant to brew bundle, which splits on it.
+	[ "$(echo "$output" | tr -s ' ')" = "work|already game |1234567 " ] || fail "$output"
+}
+
+@test "Brewfile.work-skip names only entries the Brewfile has" {
+	while read -r type name _; do
+		case "$type" in '' | '#'*) continue ;; esac
+		[ "$name" = '*' ] && continue
+		grep -q "^$type '$name'" "$REPO_ROOT/Brewfile" || fail "$type $name is not in the Brewfile"
+	done <"$REPO_ROOT/Brewfile.work-skip"
 }

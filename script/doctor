@@ -18,6 +18,9 @@ set -eu
 DOTFILES_ROOT="${DOTFILES_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
 CONFIG="$DOTFILES_ROOT/config.yml"
 problems=0
+# DOTFILES_PROFILE, plus dotfiles_bundle_skip for the Brewfile check below.
+# shellcheck source=lib/profile
+. "$(dirname "$0")/../lib/profile"
 
 ok() { echo "  ok    $1"; }
 bad() {
@@ -184,6 +187,10 @@ if [ "$(uname)" = "Darwin" ] && command -v brew >/dev/null; then
 	# The repo's Brewfile, not --global, so this still works before setup links
 	# ~/.Brewfile.
 	export HOMEBREW_BUNDLE_FILE="$DOTFILES_ROOT/Brewfile"
+	# A work Mac doesn't install Brewfile.work-skip's entries, so it doesn't
+	# count them as missing either.
+	dotfiles_bundle_skip "$DOTFILES_ROOT"
+	[ "$DOTFILES_PROFILE" = personal ] || ok "profile: $DOTFILES_PROFILE (from $DOTFILES_ENV_FILE)"
 	if missing=$(brew bundle check --no-upgrade --verbose 2>&1); then
 		ok "every Brewfile entry installed"
 	else
@@ -220,6 +227,10 @@ if [ "$(uname)" = "Darwin" ]; then
 		shift 2
 		if "$@" 2>/dev/null | grep -q "$want"; then
 			ok "$desc"
+		elif [ "$DOTFILES_PROFILE" = work ]; then
+			# The playbook leaves a work Mac's security policy to its MDM, so
+			# re-running it won't help, and IT may have a reason.
+			warn "$desc is off (a work Mac: IT's MDM manages this)"
 		else
 			bad "$desc is off (re-run: script/ansible --tags security)"
 		fi
@@ -279,7 +290,12 @@ if [ "$(uname)" = "Darwin" ] && command -v yq >/dev/null; then
 			warn "$2 $3 is ${got:-unset}, expected $want (re-run: script/ansible --tags defaults)"
 		fi
 	}
-	defaults_rows=$(yq -r '(.macos_defaults.system[] | ["system", .domain, .key, .value, (.host // "")] | @tsv),
+	# A work Mac skips the system entries, as the playbook does: its MDM owns
+	# update policy and the login window.
+	system_query='.macos_defaults.system[]'
+	# A key config.yml doesn't have, so the system half yields no rows.
+	[ "$DOTFILES_PROFILE" != work ] || system_query='.macos_defaults.none[]'
+	defaults_rows=$(yq -r "($system_query"' | ["system", .domain, .key, .value, (.host // "")] | @tsv),
 		(.macos_defaults.user[] | ["user", .domain, .key, .value, (.host // "")] | @tsv)' "$CONFIG")
 	tab=$(printf '\t')
 	while IFS="$tab" read -r scope domain key value host; do

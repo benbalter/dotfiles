@@ -16,6 +16,12 @@ cd "${DOTFILES_ROOT:-${SELF%/script/*}}"
 # The repo's Brewfile, not --global, so this works before setup links ~/.Brewfile.
 export HOMEBREW_BUNDLE_FILE="$PWD/Brewfile"
 
+# DOTFILES_PROFILE and anything else the untracked ~/.config/dotfiles/env sets
+# for this machine (a CA bundle, say). Before PATH below, so the env file can't
+# push Homebrew or mise's shims back down.
+# shellcheck source=lib/profile
+. "${SELF%/script/*}/lib/profile"
+
 # This script may run from a minimal environment (e.g. the nightly launchd job,
 # whose PATH is only /usr/bin:/bin:/usr/sbin:/sbin), so make Homebrew
 # discoverable. Mirror lib/globals: Workbrew's wrapper must precede
@@ -146,15 +152,18 @@ if [ "$(uname)" = "Darwin" ] && command -v brew >/dev/null; then
 	# terminal installs them.
 	echo "==> Installing any new Brewfile entries..."
 	if [ -t 1 ]; then
+		dotfiles_bundle_skip "$PWD"
 		step brew bundle install --no-upgrade
+		unset HOMEBREW_BUNDLE_BREW_SKIP HOMEBREW_BUNDLE_CASK_SKIP HOMEBREW_BUNDLE_MAS_SKIP HOMEBREW_BUNDLE_TAP_SKIP
 	else
 		# Exported, not prefixed: an assignment before a function call (step)
 		# isn't reliably passed on in POSIX sh.
 		HOMEBREW_BUNDLE_CASK_SKIP=$(sed -n "s/^cask '\([^']*\)'.*/\1/p" Brewfile 2>/dev/null | tr '\n' ' ' || true)
 		HOMEBREW_BUNDLE_MAS_SKIP=$(sed -n 's/^mas .*id: *\([0-9_]*\).*/\1/p' Brewfile 2>/dev/null | tr -d _ | tr '\n' ' ' || true)
 		export HOMEBREW_BUNDLE_CASK_SKIP HOMEBREW_BUNDLE_MAS_SKIP
+		dotfiles_bundle_skip "$PWD"
 		step brew bundle install --no-upgrade
-		unset HOMEBREW_BUNDLE_CASK_SKIP HOMEBREW_BUNDLE_MAS_SKIP
+		unset HOMEBREW_BUNDLE_BREW_SKIP HOMEBREW_BUNDLE_CASK_SKIP HOMEBREW_BUNDLE_MAS_SKIP HOMEBREW_BUNDLE_TAP_SKIP
 	fi
 
 	# Prune orphaned dependencies and clear stale downloads/old versions. Both

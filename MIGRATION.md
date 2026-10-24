@@ -2,6 +2,8 @@
 
 A checklist for setting up a new Mac from these dotfiles. Re-runnable: every step is idempotent, so it's safe to start over if something goes sideways.
 
+Setting up an employer-managed Mac alongside the personal one, rather than replacing it? Skip section 1, follow [Work Mac](#work-mac) first, then sections 2–5.
+
 ## 1. On the old machine (before migrating)
 
 - [ ] Commit and push every working tree under `~/projects` and `~/github` (including `.env` files into a password manager — do not commit them):
@@ -19,7 +21,7 @@ A checklist for setting up a new Mac from these dotfiles. Re-runnable: every ste
   git push
   ```
 - [ ] Verify 1Password vault is fully synced (Settings → status indicator). All SSH keys and the git commit-signing key live here.
-- [ ] Verify Dropbox is fully synced.
+- [ ] Verify Google Drive is fully synced.
 - [ ] (Optional) Export GPG secret keys — only if you still use GPG for email/encryption. Git commit signing uses SSH via 1Password and does not need this.
   ```sh
   gpg --export-secret-keys --armor > ~/gpg-secret-keys.asc
@@ -49,7 +51,7 @@ These cannot be automated by the playbook because they require GUI sign-in or mu
   - Settings → Developer → **Use the SSH agent** ✓
   - Settings → Developer → **Integrate with 1Password CLI** ✓
   - Install the **1Password browser extension** in your default browser.
-- [ ] Install **Dropbox** and sign in.
+- [ ] Install **Google Drive** and sign in with the Workspace account (Stream mode).
 
 ## 3. Clone and run setup
 
@@ -118,6 +120,56 @@ These are **not** managed by the playbook — copy or restore as needed.
 ## 6. Decommission the old machine
 
 - [ ] One last `git push` of every working tree.
-- [ ] Confirm 1Password and Dropbox say "Up to date".
+- [ ] Confirm 1Password and Google Drive say "Up to date".
 - [ ] Sign out of iCloud, App Store, and iMessage (System Settings).
 - [ ] Erase all content and settings.
+
+## Work Mac
+
+An employer-managed Mac runs the same playbook with `DOTFILES_PROFILE=work` ([`lib/profile`](lib/profile)). That profile:
+
+- Skips the [`Brewfile.work-skip`](Brewfile.work-skip) entries: personal apps, network filters, Docker Desktop and every Mac App Store app.
+- Leaves security, update policy, the login window and the computer name to the MDM. On a work Mac, `script/doctor` only warns about those settings.
+- Refuses `script/update-brewfile`, because a dump would delete the skipped entries from the shared Brewfile.
+
+### Before `script/setup`
+
+- [ ] Check the account name (`whoami`). The launch agent plists spell out `/Users/benbalter`, and the playbook stops if the home directory differs. If the name isn't `benbalter`, update the plists' paths first.
+- [ ] Check for admin rights (`sudo -v`). The playbook needs sudo. If IT grants it only for a while at a time, elevate just before running setup.
+- [ ] Set the profile:
+  ```sh
+  mkdir -p ~/.config/dotfiles
+  echo 'DOTFILES_PROFILE=work' >> ~/.config/dotfiles/env
+  ```
+- [ ] Skip section 2's App Store sign-in, Apple ID and Google Drive steps. Use the managed Apple Account if IT issues one.
+- [ ] Decide where the SSH and commit-signing keys come from. The tracked config uses the personal 1Password SSH agent and signing key. If policy keeps personal keys off this Mac, override `user.signingkey` in `~/.gitconfig.local` and add the key to GitHub.
+
+### After setup
+
+- [ ] Give work repos their own identity in the untracked `~/.gitconfig.local`, so personal commits keep the personal email:
+  ```ini
+  [includeIf "gitdir:~/work/"]
+  	path = ~/.gitconfig.work
+  ```
+  Put `[user] email = …` in `~/.gitconfig.work`.
+- [ ] Add the work GitHub account alongside the personal one: `gh auth login`, then `gh auth switch` between them.
+- [ ] Check for TLS inspection. If the issuer below is the employer's secure web gateway instead of a public CA, tools that bring their own CA list (Node, Python, Homebrew's curl and git, mise downloads) will fail until they trust its root certificate:
+  ```sh
+  curl -sv https://github.com -o /dev/null 2>&1 | grep -i issuer
+  ```
+  If it is inspected, export the system keychain's roots to one bundle and point those tools at it from `~/.config/dotfiles/env`. Interactive shells and the nightly `script/update` both read that file.
+  ```sh
+  security find-certificate -a -p /Library/Keychains/System.keychain \
+  	/System/Library/Keychains/SystemRootCertificates.keychain > ~/.config/dotfiles/ca-bundle.pem
+  cat >> ~/.config/dotfiles/env <<'EOF'
+  export SSL_CERT_FILE="$HOME/.config/dotfiles/ca-bundle.pem"
+  export NODE_EXTRA_CA_CERTS="$SSL_CERT_FILE"
+  export REQUESTS_CA_BUNDLE="$SSL_CERT_FILE"
+  EOF
+  ```
+  Containers in Colima's VM need the certificate as well.
+- [ ] Use Colima for containers (`colima start`). The docker CLI then talks to its VM, with no Docker Desktop license needed.
+- [ ] If IT installs Workbrew, nothing changes: the playbook and scripts detect its wrapper.
+- [ ] Don't copy `~/.claude.json` or `~/.claude/` from the personal Mac. They hold personal MCP servers and their tokens. The playbook sets up the shared Claude Code config.
+- [ ] Run `script/doctor`. Anything it warns is "managed by IT" is the MDM's call. Ask IT before changing it.
+

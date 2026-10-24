@@ -8,6 +8,17 @@ set -eu
 
 cd "${DOTFILES_ROOT:-$(dirname "$0")/..}"
 
+# A dump only lists what's installed, so on a work Mac it would delete every
+# Brewfile.work-skip entry (and every App Store app) from the shared Brewfile.
+# shellcheck source=lib/profile
+. "$(dirname "$0")/../lib/profile"
+if [ "$DOTFILES_PROFILE" = work ]; then
+	echo "update-brewfile: this is a work Mac (DOTFILES_PROFILE=work), which skips" >&2
+	echo "  Brewfile.work-skip's entries, so a dump would delete them. Add new" >&2
+	echo "  entries to Brewfile by hand, or run this on the personal Mac." >&2
+	exit 1
+fi
+
 # `brew bundle dump` rebuilds the Brewfile from installed state: it silently
 # erases audit-casks' PROPOSED REMOVAL lines and re-adds every cask they
 # commented out, since those are still installed until `clean` runs. That

@@ -7,6 +7,11 @@
 DOTFILES_ROOT=${DOTFILES_ROOT:-"$HOME/.files"}
 export DOTFILES_ROOT
 
+# DOTFILES_PROFILE (personal or work) and the untracked per-machine env file,
+# so a shell sees the same environment as the nightly script/update.
+# shellcheck source=lib/profile
+[ -r "$DOTFILES_ROOT/lib/profile" ] && . "$DOTFILES_ROOT/lib/profile"
+
 # Resolve the Homebrew prefix by probing known paths rather than shelling out
 # to `brew --prefix`. Under Workbrew, `brew` is a setuid wrapper that can fail
 # outright (Homebrew 7.0 refuses to run when real and effective UIDs differ),

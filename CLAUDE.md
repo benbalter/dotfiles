@@ -50,7 +50,9 @@ script/install-git-hooks # copy the gitleaks pre-commit hook (.config/git/templa
 
 **`lib/`** (`globals`, `aliases`, `auto-complete`) is sourced by interactive `.zshrc`, so never add `set -e` or `set -u` there.
 
-**Per-machine settings** that shouldn't be in this public repo go in untracked `~/.zshrc.local` and `~/.gitconfig.local`, which `.zshrc` and `.gitconfig` load last.
+**Per-machine settings** that shouldn't be in this public repo go in untracked `~/.zshrc.local` and `~/.gitconfig.local`, which `.zshrc` and `.gitconfig` load last. Environment that the headless `script/update` also needs (a CA bundle) goes in `~/.config/dotfiles/env`, which [`lib/profile`](lib/profile) sources for shells, `update`, `doctor` and the playbook.
+
+**Machine profile.** `DOTFILES_PROFILE=work` in that env file marks an employer-managed Mac; the default is `personal`. MDM enrollment can't tell them apart, because the personal Mac is enrolled too (for anti-theft). On a work Mac the playbook (`is_work`) skips `macos_defaults.system`, the computer name and the security setters (FileVault, firewall, update schedule, remote-access daemons, authorizationdb), all of which belong to the MDM. `brew bundle` also skips the [`Brewfile.work-skip`](Brewfile.work-skip) entries via `dotfiles_bundle_skip`, and `script/update-brewfile` refuses to run, since a dump would delete those entries. The skip list is a separate file because a dump would wipe conditionals inside the Brewfile. The setup steps are in [MIGRATION.md](MIGRATION.md#work-mac).
 
 **`claude/`** holds the global Claude Code config:
 

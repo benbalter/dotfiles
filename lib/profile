@@ -1,0 +1,42 @@
+#!/bin/sh
+# Per-machine profile: "personal" (the default) or "work" (an employer-managed
+# Mac). Set it in the untracked ~/.config/dotfiles/env, which may also export
+# machine-specific variables (a TLS-inspecting proxy's CA bundle, say) that the
+# nightly script/update needs. ~/.zshrc.local can't carry those: launchd runs
+# update with a bare environment that never reads it.
+#
+# MDM enrollment can't tell the two apart, because the personal Mac is enrolled
+# too (for anti-theft), so the profile is set explicitly.
+#
+# Sourced by lib/globals (interactive shells), script/update and
+# script/doctor, so it must stay POSIX and must not use `set -e`/`set -u`.
+
+DOTFILES_ENV_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/env"
+# shellcheck disable=SC1090
+[ -r "$DOTFILES_ENV_FILE" ] && . "$DOTFILES_ENV_FILE"
+DOTFILES_PROFILE="${DOTFILES_PROFILE:-personal}"
+export DOTFILES_PROFILE
+
+# Add the Brewfile entries listed in Brewfile.work-skip to brew bundle's
+# HOMEBREW_BUNDLE_*_SKIP variables on a work Mac, keeping any skips the caller
+# already set. `mas *` skips every App Store app, since a managed Mac may not
+# allow a personal Apple ID, and one failed mas install stops `brew bundle`.
+# Usage: dotfiles_bundle_skip <dotfiles root>
+dotfiles_bundle_skip() {
+	[ "$DOTFILES_PROFILE" = work ] || return 0
+	_skip_list="$1/Brewfile.work-skip"
+	[ -r "$_skip_list" ] || return 0
+	for _type in brew cask mas tap; do
+		_names=$(sed -n "s/^$_type  *\([^ #]*\).*/\1/p" "$_skip_list" | tr '\n' ' ')
+		if [ "$_type" = mas ] && printf ' %s ' "$_names" | grep -q ' \* '; then
+			_names=$(sed -n 's/^mas .*id: *\([0-9_]*\).*/\1/p' "$1/Brewfile" | tr -d _ | tr '\n' ' ')
+		fi
+		[ -n "$_names" ] || continue
+		_var="HOMEBREW_BUNDLE_$(printf %s "$_type" | tr '[:lower:]' '[:upper:]')_SKIP"
+		eval "_have=\${$_var:-}"
+		# shellcheck disable=SC2154
+		eval "$_var=\"\${_have:+\$_have }\$_names\""
+		export "${_var?}"
+	done
+	unset _skip_list _type _names _var _have
+}

@@ -40,3 +40,11 @@ run_update_brewfile() {
 	grep -qxF "brew bundle dump --file=Brewfile --force" "$LOG" || fail "$(cat "$LOG")"
 	grep -qxF "bundle exec rubocop -A Brewfile" "$LOG" || fail "$(cat "$LOG")"
 }
+
+@test "update-brewfile refuses to dump on a work Mac" {
+	printf "cask 'kept'\n" >"$FAKE_ROOT/Brewfile"
+	run env DOTFILES_ROOT="$FAKE_ROOT" DOTFILES_PROFILE=work PATH="$STUB_BIN:$PATH" "$REPO_ROOT/script/update-brewfile"
+	[ "$status" -eq 1 ] || fail "expected refusal, got $status: $output"
+	echo "$output" | grep -q 'work Mac' || fail "$output"
+	[ ! -s "$LOG" ] || fail "should not run brew or rubocop: $(cat "$LOG")"
+}

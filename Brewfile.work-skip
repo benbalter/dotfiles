@@ -1,0 +1,23 @@
+# Brewfile entries an employer-managed Mac (DOTFILES_PROFILE=work in
+# ~/.config/dotfiles/env) doesn't install. A separate file because
+# script/update-brewfile regenerates the Brewfile with `brew bundle dump`,
+# which would erase any conditionals written into it. See lib/profile.
+# Format: <type> <name>, where type is brew, cask, mas or tap. For mas, `*`
+# means every App Store app.
+
+# Network filters: AdGuard's DNS proxy and content filter fight a corporate
+# VPN or secure web gateway for the same traffic.
+cask adguard
+
+# Docker Desktop needs a paid subscription at larger companies; colima (with
+# the docker CLI) from the Brewfile covers the same workflows.
+cask docker-desktop
+
+# Personal and consumer apps
+cask google-drive
+cask signal
+cask steam
+
+# A managed Mac may not allow signing in with a personal Apple ID, and a
+# failed mas install stops brew bundle partway.
+mas *
