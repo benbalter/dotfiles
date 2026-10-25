@@ -1,0 +1,100 @@
+#!/bin/sh
+# Apply chrome/policies.json to Chrome profiles signed in to balter.com, through
+# the Google Workspace Chrome Policy API (via GAM). Extensions and settings used
+# to be managed by clicking through chrome://extensions on each machine; policy
+# keeps them in one reviewable file and applies on every machine at sign-in.
+# `defaults write com.google.Chrome` isn't enough: on an unmanaged Mac it only
+# sets "recommended" policy, which the user can override, and covers one Mac.
+#
+# GAM's OAuth files live in 1Password, not ~/.gam: each run reads them into a
+# temporary GAMCFGDIR and deletes it on exit, so no admin token stays on disk.
+#
+# Usage: script/chrome-policy [--show | --setup]
+#   (none)   apply every policy in chrome/policies.json
+#   --show   print the policies set directly on the org unit, without writing
+#   --setup  one time: create GAM's Cloud project and OAuth token, then save
+#            them to 1Password as the item $GAM_OP_ITEM
+#
+# Policies only reach signed-in profiles once Chrome browser user-level
+# management is turned on for that org unit in the Admin console (one time,
+# no API): https://support.google.com/chrome/a/answer/9025411 Removing an entry from policies.json doesn't unset it: run
+# `gam delete chromepolicy <schema> ou / appid <id>` too.
+
+set -eu
+# shellcheck disable=SC3040
+(set -o pipefail) 2>/dev/null && set -o pipefail || true
+
+cd "$(dirname "$0")/.."
+
+POLICIES="${CHROME_POLICIES:-chrome/policies.json}"
+OP_ITEM="${GAM_OP_ITEM:-op://Private/GAM}"
+FILES="client_secrets.json oauth2.txt oauth2service.json"
+
+# label <file>: its field name in the 1Password item. `op` reads a dot in a
+# field name as section.field, so oauth2.txt becomes oauth2_txt.
+label() {
+	echo "$1" | tr . _
+}
+
+GAMCFGDIR=$(mktemp -d)
+export GAMCFGDIR
+trap 'rm -rf "$GAMCFGDIR"' EXIT INT TERM
+
+if [ "${1:-}" = --setup ]; then
+	# GAM prompts along the way; without a terminal (e.g. Claude Code's `!`)
+	# its first prompt dies with an EOFError traceback.
+	if [ ! -t 0 ]; then
+		echo "script/chrome-policy --setup asks questions; run it in a terminal." >&2
+		exit 1
+	fi
+	gam create project
+	gam oauth create
+	vault=$(echo "$OP_ITEM" | cut -d/ -f3)
+	title=$(echo "$OP_ITEM" | cut -d/ -f4)
+	set --
+	for f in $FILES; do
+		set -- "$@" "$(label "$f")[file]=$GAMCFGDIR/$f"
+	done
+	op item create --category "Secure Note" --vault "$vault" --title "$title" "$@" >/dev/null
+	echo "==> Saved GAM's credentials to $OP_ITEM"
+	exit 0
+fi
+
+for f in $FILES; do
+	op read --no-newline --out-file "$GAMCFGDIR/$f" "$OP_ITEM/$(label "$f")" >/dev/null
+done
+
+ou=$(jq -r .orgunit "$POLICIES")
+user=$(jq -r .user "$POLICIES")
+
+if [ "${1:-}" = --show ]; then
+	gam show chromepolicies ou "$ou" show direct
+	exit 0
+fi
+
+# Policy goes on an org unit holding only $user, not the domain root, so other
+# balter.com accounts stay unmanaged. A sub-OU inherits everything set on the
+# root, so moving into it changes nothing else. `gam create org` exits nonzero
+# when the OU already exists, hence the check.
+if ! gam info org "$ou" >/dev/null 2>&1 </dev/null; then
+	echo "==> Creating org unit $ou"
+	gam create org "${ou#/}" </dev/null
+fi
+gam update org "$ou" add users "$user" </dev/null
+
+# One `gam update chromepolicy` per entry, with its fields as name/value pairs.
+# @sh quotes each argument, so values with spaces survive the eval. gam gets
+# /dev/null for stdin so it can't eat the loop's remaining policies.
+jq -r '.policies[] | [.name, .schema, (.appid // ""), (.fields | to_entries[] | .key, .value)] | @sh' \
+	"$POLICIES" | while read -r line; do
+	eval "set -- $line"
+	name=$1 schema=$2 appid=$3
+	shift 3
+	echo "==> $name"
+	if [ -n "$appid" ]; then
+		gam update chromepolicy "$schema" "$@" ou "$ou" appid "$appid" </dev/null
+	else
+		gam update chromepolicy "$schema" "$@" ou "$ou" </dev/null
+	fi
+done
+echo "==> Done"

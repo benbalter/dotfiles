@@ -117,7 +117,7 @@ These are **not** managed by the playbook — copy or restore as needed.
   gpg --import ~/gpg-secret-keys.asc
   gpg --import-ownertrust ~/gpg-ownertrust.txt
   ```
-- [ ] **Browser profiles** — sign in to Chrome/Safari to sync; or import bookmarks manually.
+- [ ] **Browser profiles** — sign in to Chrome/Safari to sync; or import bookmarks manually. Chrome policy for balter.com ([`script/chrome-policy`](script/chrome-policy)) applies at sign-in, with nothing to run on the new Mac.
 - [ ] **iMessage / Messages history** — handled by iCloud if enabled.
 - [ ] **Photos library** — iCloud Photos.
 

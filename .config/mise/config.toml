@@ -48,3 +48,7 @@ ruby = "3.4"
 tflint = "latest"
 # Cloud-to-cloud file copies (used for the Dropbox -> Google Drive migration)
 rclone = "latest"
+# Google Workspace admin CLI; script/chrome-policy uses it to apply Chrome
+# policy to balter.com. Its binary is `gam`, which the `gam` alias (git am)
+# shadows in interactive shells; scripts get the real one.
+"pipx:gam7" = "latest"

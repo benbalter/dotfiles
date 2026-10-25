@@ -1,0 +1,46 @@
+{
+  "orgunit": "/Ben",
+  "user": "ben@balter.com",
+  "policies": [
+    {
+      "name": "Block PayPal Honey",
+      "schema": "chrome.users.apps.InstallType",
+      "appid": "chrome:bmnlcjabgnpnenekpadlanbbkooimhnj",
+      "fields": {
+        "appInstallType": "BLOCKED"
+      }
+    },
+    {
+      "name": "Block RetailMeNot",
+      "schema": "chrome.users.apps.InstallType",
+      "appid": "chrome:jjfblogammkiefalfpafidabbnamoknm",
+      "fields": {
+        "appInstallType": "BLOCKED"
+      }
+    },
+    {
+      "name": "Block GhostText",
+      "schema": "chrome.users.apps.InstallType",
+      "appid": "chrome:godiecgffnchndlihlpaajjcplehddca",
+      "fields": {
+        "appInstallType": "BLOCKED"
+      }
+    },
+    {
+      "name": "Block Plasma Integration",
+      "schema": "chrome.users.apps.InstallType",
+      "appid": "chrome:cimiefiiaegbelhefglklhhakcgmhkai",
+      "fields": {
+        "appInstallType": "BLOCKED"
+      }
+    },
+    {
+      "name": "Block Google Analytics Opt-out",
+      "schema": "chrome.users.apps.InstallType",
+      "appid": "chrome:fllaojicojecljbmefodhfapmkghcbnh",
+      "fields": {
+        "appInstallType": "BLOCKED"
+      }
+    }
+  ]
+}
