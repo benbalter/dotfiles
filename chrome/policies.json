@@ -41,6 +41,90 @@
       "fields": {
         "appInstallType": "BLOCKED"
       }
+    },
+    {
+      "name": "Install 1Password",
+      "schema": "chrome.users.apps.InstallType",
+      "appid": "chrome:aeblfdkhhhdcdjpifhhbdiojplfjncoa",
+      "fields": {
+        "appInstallType": "FORCED"
+      }
+    },
+    {
+      "name": "Install Claude",
+      "schema": "chrome.users.apps.InstallType",
+      "appid": "chrome:fcoeoabgfenejglbffodgkkbkcdhcgfn",
+      "fields": {
+        "appInstallType": "FORCED"
+      }
+    },
+    {
+      "name": "Install AdGuard",
+      "schema": "chrome.users.apps.InstallType",
+      "appid": "chrome:bgnkhhnnamicmpeenaelnjfhikgbkllg",
+      "fields": {
+        "appInstallType": "FORCED"
+      }
+    },
+    {
+      "name": "Install Harper",
+      "schema": "chrome.users.apps.InstallType",
+      "appid": "chrome:lodbfhdipoipcjmlebjbgmmgekckhpfb",
+      "fields": {
+        "appInstallType": "FORCED"
+      }
+    },
+    {
+      "name": "Enhanced Safe Browsing",
+      "schema": "chrome.users.SafeBrowsingProtectionLevel",
+      "fields": {
+        "safeBrowsingProtectionLevel": "ENHANCED_PROTECTION"
+      }
+    },
+    {
+      "name": "Chrome password manager off (1Password)",
+      "schema": "chrome.users.PasswordManager",
+      "fields": {
+        "passwordManagerEnabled": "FALSE"
+      }
+    },
+    {
+      "name": "Card autofill off (1Password)",
+      "schema": "chrome.users.AutofillCreditCardEnabled",
+      "fields": {
+        "autofillCreditCardEnabled": false
+      }
+    },
+    {
+      "name": "Privacy Sandbox ads off",
+      "schema": "chrome.users.PrivacySandboxPromptEnabled",
+      "fields": {
+        "privacySandboxPromptEnabled": false,
+        "privacySandboxAdTopicsEnabled": false,
+        "privacySandboxSiteEnabledAdsEnabled": false,
+        "privacySandboxAdMeasurementEnabled": false
+      }
+    },
+    {
+      "name": "Shopping list off",
+      "schema": "chrome.users.ShoppingListEnabled",
+      "fields": {
+        "shoppingListEnabled": false
+      }
+    },
+    {
+      "name": "Lens overlay off",
+      "schema": "chrome.users.LensOverlaySettings",
+      "fields": {
+        "lensOverlaySettings": "DISABLED"
+      }
+    },
+    {
+      "name": "Gemini in Chrome off",
+      "schema": "chrome.users.GeminiSettings",
+      "fields": {
+        "geminiSettings": "DISABLED"
+      }
     }
   ]
 }

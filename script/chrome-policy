@@ -6,19 +6,23 @@
 # `defaults write com.google.Chrome` isn't enough: on an unmanaged Mac it only
 # sets "recommended" policy, which the user can override, and covers one Mac.
 #
+# policies.json is the whole truth for its org unit: a policy set there directly
+# but missing from the file (a deleted entry, or a change in the Admin console)
+# is unset on the next run. To let one setting stay user-changeable, set its
+# schema's *PolicyMode field to POLICY_MODE_RECOMMENDED in the file.
+#
 # GAM's OAuth files live in 1Password, not ~/.gam: each run reads them into a
 # temporary GAMCFGDIR and deletes it on exit, so no admin token stays on disk.
 #
-# Usage: script/chrome-policy [--show | --setup]
-#   (none)   apply every policy in chrome/policies.json
-#   --show   print the policies set directly on the org unit, without writing
+# Usage: script/chrome-policy [--check | --setup]
+#   (none)   make the org unit match chrome/policies.json
+#   --check  list what a run would set, change or unset; exit 1 if anything
 #   --setup  one time: create GAM's Cloud project and OAuth token, then save
 #            them to 1Password as the item $GAM_OP_ITEM
 #
 # Policies only reach signed-in profiles once Chrome browser user-level
 # management is turned on for that org unit in the Admin console (one time,
-# no API): https://support.google.com/chrome/a/answer/9025411 Removing an entry from policies.json doesn't unset it: run
-# `gam delete chromepolicy <schema> ou / appid <id>` too.
+# no API): https://support.google.com/chrome/a/answer/9025411
 
 set -eu
 # shellcheck disable=SC3040
@@ -67,34 +71,92 @@ done
 ou=$(jq -r .orgunit "$POLICIES")
 user=$(jq -r .user "$POLICIES")
 
-if [ "${1:-}" = --show ]; then
-	gam show chromepolicies ou "$ou" show direct
-	exit 0
-fi
-
 # Policy goes on an org unit holding only $user, not the domain root, so other
 # balter.com accounts stay unmanaged. A sub-OU inherits everything set on the
 # root, so moving into it changes nothing else. `gam create org` exits nonzero
 # when the OU already exists, hence the check.
-if ! gam info org "$ou" >/dev/null 2>&1 </dev/null; then
-	echo "==> Creating org unit $ou"
-	gam create org "${ou#/}" </dev/null
-fi
-gam update org "$ou" add users "$user" </dev/null
-
-# One `gam update chromepolicy` per entry, with its fields as name/value pairs.
-# @sh quotes each argument, so values with spaces survive the eval. gam gets
-# /dev/null for stdin so it can't eat the loop's remaining policies.
-jq -r '.policies[] | [.name, .schema, (.appid // ""), (.fields | to_entries[] | .key, .value)] | @sh' \
-	"$POLICIES" | while read -r line; do
-	eval "set -- $line"
-	name=$1 schema=$2 appid=$3
-	shift 3
-	echo "==> $name"
-	if [ -n "$appid" ]; then
-		gam update chromepolicy "$schema" "$@" ou "$ou" appid "$appid" </dev/null
-	else
-		gam update chromepolicy "$schema" "$@" ou "$ou" </dev/null
+if [ "${1:-}" != --check ]; then
+	if ! gam info org "$ou" >/dev/null 2>&1 </dev/null; then
+		echo "==> Creating org unit $ou"
+		gam create org "${ou#/}" </dev/null
 	fi
+	gam update org "$ou" add users "$user" </dev/null
+fi
+
+# Diff the file against the policies set directly on the org unit. Each line of
+# output is a description, a tab, and the gam arguments (shell-quoted) that fix
+# it. Only fields the file names are compared: the API also returns fields left
+# at their defaults, which the file has no reason to repeat. The namespaces are
+# the user-level ones the file can hold; GAM's default also walks device and
+# managed-guest namespaces, and a permission error on one makes it exit nonzero.
+# `redirect csv` keeps the CSV apart from what GAM prints to stdout about the
+# fresh GAMCFGDIR it initializes on each run.
+live="$GAMCFGDIR/live.csv"
+gam redirect csv "$live" print chromepolicies ou "$ou" \
+	namespace chrome.users,chrome.users.apps show direct formatjson </dev/null
+plan=$(python3 -I - "$POLICIES" "$live" <<'PY'
+import csv, json, shlex, sys
+
+want_path, live_path = sys.argv[1:]
+want = json.load(open(want_path))
+ou = want["orgunit"]
+
+
+def value(v):
+    """One field value as gam takes it, and as the API reports it."""
+    return str(v).lower() if isinstance(v, bool) else str(v)
+
+
+def target(schema, appid):
+    args = ["ou", ou]
+    return args + ["appid", appid] if appid else args
+
+
+live = {}
+for row in csv.DictReader(open(live_path)):
+    policy = json.loads(row["JSON"])
+    if not policy.get("direct"):
+        continue
+    appid = next((k["value"] for k in policy.get("additionalTargetKeys", [])
+                  if k["name"] == "app_id"), "")
+    live[(policy["name"], appid)] = {f["name"]: value(f["value"])
+                                     for f in policy.get("fields", [])}
+
+wanted = set()
+for p in want["policies"]:
+    key = (p["schema"], p.get("appid", ""))
+    wanted.add(key)
+    fields = {k: value(v) for k, v in p["fields"].items()}
+    have = live.get(key)
+    if have is not None and all(have.get(k, "").lower() == v.lower() for k, v in fields.items()):
+        continue
+    verb = "Set" if have is None else "Change"
+    args = ["update", "chromepolicy", p["schema"]]
+    for k, v in fields.items():
+        args += [k, v]
+    print(f"{verb} {p['name']}\t{shlex.join(args + target(*key))}")
+
+for key in sorted(set(live) - wanted):
+    name = " ".join(filter(None, key))
+    print(f"Unset {name} (not in {want_path})\t"
+          f"{shlex.join(['delete', 'chromepolicy', key[0]] + target(*key))}")
+PY
+)
+
+if [ "${1:-}" = --check ]; then
+	if [ -z "$plan" ]; then
+		echo "==> $ou matches $POLICIES"
+		exit 0
+	fi
+	echo "$plan" | cut -f1 | sed 's/^/  would /'
+	exit 1
+fi
+
+# gam gets /dev/null for stdin so it can't eat the loop's remaining lines.
+tab=$(printf '\t')
+[ -z "$plan" ] || echo "$plan" | while IFS="$tab" read -r what args; do
+	echo "==> $what"
+	eval "set -- $args"
+	gam "$@" </dev/null
 done
 echo "==> Done"
