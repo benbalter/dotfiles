@@ -76,6 +76,22 @@ run_policy() {
 	[ ! -e "$(cat "$STORE/cfgpath")" ]
 }
 
+@test "chrome-policy stops at the first failed policy and still deletes the credentials" {
+	# gam fails only for the first policy's update.
+	sed -i.bak 's|^exit 0$|case "$*" in *chrome:abc*) exit 2 ;; esac; exit 0|' "$STUB_BIN/gam"
+	run_policy
+	[ "$status" -ne 0 ]
+	run ! grep -q 'chrome.users.Example' "$STORE/calls"
+	[ ! -e "$(cat "$STORE/cfgpath")" ]
+}
+
+@test "chrome-policy runs nothing in gam when 1Password can't read the credentials" {
+	printf '#!/bin/sh\necho "op $*" >>"%s/calls"\nexit 1\n' "$STORE" >"$STUB_BIN/op"
+	run_policy
+	[ "$status" -ne 0 ]
+	run ! grep -q '^gam ' "$STORE/calls"
+}
+
 @test "chrome-policy --setup refuses to run without a terminal" {
 	run_policy --setup </dev/null
 	[ "$status" -eq 1 ]
