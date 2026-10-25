@@ -18,6 +18,7 @@
     "spacedTable": true
   },
   "plugins": {
+    "remark-frontmatter": {},
     "remark-squeeze-paragraphs": {},
     "remark-heading-gap": {
       "2": {

@@ -88,6 +88,8 @@ dotfiles_files_macos:
 dotfile_links_common:
   - src: claude/CLAUDE.md
     dest: .claude/CLAUDE.md
+  - src: claude/skills/roll-for-initiative
+    dest: .claude/skills/roll-for-initiative
   - src: Library/Application Support/com.mitchellh.ghostty/themes/catppuccin-latte.conf
     dest: .config/ghostty/themes/catppuccin-latte.conf
   - src: Library/Application Support/com.mitchellh.ghostty/themes/catppuccin-mocha.conf

@@ -31,7 +31,7 @@ link() {
 		echo "Backing up $dest to $bak"
 		mv "$dest" "$bak"
 	fi
-	ln -sf "$src" "$dest"
+	ln -sfn "$src" "$dest"
 }
 
 # Symlink dotfiles
@@ -54,6 +54,7 @@ for file in \
 	link "$file"
 done
 link claude/CLAUDE.md .claude/CLAUDE.md
+link claude/skills/roll-for-initiative .claude/skills/roll-for-initiative
 link "Library/Application Support/com.mitchellh.ghostty/themes/catppuccin-latte.conf" \
 	.config/ghostty/themes/catppuccin-latte.conf
 link "Library/Application Support/com.mitchellh.ghostty/themes/catppuccin-mocha.conf" \
