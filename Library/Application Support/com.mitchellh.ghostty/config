@@ -42,6 +42,13 @@ background-blur = 20
 custom-shader = shaders/bloom.glsl
 custom-shader-animation = false
 
+# ── Notifications ─────────────────────────────────────────────────
+# Native replacement for zsh bgnotify (uses shell integration). no-bell, since
+# the default action is bell,no-notify and unnamed flags keep their defaults.
+notify-on-command-finish = unfocused
+notify-on-command-finish-action = no-bell,notify
+notify-on-command-finish-after = 8s
+
 # ── Quick Terminal ────────────────────────────────────────────────
 quick-terminal-animation-duration = 0.12
 

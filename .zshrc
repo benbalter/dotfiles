@@ -14,7 +14,6 @@ source "$DOTFILES_ROOT/lib/globals"
 typeset -a plugins
 plugins=(
   ansible
-  bgnotify
   colored-man-pages
   command-not-found
   copyfile
@@ -28,6 +27,10 @@ plugins=(
   sudo
   vscode
 )
+
+# Ghostty sends its own command-finished notifications (notify-on-command-finish),
+# so bgnotify there would notify twice. Other terminals still need it.
+[[ $TERM_PROGRAM == ghostty ]] || plugins+=(bgnotify)
 
 if [[ $OSTYPE == darwin* ]]; then
   plugins+=(
@@ -121,7 +124,8 @@ fi
 _cached_init atuin atuin init zsh --disable-up-arrow
 
 # ── Loaded shell (ORDER MATTERS) ──────────────────────────────────
-# Notify when a >Ns command finishes in an unfocused terminal (bgnotify plugin).
+# Notify when a >Ns command finishes in an unfocused terminal (bgnotify plugin;
+# Ghostty uses its own notify-on-command-finish-after instead, kept in sync).
 bgnotify_threshold=8
 
 # fzf-tab: fuzzy completion menu. Then autosuggestions, then
