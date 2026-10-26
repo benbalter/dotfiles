@@ -75,6 +75,62 @@
       }
     },
     {
+      "name": "Install Kagi Search",
+      "schema": "chrome.users.apps.InstallType",
+      "appid": "chrome:cdglnehniifkbagbbombnjghhcihifij",
+      "fields": {
+        "appInstallType": "FORCED"
+      }
+    },
+    {
+      "name": "Install LanguageTool",
+      "schema": "chrome.users.apps.InstallType",
+      "appid": "chrome:oldceeleldhonbafppcapldpdifcinji",
+      "fields": {
+        "appInstallType": "FORCED"
+      }
+    },
+    {
+      "name": "Install Dark Reader",
+      "schema": "chrome.users.apps.InstallType",
+      "appid": "chrome:eimadpbcbfnmbkopoojfekhnkhdbieeh",
+      "fields": {
+        "appInstallType": "FORCED"
+      }
+    },
+    {
+      "name": "Install JSON Formatter",
+      "schema": "chrome.users.apps.InstallType",
+      "appid": "chrome:bcjindcccaagfpapjjmafapmmgkkhgoa",
+      "fields": {
+        "appInstallType": "FORCED"
+      }
+    },
+    {
+      "name": "Install Wayback Machine",
+      "schema": "chrome.users.apps.InstallType",
+      "appid": "chrome:fpnmgdkabkmnadcjpehmlllkndpkmiak",
+      "fields": {
+        "appInstallType": "FORCED"
+      }
+    },
+    {
+      "name": "Install Inoreader",
+      "schema": "chrome.users.apps.InstallType",
+      "appid": "chrome:kfimphpokifbjgmjflanmfeppcjimgah",
+      "fields": {
+        "appInstallType": "FORCED"
+      }
+    },
+    {
+      "name": "Install Toolkit for YNAB",
+      "schema": "chrome.users.apps.InstallType",
+      "appid": "chrome:lmhdkkhepllpnondndgpgclfjnlofgjl",
+      "fields": {
+        "appInstallType": "FORCED"
+      }
+    },
+    {
       "name": "Enhanced Safe Browsing",
       "schema": "chrome.users.SafeBrowsingProtectionLevel",
       "fields": {
