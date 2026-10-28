@@ -13,7 +13,6 @@ script/update      # update everything; aliased to `up`, also runs nightly headl
 script/lint        # ansible-lint, yamllint, shellcheck, shfmt, actionlint, rubocop, remark
 script/test        # the whole BATS suite (bats test/)
 script/doctor      # read-only health check: symlinks, .bak files, brew wrapper, launch agents, last update, packages, security, defaults
-script/github-settings  # apply .github/settings/ (repo options, main branch protection) via gh; --check diffs only
 script/audit-defaults   # flag config.yml Apple defaults keys that no system binary contains (likely dead)
 script/bench-shell      # time zsh startup and command lag with zsh-bench, against its noticeable thresholds
 script/install-git-hooks # copy the gitleaks pre-commit hook (.config/git/template) into existing repos under ~/projects

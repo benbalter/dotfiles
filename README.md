@@ -21,7 +21,6 @@
 - `script/clean` — Uninstall everything not in the `Brewfile` (`brew bundle cleanup --force`; destructive); aliased to `clean`
 - `script/install-tools` — Install delta, zoxide and fzf on Linux without Homebrew (Codespaces, devcontainer)
 - `script/app-preferences` — Merge the settings in `app-preferences/<domain>.plist` into each app's defaults (CleanShot X, Thaw, keyboard shortcuts), and `app-preferences/json/<path>` into JSON settings files under `$HOME` (Docker Desktop); `--check` shows drift. The playbook's `defaults` tag runs it
-- `script/github-settings` — Apply this repo's GitHub settings and `main` branch protection from `.github/settings/`; `--check` shows drift without changing anything
 - `script/lint` — Run all linters (see [Linting](#linting))
 - `script/test` — Run the BATS test suite
 - `install.sh` — Codespaces entry point; runs `script/setup` on macOS, a symlink-only install on Linux
