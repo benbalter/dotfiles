@@ -22,8 +22,13 @@ setup() {
 printf '%s\n' "${LAUNCHCTL_OUT-	last exit code = 0}"
 exit "${LAUNCHCTL_STATUS:-0}"
 STUB
+	# `brew tap` lists $BREW_TAPS (default none).
 	cat >"$STUB_BIN/brew" <<'STUB'
 #!/bin/sh
+if [ "$1" = tap ]; then
+	[ -z "${BREW_TAPS:-}" ] || printf '%s\n' "$BREW_TAPS"
+	exit 0
+fi
 printf '%s\n' "${BREW_OUT:-}"
 exit "${BREW_STATUS:-0}"
 STUB
@@ -356,4 +361,16 @@ write_status() {
 	UNAME=Darwin run_doctor
 	[ "$status" -ne 0 ] || fail "doctor should exit non-zero"
 	echo "$security_output" | grep -q "FAIL  home folder is readable by other accounts" || fail "$security_output"
+}
+
+@test "doctor warns about a tap the Brewfile doesn't use" {
+	UNAME=Darwin BREW_TAPS="someone/leftover" run_doctor
+	echo "$packages_output" | grep -q "warn  taps the Brewfile doesn't use" || fail "$packages_output"
+	echo "$packages_output" | grep -q "^        someone/leftover$" || fail "$packages_output"
+	! echo "$packages_output" | grep -q "FAIL  taps" || fail "$packages_output"
+}
+
+@test "doctor passes when every tap is in use" {
+	UNAME=Darwin run_doctor
+	echo "$packages_output" | grep -q "ok    no taps beyond the Brewfile's" || fail "$packages_output"
 }

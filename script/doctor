@@ -208,6 +208,20 @@ if [ "$(uname)" = "Darwin" ] && command -v brew >/dev/null; then
 		bad "Brewfile entries not installed (brew bundle install --file=$HOMEBREW_BUNDLE_FILE --no-upgrade):"
 		echo "$missing" | sed -nE 's/^(→|->) */        /p'
 	fi
+	# A tap the Brewfile doesn't need is third-party code nothing uses. One
+	# outlived its cask's move into homebrew/cask, then broke every `up` with
+	# tap-trust warnings. The Brewfile needs a tap it declares, or one named in
+	# a user/tap/name entry.
+	needed=$(sed -nE "s/^tap '([^']+)'.*/\1/p; s|^[a-z]+ '([^/']+/[^/']+)/[^']+'.*|\1|p" "$HOMEBREW_BUNDLE_FILE" | sort -u)
+	# Each line of a grep -F pattern is its own pattern; an empty one (no taps
+	# needed) matches only empty lines, so every tap is extra.
+	extra=$(brew tap 2>/dev/null | grep -vxF -e "$needed" || true)
+	if [ -z "$extra" ]; then
+		ok "no taps beyond the Brewfile's"
+	else
+		warn "taps the Brewfile doesn't use (brew untap <tap>; one that's untrusted needs brew trust --cask first, then brew untrust):"
+		echo "$extra" | sed 's/^/        /'
+	fi
 fi
 if command -v mise >/dev/null; then
 	# From $HOME, so mise reads the symlinked global config.
