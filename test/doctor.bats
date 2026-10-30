@@ -49,7 +49,7 @@ STUB
 	stub FDESETUP "FileVault is On." fdesetup
 	stub SOFTWAREUPDATE "Automatic checking for updates is turned on" softwareupdate
 	stub SYSTEM_PROFILER "      Activation Lock Status: Enabled" system_profiler
-	stub PMSET " womp                 0" pmset
+	stub PMSET " womp                 1" pmset
 	stub PROFILES "Enrolled via DEP: No" profiles
 	stub SOCKETFILTERFW "State = 1; stealth mode is on" socketfilterfw
 	stub DSMEMBERUTIL "user is not a member of the group" dsmemberutil
@@ -284,10 +284,10 @@ write_status() {
 }
 
 @test "doctor flags macOS security settings that were turned off" {
-	UNAME=Darwin SPCTL_OUT="assessments disabled" PMSET_OUT=" womp 1" DEFAULTS_STATUS=0 \
+	UNAME=Darwin SPCTL_OUT="assessments disabled" PMSET_OUT=" womp 0" DEFAULTS_STATUS=0 \
 		SOFTWAREUPDATE_OUT="Automatic checking for updates is turned off" run_doctor
 	[ "$status" -ne 0 ] || fail "doctor should exit non-zero"
-	for want in "Gatekeeper is off" "wake for network access is on" "automatic login is on" \
+	for want in "Gatekeeper is off" "wake for network access is off" "automatic login is on" \
 		"automatic update checks is off"; do
 		echo "$security_output" | grep -q "FAIL  $want" || fail "missing '$want': $security_output"
 	done

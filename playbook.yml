@@ -1048,11 +1048,14 @@
           failed_when: autologin_verify.rc == 0
           when: not is_ci and not ansible_check_mode
 
-        # Wake for network access lets the machine be woken by unsolicited
-        # traffic. On a laptop that buys nothing and keeps a sleeping machine
-        # reachable. `pmset -g custom` reports the live value for every power
-        # source (plain `pmset -g` shows only the current one, while the setter
-        # uses -a), so no separate read-back task is needed beyond this check.
+        # Wake for network access was off until Find My Mac replaced an
+        # anti-theft agent: without it, Find My can't locate, lock or erase a
+        # sleeping Mac, and macOS warns as much when Find My is turned on. Being
+        # wakeable doesn't open anything; the stealth-mode firewall still drops
+        # unsolicited traffic. `pmset -g custom` reports the live value for
+        # every power source (plain `pmset -g` shows only the current one, while
+        # the setter uses -a), so no separate read-back task is needed beyond
+        # this check.
         - name: Check wake for network access
           ansible.builtin.command:
             cmd: pmset -g custom
@@ -1061,11 +1064,11 @@
           check_mode: false
           when: not is_ci
 
-        - name: Disable wake for network access
+        - name: Enable wake for network access
           ansible.builtin.command:
-            cmd: pmset -a womp 0
+            cmd: pmset -a womp 1
           become: true
-          when: not is_ci and pmset_state.stdout is search('womp\s+1')
+          when: not is_ci and pmset_state.stdout is search('womp\s+0')
           changed_when: true
 
         - name: Check FileVault status

@@ -296,11 +296,16 @@ if [ "$(uname)" = "Darwin" ]; then
 	# /etc/pam.d/sudo, which updates replace, still includes it.
 	check_security "sudo reads sudo_local" "^auth[[:space:]]*include[[:space:]]*sudo_local" \
 		cat "${PAM_SUDO:-/etc/pam.d/sudo}"
-	# -g custom: every power source, not just the current one.
-	if pmset -g custom | grep -Eq 'womp[[:space:]]+1'; then
-		bad "wake for network access is on (re-run: script/ansible --tags security)"
+	# On, so Find My can lock or erase a sleeping Mac. -g custom: every power
+	# source, not just the current one.
+	if pmset -g custom | grep -Eq 'womp[[:space:]]+0'; then
+		if [ "$DOTFILES_PROFILE" = work ]; then
+			warn "wake for network access is off (a work Mac: IT's MDM manages this)"
+		else
+			bad "wake for network access is off, so Find My can't lock or erase a sleeping Mac (re-run: script/ansible --tags security)"
+		fi
 	else
-		ok "wake for network access off"
+		ok "wake for network access on"
 	fi
 	if defaults read /Library/Preferences/com.apple.loginwindow autoLoginUser >/dev/null 2>&1; then
 		bad "automatic login is on (re-run: script/ansible --tags security)"
