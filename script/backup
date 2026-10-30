@@ -30,6 +30,8 @@ cd "$(dirname "$0")/.."
 # Keychain items, all under one service; --setup reads the same-named fields
 # from the 1Password item at DOTFILES_BACKUP_OP_ITEM (op://<vault>/<item>).
 KEYCHAIN_SERVICE=dotfiles-backup
+nl='
+'
 STATE="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/backup-last"
 
 die() {
@@ -68,10 +70,15 @@ setup() {
 		case "$field" in s3-*) case "$RESTIC_REPOSITORY" in s3:*) ;; *) continue ;; esac ;; esac
 		value=$(op read "$DOTFILES_BACKUP_OP_ITEM/$field") ||
 			die "couldn't read $field from $DOTFILES_BACKUP_OP_ITEM"
-		# security reads the secret twice from stdin (entry, then confirmation),
-		# which keeps it out of the process list that -w <value> would expose.
-		printf '%s\n%s\n' "$value" "$value" |
-			security add-generic-password -U -s "$KEYCHAIN_SERVICE" -a "$field" -w >/dev/null
+		# Through `security -i`, which reads commands from stdin: -w <value> on
+		# security's own command line would show in the process list, and plain
+		# -w prompts on the terminal instead of reading a pipe.
+		case "$value" in *\"* | *\\* | *"$nl"*)
+			die "$field has a quote, backslash or newline, which security -i can't take"
+			;;
+		esac
+		printf 'add-generic-password -U -s %s -a %s -w "%s"\n' "$KEYCHAIN_SERVICE" "$field" "$value" |
+			security -i >/dev/null
 		echo "backup: stored $field in the Keychain"
 	done
 	unset value
