@@ -14,6 +14,12 @@ script/blocking-io
 # shellcheck disable=SC1091
 . env/bin/activate
 
+# The playbook turns on Touch ID for sudo, so a become task's sudo shows a
+# Touch ID dialog before any password prompt, and Ansible's default 10-second
+# wait for it ran out ("Timed out waiting for become success") whenever the
+# dialog wasn't answered at once.
+export ANSIBLE_TIMEOUT="${ANSIBLE_TIMEOUT:-60}"
+
 if [ "${CI:-}" = "true" ]; then
 	ansible-playbook playbook.yml "$@"
 elif [ -n "${ANSIBLE_BECOME_PASSWORD_FILE:-}" ]; then
