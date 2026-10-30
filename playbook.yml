@@ -806,6 +806,25 @@
       when: not is_ci and not ansible_check_mode
       tags: [macos, defaults]
 
+    # bootout before deleting: a loaded agent with KeepAlive would otherwise
+    # keep its app running until logout.
+    - name: Remove unwanted third-party launch agents
+      ansible.builtin.shell:
+        cmd: |
+          set -eu
+          plist="$HOME/Library/LaunchAgents/$LABEL.plist"
+          [ -e "$plist" ] || exit 0
+          launchctl bootout "gui/$(id -u)/$LABEL" 2>/dev/null || true
+          rm -f "$plist"
+          echo changed
+      environment:
+        LABEL: "{{ item }}"
+      loop: "{{ launch_agents_removed }}"
+      register: launch_agents_removed_result
+      changed_when: "'changed' in launch_agents_removed_result.stdout"
+      when: not is_ci and not ansible_check_mode
+      tags: [macos, defaults, launchagents]
+
     - name: Configure security settings
       tags: [macos, security]
       block:

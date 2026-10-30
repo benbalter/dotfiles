@@ -400,3 +400,11 @@ write_status() {
 	echo "$security_output" | grep -q "ok    no shares open to guests" || fail "$security_output"
 	echo "$security_output" | grep -q "ok    firewall entries match config.yml" || fail "$security_output"
 }
+
+@test "doctor warns when a removed third-party launch agent comes back" {
+	label=$(yq -r '.launch_agents_removed[0]' "$REPO_ROOT/config.yml")
+	mkdir -p "$TEST_HOME/Library/LaunchAgents"
+	touch "$TEST_HOME/Library/LaunchAgents/$label.plist"
+	run_doctor
+	echo "$agents_output" | grep -q "warn  $label starts at login again" || fail "$agents_output"
+}

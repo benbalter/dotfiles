@@ -138,6 +138,17 @@ if command -v launchctl >/dev/null; then
 		fi
 		[ -n "$log" ] || warn "$label has no log (StandardOutPath or a >> redirect); its output is discarded"
 	done
+	# Third-party agents config.yml removes come back when their app's
+	# autostart setting is switched on again.
+	if command -v yq >/dev/null; then
+		for label in $(yq -r '.launch_agents_removed[]?' "$CONFIG"); do
+			if [ -e "$HOME/Library/LaunchAgents/$label.plist" ]; then
+				warn "$label starts at login again (re-run: script/ansible --tags launchagents)"
+			else
+				ok "$label doesn't start at login"
+			fi
+		done
+	fi
 fi
 
 echo "==> Last update run"

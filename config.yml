@@ -437,6 +437,14 @@ login_items:
   - /Applications/Unclack.app
   - /Applications/WhatCable.app
 
+# Launch agents third-party apps install in ~/Library/LaunchAgents to start
+# themselves at login, by label. The playbook unloads and deletes them, and
+# script/doctor warns if one comes back. Camera Hub has no setting for this:
+# its autostart checkbox just writes the agent, which kept it (and the network
+# listener it runs) going in the background at every login.
+launch_agents_removed:
+  - com.elgato.CameraHub
+
 # Default apps, by bundle ID: URL schemes and file types (UTIs). Applied with
 # utiluti only where they differ, since macOS asks to confirm each change.
 # Setting http also sets https and public.html, which can't be set directly.
