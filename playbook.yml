@@ -841,112 +841,72 @@
     - name: Configure security settings
       tags: [macos, security]
       block:
-        - name: Check Gatekeeper status
+        # config.yml's macos_security_settings: each one is read, set only when
+        # the read doesn't match, then read back, and a read-back that still
+        # doesn't match fails the play. That read-back is the point: writing
+        # com.apple.alf's globalstate silently did nothing on modern macOS, and
+        # the setter reported "changed" while the firewall sat off for months.
+        # Setters skip CI (a runner's security settings aren't ours to change)
+        # and, unless an entry says `work: true`, a work Mac, where IT's MDM
+        # owns them. socketfilterfw lives outside PATH.
+        - name: Read security settings
           ansible.builtin.command:
-            cmd: spctl --status
-          register: gatekeeper_status
+            cmd: "{{ item.check }}"
+          environment:
+            PATH: "{{ ansible_facts['env']['PATH'] }}:/usr/libexec/ApplicationFirewall"
+          loop: "{{ macos_security_settings }}"
+          loop_control:
+            label: "{{ item.name }}"
+          register: security_settings_read
           check_mode: false
           changed_when: false
           failed_when: false
+          when: not is_ci and (not is_work or item.work | default(false))
 
-        # The setters in this block skip CI: a runner's security settings
-        # aren't ours to change, and they mean nothing on a throwaway VM.
-        - name: Enable Gatekeeper
+        - name: Set security settings
           ansible.builtin.command:
-            cmd: spctl --global-enable
+            cmd: "{{ item.item.set }}"
+          environment:
+            PATH: "{{ ansible_facts['env']['PATH'] }}:/usr/libexec/ApplicationFirewall"
           become: true
-          when: not is_ci and 'assessments enabled' not in gatekeeper_status.stdout
+          loop: "{{ security_settings_read.results | rejectattr('skipped', 'defined') | list }}"
+          loop_control:
+            label: "{{ item.item.name }}"
+          vars: &security_setting
+            security_setting_ok: >-
+              {{ (item.item.expect is defined and item.stdout is search(item.item.expect))
+                 or (item.item.reject is defined and item.stdout is not search(item.item.reject)) }}
+          when: not (security_setting_ok | bool)
           changed_when: true
 
-        - name: Verify Gatekeeper is enabled
+        - name: Read back security settings
           ansible.builtin.command:
-            cmd: spctl --status
-          register: gatekeeper_verify
+            cmd: "{{ item.check }}"
+          environment:
+            PATH: "{{ ansible_facts['env']['PATH'] }}:/usr/libexec/ApplicationFirewall"
+          loop: "{{ macos_security_settings }}"
+          loop_control:
+            label: "{{ item.name }}"
+          register: security_settings_verify
           check_mode: false
           changed_when: false
-          failed_when: "'assessments enabled' not in gatekeeper_verify.stdout"
-          when: not is_ci and not ansible_check_mode
+          failed_when: false
+          when: not is_ci and not ansible_check_mode and (not is_work or item.work | default(false))
 
-        # Not an AutomaticCheckEnabled default: softwareupdated strips that key
-        # from /Library/Preferences/com.apple.SoftwareUpdate, so the write only
-        # read back until the daemon next rewrote the file.
-        - name: Check automatic update checking
-          ansible.builtin.command:
-            cmd: softwareupdate --schedule
-          register: softwareupdate_schedule
-          check_mode: false
-          changed_when: false
-          when: not is_ci
+        - name: Verify security settings
+          ansible.builtin.fail:
+            msg: "{{ item.item.name }} didn't take: `{{ item.item.check }}` printed {{ item.stdout | default('') | trim }}"
+          loop: "{{ security_settings_verify.results | rejectattr('skipped', 'defined') | list }}"
+          loop_control:
+            label: "{{ item.item.name }}"
+          vars: *security_setting
+          when: not (security_setting_ok | bool)
 
-        - name: Enable automatic update checking
-          ansible.builtin.command:
-            cmd: softwareupdate --schedule on
-          become: true
-          when: not is_ci and not is_work and 'turned on' not in softwareupdate_schedule.stdout
-          changed_when: true
-
-        - name: Verify automatic update checking is on
-          ansible.builtin.command:
-            cmd: softwareupdate --schedule
-          register: softwareupdate_verify
-          check_mode: false
-          changed_when: false
-          failed_when: "'turned on' not in softwareupdate_verify.stdout"
-          when: not is_ci and not is_work and not ansible_check_mode
-
-        # The firewall can only be driven through socketfilterfw. Writing
-        # globalstate/stealthenabled to com.apple.alf silently does nothing on
-        # modern macOS, so each setter below is followed by a read-back that
-        # fails the play if the setting did not actually take. Without that
-        # verification an ineffective setter reports "changed" and the drift
-        # goes unnoticed -- which is exactly how the firewall sat off for months.
-        # Skipped in CI: the verification below is meant to fail loudly, and a
-        # throwaway runner is not a machine we intend to harden.
+        # The rest of the firewall: the signed-software policy (two settings in
+        # one read) and the app allowlist, which don't fit the list above.
         - name: Configure firewall
           when: not is_ci and not is_work
           block:
-            - name: Check firewall state
-              ansible.builtin.command:
-                cmd: /usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate
-              register: firewall_state
-              changed_when: false
-              check_mode: false
-
-            - name: Enable firewall
-              ansible.builtin.command:
-                cmd: /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate on
-              become: true
-              when: "'State = 1' not in firewall_state.stdout"
-              changed_when: true
-
-            - name: Verify firewall is enabled
-              ansible.builtin.command:
-                cmd: /usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate
-              register: firewall_verify
-              changed_when: false
-              failed_when: "'State = 1' not in firewall_verify.stdout"
-
-            - name: Check firewall stealth mode
-              ansible.builtin.command:
-                cmd: /usr/libexec/ApplicationFirewall/socketfilterfw --getstealthmode
-              register: stealth_state
-              changed_when: false
-              check_mode: false
-
-            - name: Enable firewall stealth mode
-              ansible.builtin.command:
-                cmd: /usr/libexec/ApplicationFirewall/socketfilterfw --setstealthmode on
-              become: true
-              when: "'stealth mode is on' not in stealth_state.stdout"
-              changed_when: true
-
-            - name: Verify firewall stealth mode is enabled
-              ansible.builtin.command:
-                cmd: /usr/libexec/ApplicationFirewall/socketfilterfw --getstealthmode
-              register: stealth_verify
-              changed_when: false
-              failed_when: "'stealth mode is on' not in stealth_verify.stdout"
-
             # The reads in this block set check_mode: false so --check still
             # sees real values; skipped in check mode they return no output,
             # and stdout_lines[0] below fails.
@@ -1147,29 +1107,6 @@
           changed_when: false
           failed_when: autologin_verify.rc == 0
           when: not is_ci and not ansible_check_mode
-
-        # Wake for network access was off until Find My Mac replaced an
-        # anti-theft agent: without it, Find My can't locate, lock or erase a
-        # sleeping Mac, and macOS warns as much when Find My is turned on. Being
-        # wakeable doesn't open anything; the stealth-mode firewall still drops
-        # unsolicited traffic. `pmset -g custom` reports the live value for
-        # every power source (plain `pmset -g` shows only the current one, while
-        # the setter uses -a), so no separate read-back task is needed beyond
-        # this check.
-        - name: Check wake for network access
-          ansible.builtin.command:
-            cmd: pmset -g custom
-          register: pmset_state
-          changed_when: false
-          check_mode: false
-          when: not is_ci
-
-        - name: Enable wake for network access
-          ansible.builtin.command:
-            cmd: pmset -a womp 1
-          become: true
-          when: not is_ci and pmset_state.stdout is search('womp\s+0')
-          changed_when: true
 
         - name: Check FileVault status
           ansible.builtin.command:

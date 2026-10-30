@@ -294,11 +294,31 @@ if [ "$(uname)" = "Darwin" ]; then
 		profiles status -type enrollment 2>/dev/null | grep -q 'Enrolled via DEP: Yes'; then
 		warn "this Mac's MDM enrolled it at setup, like an employer's, but the profile is $DOTFILES_PROFILE (re-run script/setup --work; see MIGRATION.md#work-mac)"
 	fi
-	check_security "firewall" "State = 1" "$fw" --getglobalstate
-	check_security "firewall stealth mode" "stealth mode is on" "$fw" --getstealthmode
-	check_security "Gatekeeper" "assessments enabled" spctl --status
+	# config.yml's macos_security_settings, the same list the playbook sets
+	# and reads back. socketfilterfw lives outside PATH. A heredoc, not a pipe,
+	# so `bad` counts in this shell.
+	if command -v yq >/dev/null; then
+		tab=$(printf '\t')
+		# Empty fields are "-": tabs are IFS whitespace, so read would collapse
+		# an empty field and shift the rest (an empty reject took work's value).
+		while IFS=$tab read -r name check expect reject work hint; do
+			[ "$expect" != - ] || expect=
+			[ "$reject" != - ] || reject=
+			[ "$hint" != - ] || hint=
+			out=$(PATH="$PATH:/usr/libexec/ApplicationFirewall" sh -c "$check" 2>/dev/null || true)
+			if { [ -n "$expect" ] && printf '%s\n' "$out" | grep -Eq "$expect"; } ||
+				{ [ -n "$reject" ] && ! printf '%s\n' "$out" | grep -Eq "$reject"; }; then
+				ok "$name"
+			elif [ "$DOTFILES_PROFILE" = work ] && [ "$work" != true ]; then
+				warn "$name is off (a work Mac: IT's MDM manages this)"
+			else
+				bad "$name is off${hint:+: $hint} (re-run: script/ansible --tags security)"
+			fi
+		done <<SETTINGS
+$(yq -r '.macos_security_settings[] | [.name, .check, .expect // "-", .reject // "-", (.work // false | tostring), .hint // "-"] | @tsv' "$CONFIG")
+SETTINGS
+	fi
 	check_security "FileVault" "FileVault is On" fdesetup status
-	check_security "automatic update checks" "turned on" softwareupdate --schedule
 	# Activation Lock is what keeps a wiped, stolen Mac from being reused; it
 	# follows Find My Mac, which needs an Apple Account, so the playbook can't
 	# set it. A Device Enrollment MDM disallows it by default, which is how an
@@ -345,17 +365,6 @@ if [ "$(uname)" = "Darwin" ]; then
 		echo "$guest_shares" | sed 's/^/        /'
 	else
 		ok "no shares open to guests"
-	fi
-	# On, so Find My can lock or erase a sleeping Mac. -g custom: every power
-	# source, not just the current one.
-	if pmset -g custom | grep -Eq 'womp[[:space:]]+0'; then
-		if [ "$DOTFILES_PROFILE" = work ]; then
-			warn "wake for network access is off (a work Mac: IT's MDM manages this)"
-		else
-			bad "wake for network access is off, so Find My can't lock or erase a sleeping Mac (re-run: script/ansible --tags security)"
-		fi
-	else
-		ok "wake for network access on"
 	fi
 	if defaults read /Library/Preferences/com.apple.loginwindow autoLoginUser >/dev/null 2>&1; then
 		bad "automatic login is on (re-run: script/ansible --tags security)"

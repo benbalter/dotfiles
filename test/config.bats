@@ -151,3 +151,21 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 	! yq -r '.macos_defaults.user[] | select(.all_users) | .value' "$REPO_ROOT/config.yml" | grep -q user_dir ||
 		fail "an all_users default templates user_dir"
 }
+
+@test "macos_security_settings entries are complete and their patterns work in grep and Python" {
+	# The playbook matches with Python's re (Ansible's search test) and doctor
+	# with grep -E, so a pattern must mean the same to both.
+	yq -e '.macos_security_settings | length > 0' "$REPO_ROOT/config.yml" >/dev/null || fail "no settings"
+	bad=$(yq -r '.macos_security_settings[] | select((.name and .check and .set) | not) | .name // "unnamed"' "$REPO_ROOT/config.yml")
+	[ -z "$bad" ] || fail "missing name, check or set: $bad"
+	bad=$(yq -r '.macos_security_settings[] | select(((.expect != null) and (.reject != null)) or ((.expect == null) and (.reject == null))) | .name' "$REPO_ROOT/config.yml")
+	[ -z "$bad" ] || fail "need exactly one of expect or reject: $bad"
+	while IFS= read -r pattern; do
+		[ "$pattern" != - ] || fail "a pattern of just - would read as empty in script/doctor"
+		rc=0
+		echo x | grep -Eq "$pattern" 2>/dev/null || rc=$?
+		[ "$rc" -le 1 ] || fail "grep -E rejects: $pattern"
+		python3 -c 'import re, sys; re.compile(sys.argv[1])' "$pattern" || fail "Python rejects: $pattern"
+		case "$pattern" in *'[['*) fail "POSIX classes don't work in Python: $pattern" ;; esac
+	done < <(yq -r '.macos_security_settings[] | (.expect // .reject)' "$REPO_ROOT/config.yml")
+}

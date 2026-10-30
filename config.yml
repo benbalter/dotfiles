@@ -466,6 +466,42 @@ default_apps:
   types:
     public.unix-executable: com.mitchellh.ghostty
 
+# Security settings that only their CLIs can change. The playbook runs `check`,
+# runs `set` (as root) unless the output matches `expect` (or no longer matches
+# `reject`), then checks again; script/doctor runs the same `check`. One list,
+# so the setter, its read-back and doctor can't drift apart. Patterns are
+# extended regexes that also work as Python's (no [[:space:]]), since Ansible
+# and grep -E both read them. `work: true` keeps a setting on a work Mac, whose
+# other security settings belong to IT's MDM. `hint` explains a failure.
+macos_security_settings:
+  - name: Gatekeeper
+    check: spctl --status
+    expect: assessments enabled
+    set: spctl --global-enable
+    work: true
+  - name: automatic update checks
+    # Not `defaults`: softwareupdated strips AutomaticCheckEnabled after a write.
+    check: softwareupdate --schedule
+    expect: turned on
+    set: softwareupdate --schedule on
+  - name: firewall
+    check: socketfilterfw --getglobalstate
+    expect: State = 1
+    set: socketfilterfw --setglobalstate on
+  - name: firewall stealth mode
+    check: socketfilterfw --getstealthmode
+    expect: stealth mode is on
+    set: socketfilterfw --setstealthmode on
+  - name: wake for network access
+    # Off until Find My Mac replaced an anti-theft agent; without it, Find My
+    # can't locate, lock or erase a sleeping Mac. Being wakeable opens nothing:
+    # the stealth-mode firewall still drops unsolicited traffic. -g custom
+    # reads every power source, not just the current one, as -a sets them.
+    check: pmset -g custom
+    reject: womp +0
+    set: pmset -a womp 1
+    hint: Find My can't lock or erase a sleeping Mac without it
+
 # Application Firewall policy. macOS defaults to auto-allowing any *downloaded*
 # signed (notarized) app to accept inbound connections, which quietly undoes
 # much of the point of turning the firewall on -- Dropbox, Spotify and friends

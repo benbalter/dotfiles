@@ -274,8 +274,10 @@ fi
 # Off-site, encrypted backup of config.yml's backup_paths. Unattended is the
 # point: the hand-run backups it replaced went weeks between runs. It skips
 # itself where it isn't set up (Codespaces, a new Mac).
-echo "==> Backing up..."
-step script/backup
+if [ -x script/backup ]; then
+	echo "==> Backing up..."
+	step script/backup
+fi
 
 # Report pending macOS updates without installing them: installs can restart
 # the machine, which is never OK unattended. Listing is read-only.
