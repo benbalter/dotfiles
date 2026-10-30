@@ -152,6 +152,8 @@ brew 'pnpm'
 brew 'prettier'
 # Protocol buffers (Google's data interchange format)
 brew 'protobuf'
+# Fast, efficient and secure backup program
+brew 'restic'
 # Search tool like grep and The Silver Searcher
 brew 'ripgrep'
 # Safe, concurrent, practical language

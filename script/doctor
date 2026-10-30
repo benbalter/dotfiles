@@ -250,6 +250,20 @@ if command -v mise >/dev/null; then
 	fi
 fi
 
+# script/backup records each successful run; it runs nightly with the update,
+# so a stale one means it's failing (see the update log).
+if [ -n "${DOTFILES_BACKUP_REPOSITORY:-}" ]; then
+	echo "==> Backup"
+	last="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/backup-last"
+	if [ ! -s "$last" ]; then
+		bad "no backup has finished yet (script/backup --setup, then script/backup)"
+	elif [ $(($(date +%s) - $(cat "$last"))) -gt 172800 ]; then
+		bad "no backup has finished in 2+ days (run script/backup to see why)"
+	else
+		ok "last backup $(($(($(date +%s) - $(cat "$last"))) / 3600))h ago"
+	fi
+fi
+
 if [ "$(uname)" = "Darwin" ]; then
 	echo "==> Security"
 	# Read back what the playbook's security block set. It only runs with

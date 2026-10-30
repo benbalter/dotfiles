@@ -437,6 +437,15 @@ login_items:
   - /Applications/Unclack.app
   - /Applications/WhatCable.app
 
+# Backed up nightly by script/backup (restic, encrypted before it leaves this
+# Mac), relative to $HOME; globs allowed. Only what exists nowhere else: never
+# Claude Code's transcripts or history.jsonl, which hold everything ever pasted
+# into a session, secrets included.
+backup_paths:
+  - .claude/plans
+  - .claude/projects/*/memory
+  - Library/Application Support/com.elgato.StreamDeck/ProfilesV3
+
 # Launch agents third-party apps install in ~/Library/LaunchAgents to start
 # themselves at login, by label. The playbook unloads and deletes them, and
 # script/doctor warns if one comes back. Camera Hub has no setting for this:

@@ -7,6 +7,9 @@ load test_helper
 REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 
 setup() {
+	# The host's backup setup (from its env file, via the shell) mustn't leak
+	# into the backup check; tests that want it set it themselves.
+	unset DOTFILES_BACKUP_REPOSITORY
 	TEST_HOME="$(mktemp -d)"
 	STUB_BIN="$(mktemp -d)"
 	# Force the Linux lists (and skip launchctl) wherever the suite runs, unless
@@ -407,4 +410,20 @@ write_status() {
 	touch "$TEST_HOME/Library/LaunchAgents/$label.plist"
 	run_doctor
 	echo "$agents_output" | grep -q "warn  $label starts at login again" || fail "$agents_output"
+}
+
+@test "doctor fails a backup that hasn't finished in days" {
+	mkdir -p "$TEST_HOME/.local/state/dotfiles"
+	echo $(($(date +%s) - 300000)) >"$TEST_HOME/.local/state/dotfiles/backup-last"
+	DOTFILES_BACKUP_REPOSITORY=s3:example run_doctor
+	echo "$output" | grep -q "FAIL  no backup has finished in 2+ days" || fail "$output"
+}
+
+@test "doctor passes a recent backup and skips the check where backups aren't set up" {
+	mkdir -p "$TEST_HOME/.local/state/dotfiles"
+	date +%s >"$TEST_HOME/.local/state/dotfiles/backup-last"
+	DOTFILES_BACKUP_REPOSITORY=s3:example run_doctor
+	echo "$output" | grep -q "ok    last backup 0h ago" || fail "$output"
+	run_doctor
+	! echo "$output" | grep -q "==> Backup" || fail "$output"
 }

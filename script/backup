@@ -1,0 +1,129 @@
+#!/bin/sh
+# Back up config.yml's backup_paths with restic: encrypted on this Mac, then
+# stored in a versioned repository off it. Claude Code's memory and plans and
+# the Stream Deck profiles existed nowhere else, and two hand-run, age+git
+# backup scripts had each gone weeks without a run. restic replaces them:
+# encrypted snapshots, deduplicated, with no git commits to sign, so it runs
+# unattended from the nightly update.
+#
+# Nothing private lives in this public repo. The repository (whose URL names
+# the storage account) comes from the untracked ~/.config/dotfiles/env, as
+# DOTFILES_BACKUP_REPOSITORY. Its password, and S3 credentials for an s3:
+# repository, come from the macOS Keychain, so a headless run needs no prompt;
+# --setup copies them there from 1Password, which keeps the recovery copy.
+#
+# Usage: script/backup                  back up (skips quietly if not set up)
+#        script/backup --setup          copy credentials from 1Password to the
+#                                       Keychain and create the repository
+#        script/backup --snapshots      list snapshots
+#        script/backup --restore <dir>  restore the latest snapshot into <dir>
+
+set -eu
+# shellcheck disable=SC3040
+(set -o pipefail) 2>/dev/null && set -o pipefail || true
+
+cd "$(dirname "$0")/.."
+# DOTFILES_BACKUP_* from the env file.
+# shellcheck source=lib/profile
+. lib/profile
+
+# Keychain items, all under one service; --setup reads the same-named fields
+# from the 1Password item at DOTFILES_BACKUP_OP_ITEM (op://<vault>/<item>).
+KEYCHAIN_SERVICE=dotfiles-backup
+STATE="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/backup-last"
+
+die() {
+	echo "backup: $*" >&2
+	exit 1
+}
+
+keychain() { # <account>: print that Keychain item's secret
+	security find-generic-password -s "$KEYCHAIN_SERVICE" -a "$1" -w
+}
+
+if [ -z "${DOTFILES_BACKUP_REPOSITORY:-}" ]; then
+	echo "backup: not set up on this machine (no DOTFILES_BACKUP_REPOSITORY); skipping"
+	exit 0
+fi
+command -v restic >/dev/null || die "restic isn't installed (brew bundle installs it)"
+
+export RESTIC_REPOSITORY="$DOTFILES_BACKUP_REPOSITORY"
+# A command, not the password itself, so it never sits in the environment.
+# Tests point this at a fixed password instead of the Keychain.
+export RESTIC_PASSWORD_COMMAND="${DOTFILES_BACKUP_PASSWORD_COMMAND:-security find-generic-password -s $KEYCHAIN_SERVICE -a restic-password -w}"
+
+load_s3_credentials() {
+	case "$RESTIC_REPOSITORY" in s3:*) ;; *) return 0 ;; esac
+	AWS_ACCESS_KEY_ID=$(keychain s3-access-key-id) ||
+		die "no S3 credentials in the Keychain (run script/backup --setup)"
+	AWS_SECRET_ACCESS_KEY=$(keychain s3-secret-access-key) ||
+		die "no S3 credentials in the Keychain (run script/backup --setup)"
+	export AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY
+}
+
+setup() {
+	[ -n "${DOTFILES_BACKUP_OP_ITEM:-}" ] ||
+		die "set DOTFILES_BACKUP_OP_ITEM in ~/.config/dotfiles/env to the 1Password item (op://<vault>/<item>)"
+	for field in restic-password s3-access-key-id s3-secret-access-key; do
+		case "$field" in s3-*) case "$RESTIC_REPOSITORY" in s3:*) ;; *) continue ;; esac ;; esac
+		value=$(op read "$DOTFILES_BACKUP_OP_ITEM/$field") ||
+			die "couldn't read $field from $DOTFILES_BACKUP_OP_ITEM"
+		# security reads the secret twice from stdin (entry, then confirmation),
+		# which keeps it out of the process list that -w <value> would expose.
+		printf '%s\n%s\n' "$value" "$value" |
+			security add-generic-password -U -s "$KEYCHAIN_SERVICE" -a "$field" -w >/dev/null
+		echo "backup: stored $field in the Keychain"
+	done
+	unset value
+	load_s3_credentials
+	if restic cat config >/dev/null 2>&1; then
+		echo "backup: repository already exists"
+	else
+		restic init
+	fi
+}
+
+# The configured paths that exist, relative to $HOME, one per line. Globs
+# expand here; a pattern that matches nothing is dropped. A subshell, so the cd
+# and IFS stay put; IFS is a newline because paths have spaces.
+paths() (
+	patterns=$(yq -r '.backup_paths[]' config.yml)
+	cd "$HOME"
+	IFS='
+'
+	for pattern in $patterns; do
+		for path in $pattern; do
+			[ -e "$path" ] && printf '%s\n' "$path"
+		done
+	done
+)
+
+backup() {
+	load_s3_credentials
+	list=$(mktemp)
+	trap 'rm -f "$list"' EXIT
+	# Relative to $HOME, so snapshots name the same paths on any account.
+	paths >"$list"
+	[ -s "$list" ] || die "none of config.yml's backup_paths exist"
+	# --skip-if-unchanged: a run with nothing new adds no snapshot.
+	(cd "$HOME" && restic backup --quiet --skip-if-unchanged --exclude-caches --files-from-verbatim "$list")
+	mkdir -p "${STATE%/*}"
+	date +%s >"$STATE"
+	echo "backup: done ($(wc -l <"$list" | tr -d ' ') paths)"
+}
+
+case "${1:-}" in
+	"") backup ;;
+	--setup) setup ;;
+	--snapshots)
+		load_s3_credentials
+		restic snapshots
+		;;
+	--restore)
+		[ -n "${2:-}" ] || die "usage: script/backup --restore <dir>"
+		load_s3_credentials
+		restic restore latest --target "$2"
+		echo "backup: restored the latest snapshot into $2 (paths are relative to your home folder)"
+		;;
+	*) die "unknown option: $1 (see the usage at the top of script/backup)" ;;
+esac
