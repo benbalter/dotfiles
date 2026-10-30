@@ -1,0 +1,58 @@
+#!/bin/sh
+# List Application Firewall entries that config.yml doesn't account for, one
+# path per line: apps outside macOS's own directories that are allowed incoming
+# connections without being in firewall_allowed_apps, plus entries (allowed or
+# blocked) whose app no longer exists.
+#
+# Each "Allow" click in a firewall prompt adds an entry, and nothing removed
+# them, so they piled up: interpreters like python3, ruby and an old mise node
+# among them, which let any script run with them accept connections from the
+# network. The playbook removes what this lists; script/doctor warns about it.
+#
+# macOS's own binaries (/System, /usr/libexec, /usr/sbin) are left alone: the
+# built-in signed-software policy admits them anyway, and they come back.
+# Usage: script/firewall-extras
+
+set -eu
+# shellcheck disable=SC3040
+(set -o pipefail) 2>/dev/null && set -o pipefail || true
+
+cd "$(dirname "$0")/.."
+
+fw=${SOCKETFILTERFW:-/usr/libexec/ApplicationFirewall/socketfilterfw}
+# FIREWALL_CONFIG: a test's config in place of the repo's.
+allowed=$(yq -r '.firewall_allowed_apps[]?' "${FIREWALL_CONFIG:-config.yml}")
+
+# allowed <path>: whether an allowlist entry covers it. An entry covers paths
+# under it (an app's helpers live inside its bundle). Read line by line, since
+# paths have spaces.
+nl='
+'
+allowed() {
+	old_ifs=$IFS
+	IFS=$nl
+	for app in $allowed; do
+		case "$1" in "$app" | "$app"/*)
+			IFS=$old_ifs
+			return 0
+			;;
+		esac
+	done
+	IFS=$old_ifs
+	return 1
+}
+
+# --listapps prints "N : <path> " and then "(Allow|Block incoming connections)"
+# on the next line; join each pair into "<Allow|Block>\t<path>".
+"$fw" --listapps | awk '
+	/^[0-9]+ : / { sub(/^[0-9]+ : /, ""); sub(/[[:space:]]+$/, ""); path = $0; next }
+	path != "" && /incoming connections/ { print ($0 ~ /Allow/ ? "Allow" : "Block") "\t" path; path = "" }
+' | while IFS="$(printf '\t')" read -r action path; do
+	case "$path" in /System/* | /usr/libexec/* | /usr/sbin/*) continue ;; esac
+	if [ ! -e "$path" ]; then
+		echo "$path"
+		continue
+	fi
+	[ "$action" = Allow ] || continue
+	allowed "$path" || echo "$path"
+done

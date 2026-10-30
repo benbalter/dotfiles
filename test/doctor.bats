@@ -49,6 +49,7 @@ STUB
 	stub FDESETUP "FileVault is On." fdesetup
 	stub SOFTWAREUPDATE "Automatic checking for updates is turned on" softwareupdate
 	stub SYSTEM_PROFILER "      Activation Lock Status: Enabled" system_profiler
+	stub SHARING "" sharing
 	stub PMSET " womp                 1" pmset
 	stub PROFILES "Enrolled via DEP: No" profiles
 	stub SOCKETFILTERFW "State = 1; stealth mode is on" socketfilterfw
@@ -385,4 +386,17 @@ write_status() {
 @test "doctor skips Activation Lock on a Mac that doesn't report it" {
 	SYSTEM_PROFILER_OUT="      Model Name: MacBook Pro" UNAME=Darwin run_doctor
 	! echo "$security_output" | grep -q "Activation Lock" || fail "$security_output"
+}
+
+@test "doctor warns about a share open to guests" {
+	SHARING_OUT="$(printf 'name:\t\tSomeone Public Folder\npath:\t\t/Users/someone/Public\n\tsmb:\t{\n\t\tname:\tSomeone Public Folder\n\t\tguest access:\t1\n\t}')" \
+	UNAME=Darwin run_doctor
+	echo "$security_output" | grep -q "warn  shares open to guests" || fail "$security_output"
+	echo "$security_output" | grep -q "^        Someone Public Folder$" || fail "$security_output"
+}
+
+@test "doctor passes when no share is open to guests" {
+	UNAME=Darwin run_doctor
+	echo "$security_output" | grep -q "ok    no shares open to guests" || fail "$security_output"
+	echo "$security_output" | grep -q "ok    firewall entries match config.yml" || fail "$security_output"
 }

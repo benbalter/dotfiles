@@ -926,6 +926,33 @@
                 builtin_expected: "{{ 'ENABLED' if macos_firewall_allow_signed_builtin else 'DISABLED' }}"
                 downloaded_expected: "{{ 'ENABLED' if macos_firewall_allow_signed_downloaded else 'DISABLED' }}"
 
+            # Every "Allow" click in a firewall prompt adds an entry that
+            # nothing ever removed; see script/firewall-extras.
+            - name: Find firewall entries config.yml doesn't cover
+              ansible.builtin.command:
+                cmd: "{{ playbook_dir }}/script/firewall-extras"
+              register: firewall_extras
+              changed_when: false
+              check_mode: false
+
+            - name: Remove firewall entries config.yml doesn't cover
+              ansible.builtin.command:
+                argv:
+                  - /usr/libexec/ApplicationFirewall/socketfilterfw
+                  - --remove
+                  - "{{ item }}"
+              become: true
+              loop: "{{ firewall_extras.stdout_lines }}"
+              changed_when: true
+
+            - name: Verify firewall entries match config.yml
+              ansible.builtin.command:
+                cmd: "{{ playbook_dir }}/script/firewall-extras"
+              register: firewall_extras_verify
+              changed_when: false
+              failed_when: firewall_extras_verify.stdout | length > 0
+              when: not ansible_check_mode
+
         # Firewall logging has no socketfilterfw flag on current macOS (there is
         # no --setloggingmode), so it is deliberately not managed here. The old
         # com.apple.alf loggingenabled write was a no-op.

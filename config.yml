@@ -272,6 +272,18 @@ macos_defaults:
       value: 300
       host: currentHost
       all_users: true
+    # On by default, AirPlay Receiver keeps Control Center listening on ports
+    # 5000 and 7000 on every interface, for casting to this Mac, which nobody
+    # does. The key is spelled correctly now: older guides' misspelled
+    # AirplayRecieverEnabled is in no system binary. Verified by the ports
+    # closing once Control Center restarts.
+    - name: AirPlay Receiver off
+      domain: com.apple.controlcenter
+      key: AirplayReceiverEnabled
+      type: bool
+      value: false
+      host: currentHost
+      all_users: true
     - name: Secure keyboard entry in Terminal
       domain: com.apple.Terminal
       key: SecureKeyboardEntry
@@ -445,6 +457,16 @@ default_apps:
 # not worth it to you.
 macos_firewall_allow_signed_builtin: true
 macos_firewall_allow_signed_downloaded: false
+
+# Third-party apps allowed incoming connections. Each "Allow" click in a
+# firewall prompt adds an entry, so the playbook removes allowed entries that
+# aren't covered here (and entries for apps that no longer exist), and
+# script/doctor warns about them; see script/firewall-extras. An entry covers
+# everything inside it. Add an app here when it really needs to be reachable
+# from the network, not just to stop a prompt.
+firewall_allowed_apps:
+  # Spotify Connect: phones on the network find and control this Mac.
+  - /Applications/Spotify.app
 
 # launchd system daemons kept disabled: Remote Login (sshd) and Screen
 # Sharing. Remove an entry here and re-enable it in System Settings if you need

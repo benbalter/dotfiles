@@ -296,6 +296,31 @@ if [ "$(uname)" = "Darwin" ]; then
 	# /etc/pam.d/sudo, which updates replace, still includes it.
 	check_security "sudo reads sudo_local" "^auth[[:space:]]*include[[:space:]]*sudo_local" \
 		cat "${PAM_SUDO:-/etc/pam.d/sudo}"
+	# Firewall prompts' "Allow" clicks pile up entries; see script/firewall-extras.
+	# A work Mac's firewall belongs to IT, and the playbook leaves it alone.
+	if ! extras=$(SOCKETFILTERFW="$fw" "$DOTFILES_ROOT/script/firewall-extras" 2>/dev/null); then
+		warn "couldn't list firewall entries (script/firewall-extras needs yq)"
+	elif [ -z "$extras" ]; then
+		ok "firewall entries match config.yml"
+	elif [ "$DOTFILES_PROFILE" = work ]; then
+		warn "firewall allows apps config.yml doesn't list (a work Mac: IT's MDM manages this)"
+	else
+		warn "firewall entries config.yml doesn't cover (re-run: script/ansible --tags security, or add an app to firewall_allowed_apps):"
+		echo "$extras" | sed 's/^/        /'
+	fi
+	# macOS sets up a guest-writable SMB share of each account's Public folder.
+	# It's harmless while File Sharing is off, but turning File Sharing on would
+	# open it to anyone on the network without a password.
+	guest_shares=$(sharing -l 2>/dev/null | awk -F '\t+' '
+		/^name:/ { name = $2 }
+		/^[[:space:]]*guest access:[[:space:]]*1/ && name != "" { print name; name = "" }
+	')
+	if [ -n "$guest_shares" ]; then
+		warn "shares open to guests, if File Sharing is turned on (sudo sharing -r '<name>'):"
+		echo "$guest_shares" | sed 's/^/        /'
+	else
+		ok "no shares open to guests"
+	fi
 	# On, so Find My can lock or erase a sleeping Mac. -g custom: every power
 	# source, not just the current one.
 	if pmset -g custom | grep -Eq 'womp[[:space:]]+0'; then
