@@ -94,7 +94,8 @@ fi
 live="$GAMCFGDIR/live.csv"
 gam redirect csv "$live" print chromepolicies ou "$ou" \
 	namespace chrome.users,chrome.users.apps show direct formatjson </dev/null
-plan=$(python3 -I - "$POLICIES" "$live" <<'PY'
+plan=$(
+	python3 -I - "$POLICIES" "$live" <<'PY'
 import csv, json, shlex, sys
 
 want_path, live_path = sys.argv[1:]
