@@ -109,7 +109,9 @@ backup() {
 	load_s3_credentials
 	list=$(mktemp)
 	trap 'rm -f "$list"' EXIT
-	# Relative to $HOME, so snapshots name the same paths on any account.
+	# Run from $HOME with relative paths, so a restore lays the tree out under
+	# its target as it is under $HOME (.claude/plans, ...). Snapshot metadata
+	# still records absolute paths; restic resolves them.
 	paths >"$list"
 	[ -s "$list" ] || die "none of config.yml's backup_paths exist"
 	# --skip-if-unchanged: a run with nothing new adds no snapshot.
