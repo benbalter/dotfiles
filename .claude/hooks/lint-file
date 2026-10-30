@@ -38,7 +38,9 @@ case "$rel" in
 	script/* | install.sh | lib/* | test/*.bats | test/test_helper.bash | \
 		.devcontainer/post-create.sh | .claude/hooks/* | claude/hooks/*)
 		check shfmt -w -i 0 -ci "$rel"
-		check shellcheck "$rel"
+		# -x: script/lint passes every file at once, so a sourced lib/profile
+		# is part of its input; checked alone, it's SC1091 on every edit.
+		check shellcheck -x "$rel"
 		;;
 esac
 
