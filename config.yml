@@ -482,8 +482,26 @@ firewall_allowed_apps:
 macos_disabled_daemons:
   - com.openssh.sshd
   - com.apple.screensharing
+  # Services CIS Level 1 wants disabled that were merely off: NFS server,
+  # Remote Apple Events and SMB file sharing. Disabled, their System Settings
+  # toggles do nothing until the entry is removed here.
+  - com.apple.nfsd
+  - com.apple.AEServer
+  - com.apple.smbd
 
 # Require an administrator password for every system-wide System Settings pane,
 # rather than letting one unlock be shared across panes and processes (CIS
 # macOS benchmark). Set to false if the extra prompts aren't worth it.
 macos_require_admin_for_system_settings: true
+# The rights that setting covers: the parent and every pane with its own right.
+# Only the first used to be set, leaving five panes on a shared unlock, which
+# the CIS Level 1 audit caught.
+macos_system_settings_rights:
+  - system.preferences
+  - system.preferences.energysaver
+  - system.preferences.network
+  - system.preferences.printing
+  - system.preferences.sharing
+  - system.preferences.softwareupdate
+  - system.preferences.startupdisk
+  - system.preferences.timemachine

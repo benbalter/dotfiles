@@ -595,6 +595,19 @@
       when: not is_ci
       tags: [macos, defaults]
 
+    # Same reason as this account's home: macOS creates each home 0750 with
+    # group staff, which every local account is in.
+    - name: Make other users' home folders private
+      ansible.builtin.file:
+        path: "/Users/{{ item }}"
+        state: directory
+        mode: "0700"
+      become: true
+      loop: "{{ other_users.stdout_lines | default([]) }}"
+      # Only homes that exist where expected: state: directory would create one.
+      when: not is_ci and ('/Users/' ~ item) is directory
+      tags: [macos, defaults, directories]
+
     # Written as each user through `defaults`, so cfprefsd sees the change (it
     # would overwrite an edit to their plist on disk with its cached copy).
     # Ansible runs as root and calls `sudo -u`, rather than become_user: that
@@ -1076,32 +1089,37 @@
             # `security authorizationdb read` prints the rule as an XML plist.
             shared_pattern: "<key>shared</key>\\s*<{{ want_shared | lower }}/>"
           block:
-            - name: Read System Settings authorization rule
+            - name: Read System Settings authorization rules
               ansible.builtin.command:
-                cmd: security authorizationdb read system.preferences
-              register: sysprefs_rule
+                cmd: security authorizationdb read {{ item }}
+              loop: "{{ macos_system_settings_rights }}"
+              register: sysprefs_rules
               check_mode: false
               changed_when: false
 
-            - name: Set System Settings authorization rule
+            - name: Set System Settings authorization rules
               ansible.builtin.shell:
                 cmd: >-
                   set -o pipefail;
-                  security authorizationdb read system.preferences 2>/dev/null
+                  security authorizationdb read {{ item.item }} 2>/dev/null
                   | plutil -replace shared -bool {{ want_shared | lower }} -o - -
-                  | security authorizationdb write system.preferences
+                  | security authorizationdb write {{ item.item }}
                 executable: /bin/bash
               become: true
-              when: sysprefs_rule.stdout | regex_search(shared_pattern) is none
+              loop: "{{ sysprefs_rules.results }}"
+              loop_control:
+                label: "{{ item.item }}"
+              when: item.stdout | regex_search(shared_pattern) is none
               changed_when: true
 
-            - name: Verify System Settings authorization rule
+            - name: Verify System Settings authorization rules
               ansible.builtin.command:
-                cmd: security authorizationdb read system.preferences
-              register: sysprefs_rule_verify
+                cmd: security authorizationdb read {{ item }}
+              loop: "{{ macos_system_settings_rights }}"
+              register: sysprefs_rules_verify
               check_mode: false
               changed_when: false
-              failed_when: sysprefs_rule_verify.stdout | regex_search(shared_pattern) is none
+              failed_when: sysprefs_rules_verify.stdout | regex_search(shared_pattern) is none
               when: not ansible_check_mode
 
         - name: Disable automatic login
