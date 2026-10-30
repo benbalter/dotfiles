@@ -261,7 +261,8 @@ if [ "$(uname)" = "Darwin" ]; then
 		fi
 	}
 	# Employer Macs enroll in MDM through Automated Device Enrollment (DEP)
-	# at first boot; the personal Mac's anti-theft enrollment was by hand. So
+	# at first boot; a personal Mac's MDM (an anti-theft service's, once) is
+	# enrolled by hand. So
 	# DEP without the work profile most likely means setup ran before the env
 	# file existed, and the security setters fought the MDM.
 	if [ "$DOTFILES_PROFILE" != work ] &&
@@ -273,6 +274,23 @@ if [ "$(uname)" = "Darwin" ]; then
 	check_security "Gatekeeper" "assessments enabled" spctl --status
 	check_security "FileVault" "FileVault is On" fdesetup status
 	check_security "automatic update checks" "turned on" softwareupdate --schedule
+	# Activation Lock is what keeps a wiped, stolen Mac from being reused; it
+	# follows Find My Mac, which needs an Apple Account, so the playbook can't
+	# set it. A Device Enrollment MDM disallows it by default, which is how an
+	# anti-theft service's MDM kept it off here. Macs without Apple silicon or a
+	# T2 chip have no such line, and are skipped.
+	lock=$(system_profiler SPHardwareDataType 2>/dev/null | sed -n 's/.*Activation Lock Status: *//p')
+	case "$lock" in
+		"") ;;
+		Enabled) ok "Activation Lock" ;;
+		*)
+			if [ "$DOTFILES_PROFILE" = work ]; then
+				warn "Activation Lock is off (a work Mac: IT's MDM manages this)"
+			else
+				bad "Activation Lock is off (turn on Find My Mac in System Settings > Apple Account > iCloud; an MDM enrollment can block it)"
+			fi
+			;;
+	esac
 	check_security "TouchID for sudo" "pam_tid.so" cat "$sudo_local"
 	# sudo_local survives OS updates, but only takes effect while
 	# /etc/pam.d/sudo, which updates replace, still includes it.

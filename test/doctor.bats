@@ -48,6 +48,7 @@ STUB
 	stub SPCTL "assessments enabled" spctl
 	stub FDESETUP "FileVault is On." fdesetup
 	stub SOFTWAREUPDATE "Automatic checking for updates is turned on" softwareupdate
+	stub SYSTEM_PROFILER "      Activation Lock Status: Enabled" system_profiler
 	stub PMSET " womp                 0" pmset
 	stub PROFILES "Enrolled via DEP: No" profiles
 	stub SOCKETFILTERFW "State = 1; stealth mode is on" socketfilterfw
@@ -373,4 +374,15 @@ write_status() {
 @test "doctor passes when every tap is in use" {
 	UNAME=Darwin run_doctor
 	echo "$packages_output" | grep -q "ok    no taps beyond the Brewfile's" || fail "$packages_output"
+}
+
+@test "doctor fails Activation Lock being off" {
+	SYSTEM_PROFILER_OUT="      Activation Lock Status: Disabled" UNAME=Darwin run_doctor
+	[ "$status" -ne 0 ] || fail "doctor should exit non-zero"
+	echo "$security_output" | grep -q "FAIL  Activation Lock is off" || fail "$security_output"
+}
+
+@test "doctor skips Activation Lock on a Mac that doesn't report it" {
+	SYSTEM_PROFILER_OUT="      Model Name: MacBook Pro" UNAME=Darwin run_doctor
+	! echo "$security_output" | grep -q "Activation Lock" || fail "$security_output"
 }
