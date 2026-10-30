@@ -502,6 +502,77 @@ macos_security_settings:
     set: pmset -a womp 1
     hint: Find My can't lock or erase a sleeping Mac without it
 
+# script/audit-baseline: audit this Mac against a baseline from NIST's macOS
+# Security Compliance Project (mSCP), whose rules map to CIS, read-only. mSCP
+# assumes MDM, so many of its checks read a configuration profile this Mac
+# doesn't have; `overrides` check the effective setting instead, either a
+# macos_security_settings entry by name (`setting`) or a `check` whose output
+# must match `expect`. `exceptions` are deliberate deviations, with the reason;
+# keys may be globs. Anything else that fails is a finding to decide on.
+audit_baseline:
+  # mSCP's branch for the newest macOS it covers, and that macOS's major
+  # version; the script warns when this Mac is newer.
+  branch: tahoe
+  macos: 26
+  baseline: cis_lvl1
+  overrides:
+    os_gatekeeper_enable: {setting: Gatekeeper}
+    system_settings_firewall_enable: {setting: firewall}
+    system_settings_firewall_stealth_mode_enable: {setting: firewall stealth mode}
+    system_settings_filevault_enforce: {check: fdesetup status, expect: FileVault is On}
+    system_settings_guest_account_disable:
+      check: defaults read /Library/Preferences/com.apple.loginwindow GuestEnabled
+      expect: "^0$"
+    system_settings_automatic_login_disable:
+      check: defaults read /Library/Preferences/com.apple.loginwindow autoLoginUser 2>&1
+      expect: Could not find key
+    system_settings_diagnostics_reports_disable:
+      # Both on one line: overrides match line by line.
+      check: >-
+        f="/Library/Application Support/CrashReporter/DiagnosticMessagesHistory.plist";
+        echo "$(defaults read "$f" AutoSubmit) $(defaults read "$f" ThirdPartyDataSubmit)"
+      expect: "^0 0$"
+    system_settings_personalized_advertising_disable:
+      check: defaults read com.apple.AdLib allowApplePersonalizedAdvertising
+      expect: "^0$"
+    system_settings_airplay_receiver_disable:
+      check: defaults -currentHost read com.apple.controlcenter AirplayReceiverEnabled
+      expect: "^0$"
+    system_settings_internet_sharing_disable:
+      check: defaults read /Library/Preferences/SystemConfiguration/com.apple.nat NAT 2>&1
+      expect: not found|Enabled = 0
+    system_settings_loginwindow_loginwindowtext_enable:
+      check: defaults read /Library/Preferences/com.apple.loginwindow LoginwindowText
+      expect: "."
+    # mSCP asks mdmclient, which refuses without root; the agent that serves
+    # Remote Management (and Apple Remote Desktop) not running is the signal.
+    system_settings_remote_management_disable:
+      check: pgrep -q ARDAgent && echo on || echo off
+      expect: "^off$"
+    os_software_update_app_update_enforce:
+      check: defaults read /Library/Preferences/com.apple.commerce AutoUpdate
+      expect: "^1$"
+  exceptions:
+    system_settings_wake_network_access_disable: On so Find My can locate, lock or erase a sleeping Mac.
+    "audit_*": BSM audit logs feed a security operations team; nobody reviews them on a personal Mac.
+    os_install_log_retention_configure: Compliance retention for install.log; the OS default is fine here.
+    system_settings_location_services_menu_enforce: Cosmetic (a menu bar icon).
+    pwpolicy_history_enforce: NIST SP 800-63B advises against password history and forced rotation.
+    pwpolicy_max_lifetime_enforce: NIST SP 800-63B advises against forced password expiry.
+    os_airdrop_disable: AirDrop is in personal use, and only an MDM profile can enforce this.
+    system_settings_siri_disable: Siri is in personal use, and only an MDM profile can enforce this.
+    os_writing_tools_disable: Apple Intelligence is in personal use; MDM-only.
+    os_mail_summary_disable: Apple Intelligence is in personal use; MDM-only.
+    os_notes_transcription_disable: Apple Intelligence is in personal use; MDM-only.
+    os_notes_transcription_summary_disable: Apple Intelligence is in personal use; MDM-only.
+    os_on_device_dictation_enforce: Dictation is in personal use; MDM-only.
+    system_settings_external_intelligence_disable: ChatGPT integration is a personal choice; MDM-only.
+    system_settings_external_intelligence_sign_in_disable: ChatGPT integration is a personal choice; MDM-only.
+    system_settings_improve_search_disable: MDM-only; this Mac's opt-outs are set in System Settings.
+    system_settings_improve_assistive_voice_disable: MDM-only; this Mac's opt-outs are set in System Settings.
+    system_settings_time_server_enforce: An MDM-only key; network time sync is on by default.
+    system_settings_time_server_configure: MDM-only, and reading the server needs admin; network time sync is on by default.
+
 # Application Firewall policy. macOS defaults to auto-allowing any *downloaded*
 # signed (notarized) app to accept inbound connections, which quietly undoes
 # much of the point of turning the firewall on -- Dropbox, Spotify and friends

@@ -1,0 +1,185 @@
+#!/bin/sh
+# Audit this Mac against a security baseline from NIST's macOS Security
+# Compliance Project (mSCP), whose rules map to CIS, without changing anything.
+# Security coverage here used to be ad hoc: AirPlay Receiver, guest-writable
+# shares, five System Settings panes sharing one admin unlock and three
+# startable sharing services all went unnoticed until a one-off CIS Level 1
+# audit. This makes that audit rerunnable.
+#
+# mSCP's own compliance script needs root, checks configuration profiles for
+# most rules (so a Mac without MDM fails them all), and has a --fix mode. This
+# runs its rule checks directly, swapping in config.yml's audit_baseline
+# overrides for profile-based ones and skipping its exceptions, so what's left
+# is a real finding.
+#
+# The rules come from a floating mSCP branch, so their checks are code this
+# repo doesn't review: each runs under `zsh -f` in an empty temporary folder,
+# and any check that would write (defaults write, launchctl load, rm, ...) is
+# refused. Checks that use sudo report "needs root" unless this runs as root.
+#
+# Usage: script/audit-baseline [--offline] [--verbose]
+#   --offline  use the cached mSCP checkout without fetching
+#   --verbose  list every rule, not only findings
+# Exits 1 if any rule fails.
+
+set -eu
+# shellcheck disable=SC3040
+(set -o pipefail) 2>/dev/null && set -o pipefail || true
+
+cd "$(dirname "$0")/.."
+# AUDIT_BASELINE_CONFIG: a test's config in place of the repo's.
+CONFIG="${AUDIT_BASELINE_CONFIG:-$PWD/config.yml}"
+MSCP="${XDG_CACHE_HOME:-$HOME/.cache}/dotfiles/mscp"
+offline=false verbose=false
+for arg in "$@"; do
+	case "$arg" in
+		--offline) offline=true ;;
+		--verbose) verbose=true ;;
+		*)
+			echo "usage: script/audit-baseline [--offline] [--verbose]" >&2
+			exit 2
+			;;
+	esac
+done
+
+conf() { yq -r ".audit_baseline.$1" "$CONFIG"; }
+branch=$(conf branch)
+baseline=$(conf baseline)
+
+if [ "$offline" = false ]; then
+	if [ -d "$MSCP/.git" ]; then
+		git -C "$MSCP" fetch --quiet --depth 1 origin "$branch"
+		git -C "$MSCP" reset --quiet --hard FETCH_HEAD
+	else
+		mkdir -p "${MSCP%/*}"
+		git clone --quiet --depth 1 --branch "$branch" https://github.com/usnistgov/macos_security "$MSCP"
+	fi
+fi
+[ -f "$MSCP/baselines/$baseline.yaml" ] || {
+	echo "no mSCP checkout with baselines/$baseline.yaml at $MSCP (run without --offline)" >&2
+	exit 1
+}
+echo "mSCP $branch ($(git -C "$MSCP" log -1 --format=%h)), baseline $baseline"
+macos=$(sw_vers -productVersion 2>/dev/null | cut -d. -f1 || echo 0)
+[ "$macos" -le "$(conf macos)" ] ||
+	echo "note: this Mac runs macOS $macos; the newest mSCP branch is for macOS $(conf macos), so some rules may not apply"
+
+work=$(mktemp -d)
+trap 'rm -rf "$work"' EXIT
+pass=0 fail=0 excepted=0 root=0 errors=0 refused=0 manual=0
+findings=""
+
+# report <status> <rule> [detail]
+report() {
+	case "$1" in
+		PASS) pass=$((pass + 1)) ;;
+		FAIL) fail=$((fail + 1)) ;;
+		EXCEPTED) excepted=$((excepted + 1)) ;;
+		"NEEDS ROOT") root=$((root + 1)) ;;
+		ERROR) errors=$((errors + 1)) ;;
+		REFUSED) refused=$((refused + 1)) ;;
+		MANUAL) manual=$((manual + 1)) ;;
+	esac
+	line=$(printf '  %-10s %s%s' "$1" "$2" "${3:+  ($3)}")
+	case "$1" in
+		PASS | EXCEPTED | MANUAL) [ "$verbose" = false ] || echo "$line" ;;
+		*) findings="$findings
+$line" ;;
+	esac
+}
+
+# exception <rule>: the reason, if a key in exceptions matches it (keys may be
+# globs).
+exception() {
+	yq -r '.audit_baseline.exceptions // {} | to_entries[] | [.key, .value] | @tsv' "$CONFIG" |
+		while IFS="$(printf '\t')" read -r pattern reason; do
+			# shellcheck disable=SC2254 # the key is meant as a glob
+			case "$1" in $pattern)
+				echo "$reason"
+				break
+				;;
+			esac
+		done
+}
+
+# run_check <shell code> <expected output>: run an mSCP check the way its
+# compliance script does (zsh), from an empty folder, and compare its trimmed
+# output. Prints PASS, FAIL or ERROR, then what it got.
+run_check() {
+	got=$(cd "$work" && zsh -f -c "$1" 2>"$work/.err" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//') || true
+	# A mismatch with errors on stderr is still a failure (pwpolicy's lockout
+	# checks print an XPath error when no lockout is set), so show the error.
+	if [ "$got" = "$2" ]; then
+		echo PASS
+	elif [ -s "$work/.err" ]; then
+		echo "FAIL got '$got', expected '$2': $(head -1 "$work/.err")"
+	else
+		echo "FAIL got '$got', expected '$2'"
+	fi
+}
+
+for rule in $(yq -r '.profile[].rules[]' "$MSCP/baselines/$baseline.yaml"); do
+	reason=$(exception "$rule")
+	if [ -n "$reason" ]; then
+		report EXCEPTED "$rule" "$reason"
+		continue
+	fi
+
+	setting=$(yq -r ".audit_baseline.overrides.\"$rule\".setting // \"\"" "$CONFIG")
+	check=$(yq -r ".audit_baseline.overrides.\"$rule\".check // \"\"" "$CONFIG")
+	if [ -n "$setting" ]; then
+		check=$(yq -r ".macos_security_settings[] | select(.name == \"$setting\") | .check" "$CONFIG")
+		expect=$(yq -r ".macos_security_settings[] | select(.name == \"$setting\") | .expect // \"\"" "$CONFIG")
+		[ -n "$expect" ] || {
+			report ERROR "$rule" "override setting \"$setting\" has no expect pattern"
+			continue
+		}
+	elif [ -n "$check" ]; then
+		expect=$(yq -r ".audit_baseline.overrides.\"$rule\".expect" "$CONFIG")
+	fi
+	if [ -n "$check" ]; then
+		# Output first: under pipefail, a check whose command exits non-zero
+		# (`defaults read` of a missing key, the expected answer for some) would
+		# fail the pipeline even when grep matched.
+		out=$(PATH="$PATH:/usr/libexec/ApplicationFirewall" sh -c "$check" 2>/dev/null || true)
+		if printf '%s\n' "$out" | grep -Eq "$expect"; then
+			report PASS "$rule" "override"
+		else
+			report FAIL "$rule" "override: \`$check\` didn't print /$expect/"
+		fi
+		continue
+	fi
+
+	file=$(find "$MSCP/rules" -name "$rule.yaml" | head -1)
+	[ -n "$file" ] || {
+		report ERROR "$rule" "no rule file in this mSCP branch"
+		continue
+	}
+	# The organization-defined value, if the rule has one: the baseline's own,
+	# else mSCP's recommendation.
+	# supplemental_* entries are guidance for a person, with no check.
+	if [ "$(yq -r '.check // ""' "$file")" = "" ]; then
+		report MANUAL "$rule" "guidance to read, no check"
+		continue
+	fi
+	odv=$(yq -r ".odv.$baseline // .odv.recommended // \"\"" "$file")
+	code=$(yq -r '.check // ""' "$file" | sed "s/\$ODV/$odv/g")
+	want=$(yq -r '.result // {} | to_entries[0].value // ""' "$file" | sed "s/\$ODV/$odv/g")
+	[ "$(yq -r '.result // {} | keys[0] // ""' "$file")" != boolean ] || case "$want" in true) want=1 ;; false) want=0 ;; esac
+
+	if printf '%s' "$code" | grep -Eq 'defaults write|defaults delete|launchctl (load|unload|enable|disable|bootstrap|bootout|kickstart)|(^|[;&|[:space:]])rm[[:space:]]|pwpolicy[[:space:]]+-set|systemsetup[[:space:]]+-set|(^|[;&|[:space:]])(chmod|chown)[[:space:]]'; then
+		report REFUSED "$rule" "its check would change something"
+	elif [ "$(id -u)" != 0 ] && printf '%s' "$code" | grep -q 'sudo'; then
+		report "NEEDS ROOT" "$rule"
+	else
+		result=$(run_check "$code" "$want")
+		case "$result" in
+			PASS) report PASS "$rule" ;;
+			*) report FAIL "$rule" "${result#FAIL }" ;;
+		esac
+	fi
+done
+
+[ -z "$findings" ] || printf '%s\n' "$findings" | sed '/^$/d'
+echo "pass $pass, fail $fail, excepted $excepted, needs root $root, manual $manual, refused $refused, error $errors"
+[ "$fail" -eq 0 ]
