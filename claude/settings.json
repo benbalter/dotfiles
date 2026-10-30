@@ -45,6 +45,15 @@
             "command": "\"$HOME\"/.files/claude/hooks/guard-bash"
           }
         ]
+      },
+      {
+        "matcher": "ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$HOME\"/.files/claude/hooks/require-prior-art"
+          }
+        ]
       }
     ]
   }

@@ -11,6 +11,7 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 LINT_FILE="$REPO_ROOT/.claude/hooks/lint-file"
 CHECK_DRIFT="$REPO_ROOT/.claude/hooks/check-drift"
 GUARD_BASH="$REPO_ROOT/claude/hooks/guard-bash"
+PRIOR_ART="$REPO_ROOT/claude/hooks/require-prior-art"
 
 setup() {
 	command -v jq >/dev/null || skip "jq not installed"
@@ -143,4 +144,39 @@ EOF
 	# A commit message describing these rules once tripped the guard.
 	cmd=$(printf 'git commit -F - <<EOF\nDeny chown of /opt/homebrew, npm install -g, --no-gpg-sign and git add -A\nEOF')
 	[ -z "$(bash_decision "$cmd")" ] || fail "denied: $cmd"
+}
+
+# plan_decision <plan text>: require-prior-art's decision for a plan passed
+# the way Claude Code injects it, empty if allowed. No plans dir, so the
+# newest-file fallback can't pick up a real plan.
+plan_decision() {
+	jq -n --arg p "$1" '{tool_name: "ExitPlanMode", tool_input: {plan: $p}}' |
+		CLAUDE_PLANS_DIR="$PROJECT/none" "$PRIOR_ART" | jq -r '.hookSpecificOutput.permissionDecision // empty'
+}
+
+@test "require-prior-art rejects a plan without a Prior art section" {
+	[ "$(plan_decision "$(printf '# Plan\n\n## Design\n\nBuild it.')")" = deny ] || fail "plan without prior art was allowed"
+}
+
+@test "require-prior-art allows a plan with a Prior art heading at any level" {
+	for heading in "## Prior art" "### Prior Art" "# prior art (searched restic, kopia)"; do
+		[ -z "$(plan_decision "$(printf '# Plan\n\n%s\n\nNothing fit.' "$heading")")" ] || fail "rejected: $heading"
+	done
+}
+
+@test "require-prior-art reads the plan file when the input has no plan text" {
+	mkdir -p "$PROJECT/plans"
+	printf '# Plan\n## Design\n' >"$PROJECT/plans/p.md"
+	out=$(jq -n --arg f "$PROJECT/plans/p.md" '{tool_input: {planFilePath: $f}}' | "$PRIOR_ART")
+	[ "$(echo "$out" | jq -r .hookSpecificOutput.permissionDecision)" = deny ] || fail "$out"
+}
+
+@test "require-prior-art never blocks on input it can't read" {
+	run sh -c "echo 'not json' | CLAUDE_PLANS_DIR='$PROJECT/none' '$PRIOR_ART'"
+	[ "$status" -eq 0 ] && [ -z "$output" ] || fail "status $status: $output"
+}
+
+@test "claude/settings.json runs require-prior-art on ExitPlanMode" {
+	jq -e '.hooks.PreToolUse[] | select(.matcher == "ExitPlanMode") | .hooks[].command | test("require-prior-art")' \
+		"$REPO_ROOT/claude/settings.json" >/dev/null || fail "hook not wired up"
 }

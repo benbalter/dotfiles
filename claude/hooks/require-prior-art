@@ -1,0 +1,45 @@
+#!/bin/sh
+# Claude Code PreToolUse hook for ExitPlanMode: reject a plan that has no
+# "Prior art" section. claude/CLAUDE.md already says to check for prior art
+# before building, and a plan for a custom encrypted-backup script still went
+# up for approval without any search: restic and two existing backup repos
+# turned up only afterward. The heading forces the search to happen, and to be
+# written down where the plan's reader can judge it.
+# Usage: (Claude Code passes the hook's JSON on stdin)
+
+set -eu
+# shellcheck disable=SC3040
+(set -o pipefail) 2>/dev/null && set -o pipefail || true
+
+# Without jq there's no safe way to read the input; never block planning over it.
+command -v jq >/dev/null || exit 0
+
+input=$(cat)
+
+# Claude Code injects the plan text and its path into tool_input before hooks
+# run. Older versions may not, so fall back to the newest plan file, which is
+# where plan mode writes.
+# Input jq can't parse lets the plan through, like a missing jq does.
+plan=$(printf '%s' "$input" | jq -r '.tool_input.plan // empty' 2>/dev/null) || exit 0
+if [ -z "$plan" ]; then
+	file=$(printf '%s' "$input" | jq -r '.tool_input.planFilePath // empty' 2>/dev/null) || exit 0
+	if [ -z "$file" ]; then
+		# shellcheck disable=SC2012 # newest by mtime; plan names have no newlines
+		file=$(ls -t "${CLAUDE_PLANS_DIR:-$HOME/.claude/plans}"/*.md 2>/dev/null | head -1)
+	fi
+	[ -n "$file" ] && [ -r "$file" ] && plan=$(cat "$file")
+fi
+
+# Nothing to check (no plan found): let it through rather than guess.
+[ -n "$plan" ] || exit 0
+
+# Any heading level, any case: "## Prior art", "### Prior Art".
+if printf '%s\n' "$plan" | grep -Eiq '^#+[[:space:]]+prior art'; then
+	exit 0
+fi
+
+jq -n '{hookSpecificOutput: {
+	hookEventName: "PreToolUse",
+	permissionDecision: "deny",
+	permissionDecisionReason: "The plan has no \"Prior art\" section. Before building, search what the project already depends on, open-source tools, the user'"'"'s repos in ~/projects and on github.com/benbalter, then add a \"## Prior art\" section saying what was searched, what turned up, and why each was or wasn'"'"'t used. Write custom code only when nothing suitable exists."
+}}'
