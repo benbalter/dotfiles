@@ -32,6 +32,9 @@
 		</array>
 		<key>visible</key>
 		<array>
+			<string>com.objective-see.oversight:_NS:13</string>
+			<string>com.objective-see.lulu.app:_NS:52</string>
+			<string>com.google.drivefs:Google Drive</string>
 			<string>com.apple.MenuBarAgent:menu-bar-overflow-indicator</string>
 			<string>com.apple.MenuBarAgent:com.apple.menuextra.audiovideo</string>
 			<string>org.pqrs.Karabiner-Console-User-Server:Item-0</string>
@@ -41,8 +44,8 @@
 			<string>com.apple.MenuBarAgent:menu-bar-overflow-indicator-expanded</string>
 			<string>com.apple.MenuBarAgent:Show Hidden Menu Bar Items</string>
 			<string>com.adguard.mac.adguard:Item-0</string>
-			<string>com.elgato.CameraHub:Item-0</string>
 			<string>com.1password.1password:Item-0</string>
+			<string>com.elgato.CameraHub:Item-0</string>
 			<string>org.languagetool.desktop:LanguageToolMenuBarExtraButton</string>
 			<string>us.zoom.xos:Item-0</string>
 			<string>com.stonerl.Thaw:Thaw.ControlItem.Visible</string>
@@ -54,6 +57,7 @@
 			<string>com.corsair.ControlCenter:Item-0</string>
 			<string>explorer.exe:Item-0</string>
 			<string>uk.whatcable.whatcable:Item-0</string>
+			<string>com.apple.MenuBarAgent:com.apple.menuextra.user</string>
 			<string>org.videolan.vlc:_NS:184</string>
 			<string>com.apple.MenuBarAgent:com.apple.menuextra.controlcenter</string>
 			<string>com.apple.MenuBarAgent:com.apple.menuextra.clock</string>

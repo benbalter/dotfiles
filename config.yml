@@ -482,6 +482,9 @@ macos_firewall_allow_signed_downloaded: false
 # everything inside it. Add an app here when it really needs to be reachable
 # from the network, not just to stop a prompt.
 firewall_allowed_apps:
+  # Chrome: asked again right after the playbook removed it, so something
+  # (Cast discovery, peer-to-peer Meet calls) wants incoming connections.
+  - /Applications/Google Chrome.app
   # Spotify Connect: phones on the network find and control this Mac.
   - /Applications/Spotify.app
 
