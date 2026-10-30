@@ -228,6 +228,8 @@ cask 'adguard'
 cask 'apparency'
 # Tool to flash OS images to SD cards & USB drives
 # cask 'balenaetcher' # PROPOSED REMOVAL: last opened 63 days ago
+# Monitors common persistence locations
+cask 'blockblock'
 # Utility that prevents the system from going to sleep
 cask 'caffeine'
 # Screen capturing tool
@@ -265,8 +267,12 @@ cask 'hopper-disassembler'
 cask 'karabiner-elements'
 # Preview and audit Kindle eBooks
 cask 'kindle-previewer'
+# Tool to show what is persistently installed on the computer
+cask 'knockknock'
 # Grammar, spelling and style suggestions in all the writing apps
 cask 'languagetool-desktop'
+# Open-source firewall to block unknown outgoing connections
+cask 'lulu'
 # Intercept, modify, replay, save HTTP/S traffic
 cask 'mitmproxy'
 # Toggle mute, video, record, share, and leave a meeting in a call app
@@ -275,6 +281,8 @@ cask 'mutedeck'
 cask 'ollama-app'
 # Local-first alternative to Logitech Options+ for HID++ devices
 cask 'openlogi'
+# Monitors computer mic and webcam
+cask 'oversight'
 # Extracts pages, splits, merges, mixes and rotates PDF files
 cask 'pdfsam-basic'
 # Quick Look generator for Markdown files
