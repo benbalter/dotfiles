@@ -114,9 +114,9 @@ dotfile_root_dirs:
 # homedir") and ssh expects the same of ~/.ssh. Every task that creates one of
 # these -- directories_to_create and the dotfile parent-dir tasks -- takes its
 # mode from this list, so they don't flip it back and forth on each run.
-# projects and github hold checkouts with private data. The home folder is 0750
-# with group staff, and every local account is in staff, so at 0755 any other
-# login on the Mac could read them.
+# projects and github hold checkouts with private data. The playbook makes the
+# home folder itself 0700, so other logins can't read them; these stay private
+# too in case a macOS update resets home to its default 0750.
 private_directories:
   - .gnupg
   - .ssh

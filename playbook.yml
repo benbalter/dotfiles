@@ -83,6 +83,18 @@
       tags: always
 
   tasks:
+    # macOS creates the home folder 0750 with group staff, and every local
+    # account is in staff, so another login could read Claude Code
+    # transcripts, backups and most dot-folders. Listing private folders one
+    # by one never kept up with the ones new tools create. The cost: other
+    # logins can't reach ~/Public or its Drop Box.
+    - name: Make the home folder private
+      ansible.builtin.file:
+        path: "{{ ansible_facts['user_dir'] }}"
+        state: directory
+        mode: "0700"
+      tags: [directories]
+
     - name: Create directories
       ansible.builtin.file:
         path: "{{ item }}"

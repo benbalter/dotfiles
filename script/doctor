@@ -275,6 +275,14 @@ if [ "$(uname)" = "Darwin" ]; then
 	else
 		ok "automatic login off"
 	fi
+	# The playbook makes home 0700; macOS creates it 0750 with group staff,
+	# which every local account is in. ls rather than stat: BSD and GNU stat
+	# take different flags, and the tests run on both.
+	# shellcheck disable=SC2012 # one known path, so ls's parsing caveat is moot
+	case "$(ls -ld "$HOME")" in
+		drwx------*) ok "home folder is private" ;;
+		*) bad "home folder is readable by other accounts (re-run: script/ansible --tags directories)" ;;
+	esac
 	# Other people's logins stay standard accounts, so installing software or
 	# changing security settings needs this account's approval. Each also needs
 	# a secure token, or it can't unlock FileVault after a restart. Warnings,

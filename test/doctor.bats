@@ -350,3 +350,10 @@ write_status() {
 	echo "$security_output" | grep -q "warn  other can't unlock FileVault" || fail "$security_output"
 	! echo "$security_output" | grep -q "FAIL  other" || fail "$security_output"
 }
+
+@test "doctor fails a home folder other accounts can read" {
+	chmod 750 "$TEST_HOME"
+	UNAME=Darwin run_doctor
+	[ "$status" -ne 0 ] || fail "doctor should exit non-zero"
+	echo "$security_output" | grep -q "FAIL  home folder is readable by other accounts" || fail "$security_output"
+}
