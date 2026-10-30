@@ -568,6 +568,61 @@
         label: "{{ item.name }}"
       tags: [macos, defaults]
 
+    # Other people's logins on this Mac get the security baseline (screen lock,
+    # ad tracking, secure Terminal input), not this account's taste. Discovered
+    # rather than listed, so no one's username lands in this public repo.
+    # Service accounts (no login shell, or hidden) are skipped; script/doctor
+    # shares the same discovery. CI never sees this path: a runner has no
+    # second user.
+    - name: Find other local users
+      ansible.builtin.command:
+        cmd: "{{ playbook_dir }}/script/other-users"
+      register: other_users
+      check_mode: false
+      changed_when: false
+      when: not is_ci
+      tags: [macos, defaults]
+
+    # Written as each user, through cfprefsd, not by editing their plist on
+    # disk (cfprefsd would overwrite that with its cached copy).
+    - name: Set MacOS baseline defaults for other users
+      community.general.osx_defaults:
+        domain: "{{ item.1.domain }}"
+        key: "{{ item.1.key }}"
+        type: "{{ item.1.type }}"
+        value: "{{ item.1.value }}"
+        host: "{{ item.1.host | default(omit) }}"
+      become: true
+      become_user: "{{ item.0 }}"
+      loop: "{{ other_users.stdout_lines | default([]) | product(macos_defaults.user | selectattr('all_users', 'defined') | list) | list }}"
+      loop_control:
+        label: "{{ item.0 }}: {{ item.1.name }}"
+      when: not is_ci
+      tags: [macos, defaults]
+
+    - name: Verify MacOS baseline defaults for other users
+      ansible.builtin.command:
+        argv: >-
+          {{ ['defaults'] + (['-currentHost'] if item.1.host is defined else [])
+             + ['read', item.1.domain, item.1.key] }}
+      become: true
+      become_user: "{{ item.0 }}"
+      loop: "{{ other_users.stdout_lines | default([]) | product(macos_defaults.user | selectattr('all_users', 'defined') | list) | list }}"
+      loop_control:
+        label: "{{ item.0 }}: {{ item.1.name }}"
+      register: other_users_check
+      changed_when: false
+      # Same matching as the system defaults check: `defaults read` prints
+      # booleans as 1/0, and a missing key exits non-zero.
+      failed_when: >-
+        other_users_check.rc != 0 or
+        (other_users_check.stdout | trim | lower) not in
+        (['true', '1'] if item.1.value in [true, 1]
+        else ['false', '0'] if item.1.value in [false, 0]
+        else [item.1.value | string | lower])
+      when: not is_ci and not ansible_check_mode
+      tags: [macos, defaults]
+
     # Third-party apps' settings that osx_defaults can't write (nested arrays,
     # data blobs, keys with dots); see script/app-preferences.
     - name: Apply app preferences

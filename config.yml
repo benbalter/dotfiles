@@ -114,9 +114,14 @@ dotfile_root_dirs:
 # homedir") and ssh expects the same of ~/.ssh. Every task that creates one of
 # these -- directories_to_create and the dotfile parent-dir tasks -- takes its
 # mode from this list, so they don't flip it back and forth on each run.
+# projects and github hold checkouts with private data. The home folder is 0750
+# with group staff, and every local account is in staff, so at 0755 any other
+# login on the Mac could read them.
 private_directories:
   - .gnupg
   - .ssh
+  - github
+  - projects
 
 directories_to_create_common:
   - ~/.bundle
@@ -204,6 +209,11 @@ macos_defaults:
       key: RetriesUntilHint
       type: integer
       value: 0
+  # Applied to the account running the playbook. Entries with `all_users: true`
+  # are a security baseline that the playbook also writes, as each user, for
+  # every other local login. The rest are personal taste and stay on this account
+  # only. An all_users value must not template user_dir, which is this account's
+  # home.
   user:
     - name: Hot corner
       domain: com.apple.dock
@@ -224,11 +234,13 @@ macos_defaults:
       key: askForPassword
       type: bool
       value: true
+      all_users: true
     - name: Screensaver delay
       domain: com.apple.screensaver
       key: askForPasswordDelay
       type: integer
       value: 0
+      all_users: true
     # Replaces the legacy system-level `com.apple.AdLib forceLimitAdTracking`.
     # Personalized-ad opt-out is a per-user preference on modern macOS.
     - name: Limit ad tracking
@@ -236,6 +248,7 @@ macos_defaults:
       key: allowApplePersonalizedAdvertising
       type: bool
       value: false
+      all_users: true
     - name: Screenshot location
       domain: com.apple.screencapture
       key: location
@@ -258,11 +271,13 @@ macos_defaults:
       type: integer
       value: 300
       host: currentHost
+      all_users: true
     - name: Secure keyboard entry in Terminal
       domain: com.apple.Terminal
       key: SecureKeyboardEntry
       type: bool
       value: true
+      all_users: true
     # `mo optimize` sets this too, but a fresh machine shouldn't depend on
     # mole having run to stop Finder littering shared drives. Its USB sibling,
     # DSDontWriteUSBStores, is gone: script/audit-defaults found it (and even
@@ -272,6 +287,7 @@ macos_defaults:
       key: DSDontWriteNetworkStores
       type: bool
       value: true
+      all_users: true
     # Off, the macOS default: on, it also overrides each app's hidden-extension
     # flag, so Finder, Spotlight and Open dialogs showed "Slack.app". There's no
     # apps-only exception. Gatekeeper and notarization already stop most

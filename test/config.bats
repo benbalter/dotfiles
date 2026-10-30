@@ -144,3 +144,10 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 		grep -oE '\]\([^)]*\)' | grep -vE '^\]\(https?://') || true
 	[ -z "$links" ] || fail "relative links in claude/CLAUDE.md: $links"
 }
+
+@test "macos_defaults all_users entries don't use this account's home" {
+	# all_users entries are also written for other local logins, where
+	# user_dir would point at the playbook runner's home instead of theirs.
+	! yq -r '.macos_defaults.user[] | select(.all_users) | .value' "$REPO_ROOT/config.yml" | grep -q user_dir ||
+		fail "an all_users default templates user_dir"
+}

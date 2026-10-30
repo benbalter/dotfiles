@@ -275,6 +275,23 @@ if [ "$(uname)" = "Darwin" ]; then
 	else
 		ok "automatic login off"
 	fi
+	# Other people's logins stay standard accounts, so installing software or
+	# changing security settings needs this account's approval. Each also needs
+	# a secure token, or it can't unlock FileVault after a restart. Warnings,
+	# not failures: both can be deliberate, and the playbook doesn't set them.
+	for user in $("$DOTFILES_ROOT/script/other-users" 2>/dev/null); do
+		if dsmemberutil checkmembership -U "$user" -G admin 2>/dev/null | grep -q 'is a member'; then
+			warn "$user is an administrator (System Settings > Users & Groups to make it standard)"
+		else
+			ok "$user is a standard account"
+		fi
+		# sysadminctl prints its answer to stderr.
+		if sysadminctl -secureTokenStatus "$user" 2>&1 | grep -q 'ENABLED'; then
+			ok "$user can unlock FileVault"
+		else
+			warn "$user can't unlock FileVault (sysadminctl -secureTokenOn $user -password - -adminUser \$(id -un) -adminPassword -)"
+		fi
+	done
 fi
 
 if [ "$(uname)" = "Darwin" ] && command -v yq >/dev/null; then

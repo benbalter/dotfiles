@@ -1,0 +1,22 @@
+#!/bin/sh
+# List the other people's logins on this Mac, one per line: UID 501 and up, a
+# real login shell, not hidden, and not the account running this. Discovered
+# rather than listed in config, so no one's username lands in this public repo.
+# The playbook writes the all_users defaults for each, and script/doctor checks
+# that each stays a standard account that can unlock FileVault.
+# Usage: script/other-users
+
+set -eu
+# shellcheck disable=SC3040
+(set -o pipefail) 2>/dev/null && set -o pipefail || true
+
+me="$(id -un)"
+dscl . list /Users UniqueID | while read -r name uid; do
+	[ "$uid" -ge 501 ] && [ "$name" != "$me" ] || continue
+	shell="$(dscl . read "/Users/$name" UserShell 2>/dev/null | awk '{print $2}')"
+	case "$shell" in "" | /usr/bin/false | /sbin/nologin) continue ;; esac
+	if dscl . read "/Users/$name" IsHidden 2>/dev/null | grep -q ': 1$'; then
+		continue
+	fi
+	echo "$name"
+done

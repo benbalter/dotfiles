@@ -46,6 +46,21 @@ STUB
 	stub PMSET " womp                 0" pmset
 	stub PROFILES "Enrolled via DEP: No" profiles
 	stub SOCKETFILTERFW "State = 1; stealth mode is on" socketfilterfw
+	stub DSMEMBERUTIL "user is not a member of the group" dsmemberutil
+	# sysadminctl answers on stderr.
+	# shellcheck disable=SC2016 # expands when the stub runs
+	printf '#!/bin/sh\nprintf "%%s\\n" "${SYSADMINCTL_OUT-Secure token is ENABLED for user Test}" >&2\n' >"$STUB_BIN/sysadminctl"
+	chmod +x "$STUB_BIN/sysadminctl"
+	# script/other-users' directory lookups: $DSCL_USERS ("name uid" lines,
+	# default none) all with a login shell and not hidden.
+	cat >"$STUB_BIN/dscl" <<'STUB'
+#!/bin/sh
+case "$2" in
+list) [ -z "${DSCL_USERS:-}" ] || printf '%s\n' "$DSCL_USERS" ;;
+read) [ "$4" = UserShell ] && echo "UserShell: /bin/zsh" || exit 1 ;;
+esac
+STUB
+	chmod +x "$STUB_BIN/dscl"
 	echo "auth sufficient pam_tid.so" >"$STUB_BIN/sudo_local"
 	echo "auth       include        sudo_local" >"$STUB_BIN/pam_sudo"
 	# `defaults read <domain> <key>` answers from defaults.db, a tab-separated
@@ -320,4 +335,18 @@ write_status() {
 	echo "$app_prefs_output" | grep -q "warn  pl.maketheweb.cleanshotx: .* differ from app-preferences/" ||
 		fail "$app_prefs_output"
 	! echo "$app_prefs_output" | grep -q FAIL || fail "$app_prefs_output"
+}
+
+@test "doctor checks other logins are standard accounts that can unlock FileVault" {
+	DSCL_USERS="other 502" UNAME=Darwin run_doctor
+	echo "$security_output" | grep -q "ok    other is a standard account" || fail "$security_output"
+	echo "$security_output" | grep -q "ok    other can unlock FileVault" || fail "$security_output"
+}
+
+@test "doctor only warns about another login that's an admin or can't unlock FileVault" {
+	DSCL_USERS="other 502" DSMEMBERUTIL_OUT="user is a member of the group" \
+		SYSADMINCTL_OUT="Secure token is DISABLED for user Other" UNAME=Darwin run_doctor
+	echo "$security_output" | grep -q "warn  other is an administrator" || fail "$security_output"
+	echo "$security_output" | grep -q "warn  other can't unlock FileVault" || fail "$security_output"
+	! echo "$security_output" | grep -q "FAIL  other" || fail "$security_output"
 }
