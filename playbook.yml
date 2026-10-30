@@ -595,44 +595,80 @@
       when: not is_ci
       tags: [macos, defaults]
 
-    # Written as each user, through cfprefsd, not by editing their plist on
-    # disk (cfprefsd would overwrite that with its cached copy).
-    - name: Set MacOS baseline defaults for other users
-      community.general.osx_defaults:
-        domain: "{{ item.1.domain }}"
-        key: "{{ item.1.key }}"
-        type: "{{ item.1.type }}"
-        value: "{{ item.1.value }}"
-        host: "{{ item.1.host | default(omit) }}"
+    # Written as each user through `defaults`, so cfprefsd sees the change (it
+    # would overwrite an edit to their plist on disk with its cached copy).
+    # Ansible runs as root and calls `sudo -u`, rather than become_user: that
+    # ran Ansible's Python as the other user, and the venv's interpreter sits in
+    # this account's home, which is 0700. `chdir: /` keeps the other user's
+    # shell from failing to read a working directory it can't reach.
+    - name: Read MacOS baseline defaults for other users
+      ansible.builtin.command:
+        argv: >-
+          {{ ['sudo', '-u', item.0, 'defaults']
+             + (['-currentHost'] if item.1.host is defined else [])
+             + ['read', item.1.domain, item.1.key] }}
+        chdir: /
       become: true
-      become_user: "{{ item.0 }}"
       loop: "{{ other_users.stdout_lines | default([]) | product(macos_defaults.user | selectattr('all_users', 'defined') | list) | list }}"
       loop_control:
         label: "{{ item.0 }}: {{ item.1.name }}"
+      register: other_users_read
+      changed_when: false
+      failed_when: false
+      check_mode: false
       when: not is_ci
       tags: [macos, defaults]
 
-    - name: Verify MacOS baseline defaults for other users
+    - name: Set MacOS baseline defaults for other users
       ansible.builtin.command:
         argv: >-
-          {{ ['defaults'] + (['-currentHost'] if item.1.host is defined else [])
-             + ['read', item.1.domain, item.1.key] }}
+          {{ ['sudo', '-u', item.item.0, 'defaults']
+             + (['-currentHost'] if item.item.1.host is defined else [])
+             + ['write', item.item.1.domain, item.item.1.key,
+                {'bool': '-bool', 'integer': '-int', 'int': '-int', 'float': '-float'}.get(item.item.1.type, '-string'),
+                (item.item.1.value | string | lower) if item.item.1.type == 'bool' else (item.item.1.value | string)] }}
+        chdir: /
       become: true
-      become_user: "{{ item.0 }}"
+      loop: "{{ other_users_read.results | default([]) | rejectattr('skipped', 'defined') | list }}"
+      loop_control:
+        label: "{{ item.item.0 }}: {{ item.item.1.name }}"
+      vars: &other_user_default
+        # `defaults read` prints booleans as 1/0, and a missing key exits
+        # non-zero; same matching as the system defaults check.
+        other_user_default_ok: >-
+          {{ item.rc == 0 and (item.stdout | trim | lower) in
+             (['true', '1'] if item.item.1.value in [true, 1]
+              else ['false', '0'] if item.item.1.value in [false, 0]
+              else [item.item.1.value | string | lower]) }}
+      when: not is_ci and not (other_user_default_ok | bool)
+      changed_when: true
+      tags: [macos, defaults]
+
+    - name: Read back MacOS baseline defaults for other users
+      ansible.builtin.command:
+        argv: >-
+          {{ ['sudo', '-u', item.0, 'defaults']
+             + (['-currentHost'] if item.1.host is defined else [])
+             + ['read', item.1.domain, item.1.key] }}
+        chdir: /
+      become: true
       loop: "{{ other_users.stdout_lines | default([]) | product(macos_defaults.user | selectattr('all_users', 'defined') | list) | list }}"
       loop_control:
         label: "{{ item.0 }}: {{ item.1.name }}"
-      register: other_users_check
+      register: other_users_verify
       changed_when: false
-      # Same matching as the system defaults check: `defaults read` prints
-      # booleans as 1/0, and a missing key exits non-zero.
-      failed_when: >-
-        other_users_check.rc != 0 or
-        (other_users_check.stdout | trim | lower) not in
-        (['true', '1'] if item.1.value in [true, 1]
-        else ['false', '0'] if item.1.value in [false, 0]
-        else [item.1.value | string | lower])
+      failed_when: false
       when: not is_ci and not ansible_check_mode
+      tags: [macos, defaults]
+
+    - name: Verify MacOS baseline defaults for other users
+      ansible.builtin.fail:
+        msg: "{{ item.item.1.domain }} {{ item.item.1.key }} reads {{ item.stdout | default('nothing') }} for {{ item.item.0 }}, expected {{ item.item.1.value }}"
+      loop: "{{ other_users_verify.results | default([]) | rejectattr('skipped', 'defined') | list }}"
+      loop_control:
+        label: "{{ item.item.0 }}: {{ item.item.1.name }}"
+      vars: *other_user_default
+      when: not is_ci and not ansible_check_mode and not (other_user_default_ok | bool)
       tags: [macos, defaults]
 
     # Third-party apps' settings that osx_defaults can't write (nested arrays,
