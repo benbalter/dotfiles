@@ -77,7 +77,8 @@ I often run several Claude Code sessions in the same repo at once, so assume ano
 - Record timelines in the words someone used ("7–10 days"), not a calendar date I didn't give. If a derived date helps, show it as a range with the math.
 - Estimate development time as Claude doing the work with me reviewing it, not as a human developer would: hours, not days or weeks.
 - A draft isn't the message I sent; I usually rewrite before sending. When a decision turns on what someone actually received, ask me for the sent text.
-- When editing my prose, use the `no-ai-slop` skill, which preserves voice. Use `stop-slop` only as a detection checklist, since several of its rules fight my voice. A repo's own style guide overrides both.
+- Before writing or editing prose in my voice, read my writing style guide: a secret gist titled "Ben Balter's Writing Style". Find it with `gh gist list`, since its ID stays out of this public file. It covers voice, structure, and how I use footnotes to keep posts short.
+- When editing my prose, use the `no-ai-slop` skill, which preserves voice. Use `stop-slop` only as a detection checklist, since several of its rules fight my voice. A repo's own style guide overrides all three.
 - Use inclusive language in everything you write: replies, code, comments, commits, and docs. Say "quick check" or "spot-check", not "sanity check"; "allowlist"/"denylist", not "whitelist"/"blacklist"; "main", "primary"/"replica", not "master"/"slave"; "placeholder", not "dummy"; "backlog refinement", not "grooming"; "folks" or "everyone", not "guys". Keep a non-inclusive term only where it's an external name you can't change (an API field, a `master` branch), and don't rename those unasked.
 
 ## Drafting text for me to paste
