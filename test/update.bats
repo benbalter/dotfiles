@@ -20,7 +20,7 @@ setup() {
 	# ahead of any PATH stub. So stub those commands as shell functions (which
 	# win over PATH), and source the script into the shell that defines them.
 	STUBS='
-		for cmd in brew defaults sudo mas mise npm bundle mole git zsh tldr softwareupdate; do
+		for cmd in brew defaults sudo mas mise npm bundle mole git gh zsh tldr softwareupdate; do
 			eval "$cmd() { echo \"$cmd \$*\" >>\"\$LOG\"; return \$STUB_STATUS; }"
 		done
 		uname() { echo "${UNAME:-Darwin}"; }
@@ -256,6 +256,34 @@ refute_called() {
 	assert_called "claude plugin marketplace update"
 	assert_called "claude plugin update on@market"
 	refute_called '^claude plugin update off@market'
+}
+
+@test "update clones the writing-style skill when it's missing" {
+	run_update 0
+	[ "$status" -eq 0 ] || fail "update exited $status: $output"
+	assert_called "gh repo clone benbalter/writing-style $FAKE_ROOT/projects/writing-style"
+	refute_called "pull --ff-only"
+}
+
+@test "update pulls a clean writing-style clone and links it as a skill" {
+	mkdir -p "$FAKE_ROOT/projects/writing-style/.git"
+	run_update 0
+	[ "$status" -eq 0 ] || fail "update exited $status: $output"
+	assert_called "git -C $FAKE_ROOT/projects/writing-style pull --ff-only"
+	refute_called "^gh repo clone"
+	[ "$(readlink "$FAKE_ROOT/.claude/skills/writing-style")" = "$FAKE_ROOT/projects/writing-style" ] ||
+		fail "skill not linked: $(ls -la "$FAKE_ROOT/.claude/skills" 2>&1)"
+}
+
+@test "update leaves a dirty writing-style clone alone" {
+	mkdir -p "$FAKE_ROOT/projects/writing-style/.git"
+	# git diff --quiet exits 1 on a dirty tree; every other stubbed call succeeds.
+	STUBS="$STUBS"'
+		git() { echo "git $*" >>"$LOG"; case "$*" in *"diff --quiet"*) return 1 ;; esac; return 0; }
+	'
+	run_update 0
+	[ "$status" -eq 0 ] || fail "update exited $status: $output"
+	refute_called "writing-style pull"
 }
 
 @test "interactive update runs the terminal-only steps" {

@@ -104,7 +104,7 @@ These dotfiles are automatically applied to new Codespaces when configured in yo
 
 ### Updating
 
-Run `up` (alias for `script/update`). It pulls this repo (when the tree is clean), upgrades Homebrew and installs any new `Brewfile` entries, upgrades Mac App Store apps, mise tools (including global npm CLIs), oh-my-zsh, and tldr pages, refreshes this repo's npm/gem/Python/Ansible dependencies, and lists pending macOS updates without installing them.
+Run `up` (alias for `script/update`). It pulls this repo (when the tree is clean), upgrades Homebrew and installs any new `Brewfile` entries, upgrades Mac App Store apps, mise tools (including global npm CLIs), oh-my-zsh, and tldr pages, refreshes this repo's npm/gem/Python/Ansible dependencies, clones or pulls the private `writing-style` Claude Code skill into `~/projects` (linking it into `~/.claude/skills`), and lists pending macOS updates without installing them.
 
 A launch agent also runs it nightly at midnight, logging to `~/Library/Logs/dotfiles-update.log`. It reads `~/.config/dotfiles/env` too, so machine-specific settings like a CA bundle apply headless. With no terminal attached, it skips anything that needs a human: cask and App Store upgrades, installing new casks and App Store apps, the `git pull`, `script/audit-casks`, and mole. A failed step doesn't stop the rest, but the run exits non-zero, and `script/doctor` reports which steps failed.
 

@@ -220,6 +220,27 @@ if command -v claude >/dev/null && command -v jq >/dev/null; then
 	done
 fi
 
+# The writing-style skill is a clone of a private repo, not a file in this
+# one, so the dotfile links can't carry it: clone it the first time, pull it
+# after, and link it into ~/.claude/skills. Codespaces, where the token can't
+# reach other private repos, falls back to reading SKILL.md with gh api (see
+# claude/CLAUDE.md). A dirty clone is left alone, like the dotfiles pull above,
+# so an in-progress edit to the guide is never merged into.
+WRITING_STYLE="$HOME/projects/writing-style"
+if [ -d "$WRITING_STYLE/.git" ]; then
+	if git -C "$WRITING_STYLE" diff --quiet && git -C "$WRITING_STYLE" diff --cached --quiet; then
+		echo "==> Pulling the writing-style skill..."
+		step git -C "$WRITING_STYLE" pull --ff-only
+	fi
+elif command -v gh >/dev/null && gh auth status >/dev/null 2>&1; then
+	echo "==> Cloning the writing-style skill..."
+	step gh repo clone benbalter/writing-style "$WRITING_STYLE"
+fi
+if [ -d "$WRITING_STYLE" ] && [ ! -e "$HOME/.claude/skills/writing-style" ]; then
+	mkdir -p "$HOME/.claude/skills"
+	step ln -s "$WRITING_STYLE" "$HOME/.claude/skills/writing-style"
+fi
+
 if command -v npm >/dev/null; then
 	# `npm ci`, not `npm update`: these are only the repo's lint tools, and
 	# update rewrote the tracked package-lock.json nightly, leaving a dirty tree
