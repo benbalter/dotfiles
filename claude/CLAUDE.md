@@ -19,7 +19,7 @@ Managed in [benbalter/dotfiles](https://github.com/benbalter/dotfiles) (public) 
 ### macOS
 
 - Dotfiles are checked out at `~/.files`.
-- [Homebrew](https://brew.sh) is plain Homebrew at `/opt/homebrew`, owned by me (this Mac ran [Workbrew](https://workbrew.com) until October 2026, so older notes may mention it). Never run `sudo brew` or chown that tree: files left owned by root or another user cause its "not writable" and lock errors, so fix the specific path brew names.
+- [Homebrew](https://brew.sh) is plain Homebrew at `/opt/homebrew`, owned by me (this Mac ran [Workbrew](https://workbrew.com) until 2026-10, so older notes may mention it). Never run `sudo brew` or chown that tree: files left owned by root or another user cause its "not writable" and lock errors, so fix the specific path brew names.
 - Secrets live in 1Password. Use the [`op` CLI](https://developer.1password.com/docs/cli/) (e.g. `op run --env-file=.env`, where `.env` holds `op://` references, never secret values).
 - Git commits are SSH-signed through [1Password's `op-ssh-sign`](https://developer.1password.com/docs/ssh/git-commit-signing/) (set in [`.gitconfig.macos`](https://github.com/benbalter/dotfiles/blob/main/.gitconfig.macos)). If `git commit` fails with `1Password: failed to fill whole buffer` / `fatal: failed to write commit object`, the signing prompt timed out or wasn't approved. Nothing is wrong with the repo: rerun the same commit once so 1Password prompts again. If that times out too, I've probably stepped away from the computer. Stop, tell me the commit is waiting on 1Password, and rerun it when I'm back (my next message) rather than retrying in a loop. Don't disable signing or pass `--no-gpg-sign`. When a commit is chained with `git push` / `gh pr create`, check it succeeded before pushing or opening the PR. Tags are signed too (`tag.gpgSign`), so `git tag` needs `-m`.
 
@@ -82,6 +82,7 @@ I often run several Claude Code sessions in the same repo at once, so assume ano
   - **Screenshots.** Crop the status bar and anything else that leaks household detail (Live Activities, now-playing art, notifications).
   - **Audio.** Drop it (`-an`) unless I asked for it, and confirm with `ffprobe` that no audio stream is left.
   - **Color.** iPhone images are Display P3, and stripping drops the profile without converting the pixels, so the colors render dull. Convert to sRGB (`-profile "/System/Library/ColorSync/Profiles/sRGB Profile.icc"`) before `-strip`.
+- Write dates and times in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601): `2026-11-01`, `2026-10` for a month, and `2026-11-01T14:30-04:00` when the time matters, always with an offset or time zone. It's unambiguous in every locale, it sorts correctly, and it matches what tools print. Reader-facing prose that a repo's own style guide covers, like my blog posts, follows that guide instead.
 - Record timelines in the words someone used ("7–10 days"), not a calendar date I didn't give. If a derived date helps, show it as a range with the math.
 - Estimate development time as Claude doing the work with me reviewing it, not as a human developer would: hours, not days or weeks.
 - A draft isn't the message I sent; I usually rewrite before sending. When a decision turns on what someone actually received, ask me for the sent text.
