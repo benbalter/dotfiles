@@ -144,6 +144,26 @@ EOF
 	# A commit message describing these rules once tripped the guard.
 	cmd=$(printf 'git commit -F - <<EOF\nDeny chown of /opt/homebrew, npm install -g, --no-gpg-sign and git add -A\nEOF')
 	[ -z "$(bash_decision "$cmd")" ] || fail "denied: $cmd"
+	cmd=$(printf "git commit -F - <<'EOF'\nDeny a Co-Authored-By: Claude trailer in guard-bash\nEOF")
+	[ -z "$(bash_decision "$cmd")" ] || fail "denied a mid-sentence mention: $cmd"
+}
+
+@test "guard-bash denies a Claude co-author trailer" {
+	cmd=$(printf "git commit -F - <<'EOF'\nFix the thing\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nEOF")
+	[ "$(bash_decision "$cmd")" = deny ] || fail "allowed heredoc trailer"
+	cmd=$(printf "gh pr create --title x --body-file - <<'EOF'\nWhy\n\n  co-authored-by: claude\nEOF")
+	[ "$(bash_decision "$cmd")" = deny ] || fail "allowed PR body trailer"
+	[ "$(bash_decision 'git commit -m x --trailer "Co-Authored-By: Claude <noreply@anthropic.com>"')" = deny ] ||
+		fail "allowed --trailer"
+	printf 'Fix\n\nCo-Authored-By: Claude <noreply@anthropic.com>\n' >"$PROJECT/msg"
+	[ "$(bash_decision "git commit -F $PROJECT/msg")" = deny ] || fail "allowed -F file trailer"
+}
+
+@test "guard-bash allows a human co-author" {
+	cmd=$(printf "git commit -F - <<'EOF'\nPair on the fix\n\nCo-Authored-By: Jane Doe <jane@example.com>\nEOF")
+	[ -z "$(bash_decision "$cmd")" ] || fail "denied a human co-author: $cmd"
+	printf 'Fix\n\nCo-Authored-By: Jane Doe <jane@example.com>\n' >"$PROJECT/msg"
+	[ -z "$(bash_decision "git commit -F $PROJECT/msg")" ] || fail "denied a human co-author in -F file"
 }
 
 # plan_decision <plan text>: require-prior-art's decision for a plan passed

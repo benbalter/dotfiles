@@ -31,6 +31,7 @@ Managed in [benbalter/dotfiles](https://github.com/benbalter/dotfiles) (public) 
 - When a skill, doc, or what you remember disagrees with the installed package's types or `--help`, the installed version wins.
 - Keep one source of truth. Edit the source, not generated or mirrored copies, and don't restate config or facts in a second file. If a copy is unavoidable, guard it with a test.
 - Run the repo's lint, typecheck, and tests before committing. Lint and format only the files you touched, stage specific paths rather than `git add -A`, and never commit scratch output or generated artifacts.
+- Never credit Claude in a commit or pull request: no `Co-Authored-By: Claude` trailer, even where a repo's older commits have one, and say so in every brief for an agent that commits. [`settings.json`](https://github.com/benbalter/dotfiles/blob/main/claude/settings.json) leaves `attribution` empty for this, and [`guard-bash`](https://github.com/benbalter/dotfiles/blob/main/claude/hooks/guard-bash) denies a commit that adds the trailer.
 - After a PR merges, or before starting unrelated work, switch to the default branch and pull. Always say which branch you left the repo on.
 - After a deploy, load the live URL and confirm the change is there. A green build or deploy check proves the build ran, not that the site is serving it.
 - Don't pin GitHub Actions or Docker images to SHAs or digests; use floating version tags. The pin churn is noise I don't want.

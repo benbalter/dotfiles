@@ -11,7 +11,10 @@ set -eu
 # Without jq there's no safe way to read the command; never break Bash over it.
 command -v jq >/dev/null || exit 0
 
-cmd=$(jq -r '.tool_input.command // empty')
+input=$(cat)
+cmd=$(printf '%s' "$input" | jq -r '.tool_input.command // empty')
+cwd=$(printf '%s' "$input" | jq -r '.cwd // empty')
+[ -n "$cwd" ] || cwd=$PWD
 
 # matches <grep -E args>...: whether the command matches.
 matches() {
@@ -54,4 +57,21 @@ if matches -i "${start}git[[:space:]][^;&|]*(--no-gpg-sign|(commit|tag)\.gpgsign
 fi
 if matches "${start}git[[:space:]]+add[[:space:]]+(-A|--all|\.)([[:space:]]|$|[;&|])"; then
 	deny "Stage specific paths (git add <file>...) rather than everything, so scratch output and generated artifacts stay out of commits."
+fi
+# No Claude co-author credit: settings.json leaves attribution empty for this,
+# but older commits in some repos carry the trailer, and copying that
+# convention kept bringing it back. Only a trailer line (or --trailer) counts,
+# so a message that mentions the rule mid-sentence still passes. A message
+# file passed with -F or --body-file is checked when its path resolves.
+coauthor='Co-Authored-By:[[:space:]]*Claude'
+if matches "${start}(git[[:space:]]+([^;&|]*[[:space:]])?commit|gh[[:space:]]+pr[[:space:]]+(create|edit))([[:space:]]|$)"; then
+	msgfile=$(printf '%s\n' "$cmd" | sed -nE "s/.*(-F|--file|--body-file)[= ]+[\"']?([^-[:space:]\"'][^[:space:]\"']*).*/\2/p" | head -n 1)
+	case $msgfile in
+		'' | /*) ;;
+		*) msgfile="$cwd/$msgfile" ;;
+	esac
+	if matches -i "^[[:space:]]*${coauthor}" || matches -i -e "--trailer[= ]+[\"']?${coauthor}" ||
+		{ [ -f "$msgfile" ] && grep -Eqi "^[[:space:]]*${coauthor}" "$msgfile"; }; then
+		deny "Don't credit Claude in commits or pull requests: drop the Co-Authored-By: Claude trailer and rerun. Ben's settings.json leaves attribution empty on purpose, even where older commits in a repo have the trailer."
+	fi
 fi
