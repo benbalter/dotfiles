@@ -70,7 +70,8 @@ audit() {
 
 @test "audit-baseline never runs a check that would write" {
 	audit
-	[ "$(stat -f %Lp "$TMP/marker" 2>/dev/null || stat -c %a "$TMP/marker")" = 644 ] || fail "a refused check ran"
+	# GNU stat first: on Linux `stat -f` means filesystem status and succeeds, so a BSD-first fallback never runs.
+	[ "$(stat -c %a "$TMP/marker" 2>/dev/null || stat -f %Lp "$TMP/marker")" = 644 ] || fail "a refused check ran"
 }
 
 @test "audit-baseline exits 0 when nothing fails" {
