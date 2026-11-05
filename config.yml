@@ -609,6 +609,18 @@ firewall_allowed_apps:
 # editor or rg, not Spotlight.
 spotlight_exclusions:
   - ~/projects
+  # Chrome's profile and Drive's cache rewrite files all day. Drive's own files
+  # live in ~/Library/CloudStorage and stay searchable.
+  - ~/Library/Application Support/Google
+  # Package stores and editor tooling: nothing anyone searches for, re-indexed
+  # on every install or update.
+  - ~/Library/pnpm
+  - ~/Library/Application Support/Zed
+  - ~/Library/Application Support/circup
+  - ~/Library/Application Support/Code - Insiders
+  # Windows bottles and game files.
+  - ~/Library/Application Support/CrossOver
+  - ~/Library/Application Support/Steam
 
 # launchd system daemons kept disabled: Remote Login (sshd) and Screen
 # Sharing. Remove an entry here and re-enable it in System Settings if you need
