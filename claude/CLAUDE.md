@@ -32,10 +32,7 @@ Managed in [benbalter/dotfiles](https://github.com/benbalter/dotfiles) (public) 
 - Keep one source of truth. Edit the source, not generated or mirrored copies, and don't restate config or facts in a second file. If a copy is unavoidable, guard it with a test.
 - Run the repo's lint, typecheck, and tests before committing. Lint and format only the files you touched, stage specific paths rather than `git add -A`, and never commit scratch output or generated artifacts.
 - Don't pin GitHub Actions or Docker images to SHAs or digests; use floating version tags. The pin churn is noise I don't want.
-- New repos get [Renovate](https://docs.renovatebot.com), not Dependabot. Keep Dependabot alerts on, since Renovate reads them, and Dependabot security updates off, since their PRs never auto-merge and Renovate opens the same fixes. Each repo's `renovate.json` extends the [renovate-config](https://github.com/benbalter/renovate-config#variants) variant that fits: `:private` for private repos to save CI minutes, `:instant` only where the repo has required status checks, otherwise the default. A repo in an org also has to be added to that org's Renovate app installation, which may cover selected repos only.
-- My private [benbalter/github-settings](https://github.com/benbalter/github-settings) repo (OpenTofu) owns my repos' settings. Every new repo, and every archive, delete, or visibility change, gets a matching change there, following its own CLAUDE.md, with a plan I approve before applying. Never change repo settings with `gh api` against the repo itself; the next apply reverts them.
-- When you rename or reshape CI jobs (matrix names included), update the required status checks that name them, or every later merge waits on a check that never runs. Look at both classic branch protection and rulesets, since each API misses the other. Never require a check that skips fork PRs, like CodeQL default setup: it blocks every outside contribution.
-- Private repos share my account's Actions spending limit, and GitHub bills each job rounded up to a whole minute. Fold small parallel jobs into one, and cancel superseded PR runs with a `concurrency` group.
+- Before creating, archiving, deleting, or changing the visibility or settings of a repo, or adding or reshaping CI workflows and jobs, load the [`repo-and-ci-setup`](https://github.com/benbalter/dotfiles/blob/main/claude/skills/repo-and-ci-setup/SKILL.md) skill. It covers Renovate, the github-settings repo that owns repo settings, required status checks, and Actions minutes.
 
 ## Git and GitHub
 
@@ -51,8 +48,7 @@ Managed in [benbalter/dotfiles](https://github.com/benbalter/dotfiles) (public) 
 - After a deploy, load the live URL and confirm the change is there. A green build or deploy check proves the build ran, not that the site is serving it.
 - **Never create a public repo, or make a private one public, without my explicit approval for that specific repo and visibility.** Approving a plan that says "public repo" is not that approval: ask with the question tool right before `gh repo create --public` or a visibility change, and default to `--private`. A public push can't be taken back. It may be cloned, cached, or indexed within minutes.
 - Run audits across my repos against origin (`gh api …/contents`, or fetch first), not local checkouts: the ones in `~/projects` are often weeks behind.
-- Changelogs and release notes credit every external contributor (anyone outside the project's maintainers), docs-only ones included. Check each PR's author (`gh pr view <n> --json author`), not the merge commit's branch name, and link their handle the way the project already does (e.g. "Thanks to [@handle](https://github.com/handle).").
-- After merging an external contributor's PR, post a brief, friendly comment thanking them by handle, but only once `gh pr view <n> --json state` confirms the merge; a blocked merge leaves a premature thank-you behind.
+- When writing a changelog or release notes, or merging a PR from outside the project's maintainers, load the [`credit-contributors`](https://github.com/benbalter/dotfiles/blob/main/claude/skills/credit-contributors/SKILL.md) skill, so external contributors get credited and thanked.
 
 ## Parallel sessions
 
@@ -91,13 +87,7 @@ I often run several Claude Code sessions in the same repo at once, so assume ano
 - Never read my email: don't open Gmail or any other mail client, search it, or read messages, in the browser or through a connector, even to check whether something arrived. If a task depends on an email (a verification code, an approval link, a receipt), tell me what to look for and let me check.
 - In public repos, keep private data out of everything that ships: commit messages, PR and issue text, code comments, test fixtures, and committed docs. Private means anything not already public, even if it isn't sensitive: traffic and conversion rates, revenue, compensation, subscriber counts, word counts from unpublished writing. Describe it qualitatively instead ("most visitors", "a sharp drop"). The same goes for household specifics: names, LAN addresses, MACs, account or policy numbers, medical details, pointers to private repos, the brand or model of any lock, camera, or alarm, and technical details that pin down where the house is (exact sun angles with a date and time, a nearby weather station's code). The [writing-style](https://github.com/benbalter/writing-style) skill applies this to prose.
 - These leaks happen at the private-to-public boundary, when a figure from me, a private repo, or a connected tool becomes the justification in a public commit or PR. Before you commit, push, or open a PR or issue, check the repo's visibility (`gh repo view --json visibility`) rather than assuming, and if it's public, reread the message, body, and diff for any number or detail that didn't come from that repo's own public contents. Rewrite it qualitatively before it ships; a pushed commit message can't be quietly fixed.
-- Photos, videos, and screenshots headed for anything public (a post, README, issue, or PR) get a privacy pass first, since phone photos carry my home's GPS coordinates and frames show more than the subject:
-  - **Metadata.** Strip it from every exported file (`exiftool -all=` for stills; for video, map only the video stream with `-map_metadata -1`, which also drops Apple's timed location track), then verify with `exiftool -a -G1 -ee -gps:all -xmp:all <file>` coming back empty. Format conversions (`sips`, `magick`) carry GPS forward unless stripped.
-  - **People.** No kids in frame at all, and crop out bystanders, even blurry ones. For a Live Photo or video, check every frame, not just the still.
-  - **The house.** Look at full resolution for house numbers, street signs, the front door, and reflections in shiny surfaces.
-  - **Screenshots.** Crop the status bar and anything else that leaks household detail (Live Activities, now-playing art, notifications).
-  - **Audio.** Drop it (`-an`) unless I asked for it, and confirm with `ffprobe` that no audio stream is left.
-  - **Color.** iPhone images are Display P3, and stripping drops the profile without converting the pixels, so the colors render dull. Convert to sRGB (`-profile "/System/Library/ColorSync/Profiles/sRGB Profile.icc"`) before `-strip`.
+- Before any photo, video, or screenshot goes anywhere public (a post, README, issue, or PR), run the [`media-privacy-pass`](https://github.com/benbalter/dotfiles/blob/main/claude/skills/media-privacy-pass/SKILL.md) skill. Phone photos carry my home's GPS coordinates, and frames show more than the subject.
 
 ## Writing
 
@@ -110,11 +100,7 @@ I often run several Claude Code sessions in the same repo at once, so assume ano
 
 ## Drafting text for me to paste
 
-- The terminal's quote bar comes along when I copy a draft, so whenever you show one I'll paste elsewhere (email, message, PR or issue comment), also put it on my clipboard with `pbcopy` (macOS only), and again after every revision.
-- LinkedIn collapses the blank lines in pasted plain text, so for a LinkedIn draft put both `public.html` (a `<p>` per paragraph, `<p><br></p>` between) and `public.utf8-plain-text` on the pasteboard with JXA's `NSPasteboard` instead of `pbcopy`.
-- Break every drafted message up for skimming, even a quick text or DM: one idea per short paragraph, a blank line between paragraphs, the ask on its own line, and a list when there are several items or steps.
-- When drafting an email, new or reply, also give me a Gmail compose link that prefills it whenever you know the recipient: `https://mail.google.com/mail/?view=cm&fs=1&to=…&cc=…&bcc=…&su=…&body=…`, with every value URL-encoded (newlines as `%0A`). Omit empty fields.
-- For events, give me a Google Calendar link that prefills it: `https://calendar.google.com/calendar/render?action=TEMPLATE&text=…&dates=…&details=…&location=…`, URL-encoded, with `dates` as `YYYYMMDDTHHMMSS/YYYYMMDDTHHMMSS` (or `YYYYMMDD/YYYYMMDD` for all-day). If you write an `.ics` file, link it too.
+- Whenever you draft or revise text I'll paste elsewhere (email, message, post, PR or issue comment) or an event for my calendar, load the [`draft-for-paste`](https://github.com/benbalter/dotfiles/blob/main/claude/skills/draft-for-paste/SKILL.md) skill. It covers the clipboard copy, LinkedIn formatting, skimmable structure, and prefilled Gmail and Calendar links.
 
 ## Writing CLAUDE.md files
 
