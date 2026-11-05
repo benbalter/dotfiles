@@ -595,6 +595,13 @@ firewall_allowed_apps:
   # Spotify Connect: phones on the network find and control this Mac.
   - /Applications/Spotify.app
 
+# Folders Spotlight never indexes; see script/spotlight-exclusions. ~/projects
+# held millions of indexed files, and git and Claude Code worktrees churned them
+# constantly, which kept mds busy and the fan on. Code search happens in an
+# editor or rg, not Spotlight.
+spotlight_exclusions:
+  - ~/projects
+
 # launchd system daemons kept disabled: Remote Login (sshd) and Screen
 # Sharing. Remove an entry here and re-enable it in System Settings if you need
 # to reach this machine remotely.

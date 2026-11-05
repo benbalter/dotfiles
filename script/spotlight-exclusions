@@ -1,0 +1,82 @@
+#!/bin/sh
+# Keep config.yml's spotlight_exclusions out of Spotlight's index.
+#
+# ~/projects held millions of indexed files (checkouts, node_modules, .git
+# objects, Claude Code worktrees), and every git operation or worktree checkout
+# made mds re-index them, which kept it near a full core and the fan spinning.
+# Nobody searches code through Spotlight.
+#
+# System Settings > Spotlight > Search Privacy stores its list in the root-only
+# Exclusions array of the data volume's VolumeConfiguration.plist, so this
+# writes that array and restarts mds to pick it up. There's no CLI for it.
+#
+# Usage: script/spotlight-exclusions [--apply | --indexed]
+#   (no flag)  list configured paths missing from the Exclusions array (root)
+#   --apply    add them and restart mds; prints each path it added (root)
+#   --indexed  list configured paths Spotlight still has items under, with a
+#              count (no root needed; what script/doctor checks)
+
+set -eu
+# shellcheck disable=SC3040
+(set -o pipefail) 2>/dev/null && set -o pipefail || true
+
+cd "$(dirname "$0")/.."
+
+plist=${SPOTLIGHT_PLIST:-/System/Volumes/Data/.Spotlight-V100/VolumeConfiguration.plist}
+plistbuddy=${PLISTBUDDY:-/usr/libexec/PlistBuddy}
+mdfind=${MDFIND:-mdfind}
+
+# Paths in config.yml start with ~, meaning the login user's home, even when
+# this runs as root: the playbook passes SPOTLIGHT_HOME, and a bare sudo falls
+# back to SUDO_USER's home, since sudo may reset HOME to root's.
+if [ -n "${SPOTLIGHT_HOME:-}" ]; then
+	home=$SPOTLIGHT_HOME
+elif [ "$(id -u)" = 0 ] && [ -n "${SUDO_USER:-}" ]; then
+	home=$(dscl . -read "/Users/$SUDO_USER" NFSHomeDirectory | sed 's/^NFSHomeDirectory: //')
+else
+	home=$HOME
+fi
+paths=$(yq -r '.spotlight_exclusions[]?' "${SPOTLIGHT_CONFIG:-config.yml}" | sed "s|^~|$home|")
+
+# PlistBuddy prints "Array {", one indented path per line, then "}". It exits
+# non-zero when the key is missing, which a fresh volume may be.
+excluded() {
+	"$plistbuddy" -c 'Print :Exclusions' "$plist" 2>/dev/null | sed -e '1d' -e '$d' -e 's/^[[:space:]]*//'
+}
+
+missing() {
+	have=$(excluded || true)
+	printf '%s\n' "$paths" | while IFS= read -r path; do
+		[ -n "$path" ] || continue
+		printf '%s\n' "$have" | grep -Fqx -- "$path" || printf '%s\n' "$path"
+	done
+}
+
+case "${1:-}" in
+	"")
+		missing
+		;;
+	--apply)
+		todo=$(missing)
+		[ -n "$todo" ] || exit 0
+		"$plistbuddy" -c 'Print :Exclusions' "$plist" >/dev/null 2>&1 ||
+			"$plistbuddy" -c 'Add :Exclusions array' "$plist"
+		printf '%s\n' "$todo" | while IFS= read -r path; do
+			"$plistbuddy" -c "Add :Exclusions: string $path" "$plist"
+			printf '%s\n' "$path"
+		done
+		# mds reads the list at launch; launchd restarts it when it exits.
+		[ -n "${SPOTLIGHT_NO_RESTART:-}" ] || killall mds
+		;;
+	--indexed)
+		printf '%s\n' "$paths" | while IFS= read -r path; do
+			[ -d "$path" ] || continue
+			count=$("$mdfind" -onlyin "$path" -count 'kMDItemContentTypeTree == "public.item"' 2>/dev/null || echo 0)
+			[ "${count:-0}" -eq 0 ] || printf '%s: %s items\n' "$path" "$count"
+		done
+		;;
+	*)
+		echo "Usage: script/spotlight-exclusions [--apply | --indexed]" >&2
+		exit 1
+		;;
+esac

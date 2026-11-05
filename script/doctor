@@ -444,6 +444,17 @@ if [ "$(uname)" = "Darwin" ] && command -v yq >/dev/null; then
 $defaults_rows
 EOF
 
+	# Spotlight's exclusion list is root-only, so check the result instead:
+	# nothing indexed under an excluded folder. See script/spotlight-exclusions.
+	if indexed=$("$DOTFILES_ROOT/script/spotlight-exclusions" --indexed 2>/dev/null); then
+		if [ -z "$indexed" ]; then
+			ok "Spotlight skips config.yml's spotlight_exclusions"
+		else
+			warn "Spotlight still indexes (re-run: script/ansible --tags defaults):"
+			echo "$indexed" | sed 's/^/        /'
+		fi
+	fi
+
 	# A read-back passes for a key macOS no longer reads at all, which tends
 	# to happen after an OS upgrade. Warn only: the search can miss a key
 	# built at runtime, so confirm one before removing it. Silent when the

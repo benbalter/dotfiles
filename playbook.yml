@@ -838,6 +838,33 @@
       when: not is_ci and not ansible_check_mode
       tags: [macos, defaults, launchagents]
 
+    # The Search Privacy list lives in a root-only plist with no CLI; see
+    # script/spotlight-exclusions. PATH carries over so it finds yq as root.
+    - name: Keep config.yml's spotlight_exclusions out of Spotlight
+      ansible.builtin.command:
+        cmd: "{{ playbook_dir }}/script/spotlight-exclusions --apply"
+      environment:
+        PATH: "{{ ansible_facts['env']['PATH'] }}"
+        SPOTLIGHT_HOME: "{{ ansible_facts['user_dir'] }}"
+      become: true
+      register: spotlight_exclusions_added
+      changed_when: spotlight_exclusions_added.stdout | length > 0
+      when: not is_ci and not ansible_check_mode
+      tags: [macos, defaults]
+
+    - name: Verify Spotlight's exclusions match config.yml
+      ansible.builtin.command:
+        cmd: "{{ playbook_dir }}/script/spotlight-exclusions"
+      environment:
+        PATH: "{{ ansible_facts['env']['PATH'] }}"
+        SPOTLIGHT_HOME: "{{ ansible_facts['user_dir'] }}"
+      become: true
+      register: spotlight_exclusions_missing
+      changed_when: false
+      failed_when: spotlight_exclusions_missing.rc != 0 or spotlight_exclusions_missing.stdout | length > 0
+      when: not is_ci and not ansible_check_mode
+      tags: [macos, defaults]
+
     - name: Configure security settings
       tags: [macos, security]
       block:
