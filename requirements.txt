@@ -1,2 +1,2 @@
-ansible-core~=2.21.4
+ansible-core~=2.22.0
 ansible-lint~=26.8
