@@ -2,6 +2,8 @@
 
 Managed in [benbalter/dotfiles](https://github.com/benbalter/dotfiles) (public) and symlinked to `~/.claude/CLAUDE.md`; edit the file the symlink points to, not the link. Don't put anything private here. The same dotfiles also set up GitHub Codespaces, where the repo isn't at `~/.files` and nothing under macOS below applies.
 
+How I like to work, write, and handle privacy is in [`preferences.md`](https://github.com/benbalter/dotfiles/blob/main/claude/preferences.md), linked to `~/.claude/rules/preferences.md`, where Claude Code loads it alongside this file. It's shared with claude.ai, where I paste it as my instructions (`script/claude-ai-prefs`), so keep it free of anything that only makes sense in Claude Code; Claude Code–specific additions go in the matching sections below.
+
 ## Environment
 
 - Global npm CLIs are managed by [mise](https://mise.jdx.dev). To add one, put `"npm:<pkg>" = "latest"` under `[tools]` in [`~/.config/mise/config.toml`](https://github.com/benbalter/dotfiles/blob/main/.config/mise/config.toml) and run `mise install`; never `npm install -g` or a [`Brewfile`](https://github.com/benbalter/dotfiles/blob/main/Brewfile) `npm` entry.
@@ -44,6 +46,7 @@ Managed in [benbalter/dotfiles](https://github.com/benbalter/dotfiles) (public) 
 - Write down the why. Commit messages, PR bodies, and comments should say why a change was made, not just what changed.
 - Never credit Claude in a commit or pull request: no `Co-Authored-By: Claude` trailer, even where a repo's older commits have one, and say so in every brief for an agent that commits. [`settings.json`](https://github.com/benbalter/dotfiles/blob/main/claude/settings.json) leaves `attribution` empty for this, and [`guard-bash`](https://github.com/benbalter/dotfiles/blob/main/claude/hooks/guard-bash) denies a commit that adds the trailer.
 - On my solo, personal repos, pushing straight to the default branch past its protection rules (required PR, required checks) is the normal workflow, since I bypass them as the admin. Don't warn about the "Bypassed rule violations" message; do check the CI run the push triggers.
+- Before pushing to a PR's branch, check that the PR is still open (`gh pr view <n> --json state`). I often merge while you're still working, and commits pushed after the merge never reach the default branch. If it's merged or closed, branch from the updated default branch, cherry-pick the new commits, and open a new PR. Check again after pushing, since a merge can land between the check and the push. Likewise, when a step waits on a merge ("once #123 merges"), check the PR's state yourself at the start of each turn instead of asking me to tell you, and carry on once it's merged.
 - After a PR merges, or before starting unrelated work, switch to the default branch and pull. Always say which branch you left the repo on.
 - After a deploy, load the live URL and confirm the change is there. A green build or deploy check proves the build ran, not that the site is serving it.
 - **Never create a public repo, or make a private one public, without my explicit approval for that specific repo and visibility.** Approving a plan that says "public repo" is not that approval: ask with the question tool right before `gh repo create --public` or a visibility change, and default to `--private`. A public push can't be taken back. It may be cloned, cached, or indexed within minutes.
@@ -63,44 +66,26 @@ I often run several Claude Code sessions in the same repo at once, so assume ano
 - If sessions deadlock over who goes first or who owns a file, settle it with the [`roll-for-initiative`](https://github.com/benbalter/dotfiles/blob/main/claude/skills/roll-for-initiative/SKILL.md) skill rather than waiting on me.
 - If the conflict is about what the right change is, not just who goes first, ask me.
 
-## Working with me
+## Working with me in Claude Code
 
-- Be direct and candid, professional but not formal. Back recommendations with facts or data, and tell me when I'm wrong; I'd rather the better idea win.
-- Bring a proposed fix, not just a problem, and ask *why* before doing what everyone else does.
 - Before changing how something works, find out why it's that way (`git log`, `git blame`, linked issues). Say what you found when it bears on the change.
 - Ship the smallest useful change, then iterate. "Smallest" limits scope; it isn't a reason to stop early. When you find in-scope, reversible fixes, make them rather than listing them for me to approve. Ask first only about destructive or outward-facing steps (merge, publish, send, deploy) or real judgment calls. Deleting anything whose history can't be recovered (an analytics site, logs, a database) always needs my explicit OK, even when it looks orphaned.
-- Look for chances to "plus" the experience for users and developers: go a step past the literal ask with a clearer error message, a sensible default, a helpful hint, or one less manual step. Make the in-scope, reversible ones; suggest the rest.
-- Respect scope words: "prepare", "draft", "don't open", and "I'll submit" mean stop before the outward-facing step. Forms work the same way: fill the fields and click through intermediate pages, then stop before the final submit, purchase, or step that contacts someone, and let me click it.
-- Don't hand me work a script or tool could do. Automate it or do it yourself, and ask only for decisions and approvals that are mine to make. An MFA step that's a link plus a passkey tap isn't a blocker: drive it, and I'll approve the prompt.
-- When I need to make a choice, ask with the multiple-choice question tool (2–4 options, recommended first) rather than in prose. Explain the tradeoffs first, so the options make sense.
-- Look things up rather than guessing: check the repo, data I've given you, or current docs before asserting. Mark what's unverified, and don't quietly upgrade an unverified caveat to fact. Prices, availability, and status are dated snapshots, so say when they're from.
-- Before presenting high-stakes output (public copy, anything sent under my name, health, safety, or money decisions, PRs to outside maintainers), have a subagent or the advisor review it independently, without my framing, and tell me what changed.
+- An MFA step that's a link plus a passkey tap isn't a blocker: drive it, and I'll approve the prompt.
 - Size multi-agent runs (subagents, workflows, skills that fan out) to the target. Before launching one, say in one line what depth or effort level you picked and the most agents it will run, and pick the lightest one a skill offers for a small repo. Don't raise that cap mid-run; offer the deeper pass as a follow-up I can opt into.
 - On long or background work, post a one-line status periodically and say what you're waiting on.
-- Everything should have a URL: link any issue, PR, commit, doc, or run you mention. When you create, edit, or point me to a local file, link it by absolute path (`[name.md](/abs/path/name.md)`).
+- When you create, edit, or point me to a local file, link it by absolute path (`[name.md](/abs/path/name.md)`).
 - Estimate development time as Claude doing the work with me reviewing it, not as a human developer would: hours, not days or weeks.
-- Record timelines in the words someone used ("7–10 days"), not a calendar date I didn't give. If a derived date helps, show it as a range with the math.
-- A draft isn't the message I sent; I usually rewrite before sending. When a decision turns on what someone actually received, ask me for the sent text.
 
-## Privacy
+## Privacy in Claude Code
 
-- Never read my email: don't open Gmail or any other mail client, search it, or read messages, in the browser or through a connector, even to check whether something arrived. If a task depends on an email (a verification code, an approval link, a receipt), tell me what to look for and let me check.
-- In public repos, keep private data out of everything that ships: commit messages, PR and issue text, code comments, test fixtures, and committed docs. Private means anything not already public, even if it isn't sensitive: traffic and conversion rates, revenue, compensation, subscriber counts, word counts from unpublished writing. Describe it qualitatively instead ("most visitors", "a sharp drop"). The same goes for household specifics: names, LAN addresses, MACs, account or policy numbers, medical details, pointers to private repos, the brand or model of any lock, camera, or alarm, and technical details that pin down where the house is (exact sun angles with a date and time, a nearby weather station's code). The [writing-style](https://github.com/benbalter/writing-style) skill applies this to prose.
-- These leaks happen at the private-to-public boundary, when a figure from me, a private repo, or a connected tool becomes the justification in a public commit or PR. Before you commit, push, or open a PR or issue, check the repo's visibility (`gh repo view --json visibility`) rather than assuming, and if it's public, reread the message, body, and diff for any number or detail that didn't come from that repo's own public contents. Rewrite it qualitatively before it ships; a pushed commit message can't be quietly fixed.
-- Before any photo, video, or screenshot goes anywhere public (a post, README, issue, or PR), run the [`media-privacy-pass`](https://github.com/benbalter/dotfiles/blob/main/claude/skills/media-privacy-pass/SKILL.md) skill. Phone photos carry my home's GPS coordinates, and frames show more than the subject.
+- Leaks of private data happen at the private-to-public boundary, when a figure from me, a private repo, or a connected tool becomes the justification in a public commit or PR. Before you commit, push, or open a PR or issue, check the repo's visibility (`gh repo view --json visibility`) rather than assuming, and if it's public, reread the message, body, and diff for any number or detail that didn't come from that repo's own public contents. Rewrite it qualitatively before it ships; a pushed commit message can't be quietly fixed.
+- Before any photo, video, or screenshot goes anywhere public (a post, README, issue, or PR), run the [`media-privacy-pass`](https://github.com/benbalter/dotfiles/blob/main/claude/skills/media-privacy-pass/SKILL.md) skill.
 
-## Writing
+## Writing in Claude Code
 
-- Write plainly. Define jargon, show the math behind any derived number, and when you offer to do something, say what it does. If I'd have to quote a line back to ask what it means, rewrite it.
-- Before writing or editing prose in my voice, load the `writing-style` skill from my private [benbalter/writing-style](https://github.com/benbalter/writing-style) repo. On macOS, [`script/update`](https://github.com/benbalter/dotfiles/blob/main/script/update) keeps a clone at `~/projects/writing-style` linked into `~/.claude/skills`; elsewhere (Codespaces), read `SKILL.md` with `gh api repos/benbalter/writing-style/contents/SKILL.md -H 'Accept: application/vnd.github.raw'`. Open its `references/long-form.md` (blog posts and other long-form writing) and `references/language.md` (grammar lookups) only when the task needs them.
+- The `writing-style` skill lives in my private [benbalter/writing-style](https://github.com/benbalter/writing-style) repo. On macOS, [`script/update`](https://github.com/benbalter/dotfiles/blob/main/script/update) keeps a clone at `~/projects/writing-style` linked into `~/.claude/skills`; elsewhere (Codespaces), read `SKILL.md` with `gh api repos/benbalter/writing-style/contents/SKILL.md -H 'Accept: application/vnd.github.raw'`. Open its `references/long-form.md` (blog posts and other long-form writing) and `references/language.md` (grammar lookups) only when the task needs them.
 - `writing-style` already folds in `no-ai-slop`'s editing rules, so don't load that skill too. Use `stop-slop` only as a detection checklist, since several of its rules fight my voice. A repo's own style guide overrides both.
-- Don't hard-wrap Markdown or prose meant for pasting: write each paragraph or list item on one line and let the editor soft-wrap. Hard wraps make every edit reflow neighboring lines, which buries the real change in the diff, and they break when the text is pasted elsewhere. Follow a repo's existing wrap style if it has one.
-- Write dates and times in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601): `2026-11-01`, `2026-10` for a month, and `2026-11-01T14:30-04:00` when the time matters, always with an offset or time zone. It's unambiguous in every locale, it sorts correctly, and it matches what tools print. Reader-facing prose that a repo's own style guide covers, like my blog posts, follows that guide instead.
-- Use inclusive language everywhere, code and commits included: "spot-check", not "sanity check"; "allowlist"/"denylist", not "whitelist"/"blacklist"; "main", "primary"/"replica", not "master"/"slave"; "placeholder", not "dummy"; "backlog refinement", not "grooming"; "folks", not "guys". Keep a non-inclusive term only where it's an external name you can't change (an API field, a `master` branch), and don't rename those unasked.
-
-## Drafting text for me to paste
-
-- Whenever you draft or revise text I'll paste elsewhere (email, message, post, PR or issue comment) or an event for my calendar, load the [`draft-for-paste`](https://github.com/benbalter/dotfiles/blob/main/claude/skills/draft-for-paste/SKILL.md) skill. It covers the clipboard copy, LinkedIn formatting, skimmable structure, and prefilled Gmail and Calendar links.
+- Whenever you draft or revise text I'll paste elsewhere (email, message, post, PR or issue comment) or an event for my calendar, load the [`draft-for-paste`](https://github.com/benbalter/dotfiles/blob/main/claude/skills/draft-for-paste/SKILL.md) skill. It covers the clipboard copy and LinkedIn formatting.
 
 ## Writing CLAUDE.md files
 

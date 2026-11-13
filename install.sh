@@ -54,6 +54,7 @@ for file in \
 	link "$file"
 done
 link claude/CLAUDE.md .claude/CLAUDE.md
+link claude/preferences.md .claude/rules/preferences.md
 link claude/skills/credit-contributors .claude/skills/credit-contributors
 link claude/skills/draft-for-paste .claude/skills/draft-for-paste
 link claude/skills/media-privacy-pass .claude/skills/media-privacy-pass

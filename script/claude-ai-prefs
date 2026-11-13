@@ -1,0 +1,36 @@
+#!/bin/sh
+# Put claude/preferences.md on the clipboard and open claude.ai's settings,
+# where it's pasted as instructions for Claude. Claude Code loads the same file
+# from ~/.claude/rules, so both share one set of rules. claude.ai has no public
+# API for these instructions, so the paste itself stays manual. Records a hash
+# of what was copied so script/doctor can warn when the file has changed since
+# the last paste.
+# Usage: script/claude-ai-prefs [--check]
+#   --check  exit 0 if the last copy matches the current file, 1 if it's
+#            stale or was never made (no clipboard, no browser)
+
+set -eu
+# shellcheck disable=SC3040
+(set -o pipefail) 2>/dev/null && set -o pipefail || true
+
+DOTFILES_ROOT="${DOTFILES_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
+PREFS="$DOTFILES_ROOT/claude/preferences.md"
+STATE="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/claude-ai-preferences.sha256"
+
+hash=$(shasum -a 256 "$PREFS" | cut -d' ' -f1)
+
+if [ "${1:-}" = "--check" ]; then
+	[ -s "$STATE" ] && [ "$(cat "$STATE")" = "$hash" ]
+	exit
+fi
+
+if ! command -v pbcopy >/dev/null; then
+	echo "claude-ai-prefs: needs pbcopy (macOS); copy $PREFS by hand" >&2
+	exit 1
+fi
+pbcopy <"$PREFS"
+mkdir -p "$(dirname "$STATE")"
+echo "$hash" >"$STATE"
+echo "Copied claude/preferences.md to the clipboard."
+echo "Paste it into claude.ai under Settings > Your Claude > Instructions, replacing what's there."
+open "https://claude.ai/new#settings/personalization"

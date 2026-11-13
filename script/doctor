@@ -491,6 +491,16 @@ elif [ "$(uname)" = "Darwin" ]; then
 else
 	ok "no Python venv (not needed on Linux)"
 fi
+# claude.ai can't read claude/preferences.md the way Claude Code does, so the
+# copy pasted there drifts unless it's re-pasted after each change. macOS only:
+# the helper needs pbcopy and a browser.
+if [ "$(uname)" = "Darwin" ]; then
+	if "$DOTFILES_ROOT/script/claude-ai-prefs" --check; then
+		ok "claude.ai preferences match claude/preferences.md"
+	else
+		warn "claude/preferences.md changed since it was last copied for claude.ai (run script/claude-ai-prefs)"
+	fi
+fi
 # `up` pulls only onto a clean tree, so uncommitted changes quietly stop it
 # picking up new commits.
 if git -C "$DOTFILES_ROOT" diff --quiet 2>/dev/null && git -C "$DOTFILES_ROOT" diff --cached --quiet 2>/dev/null; then

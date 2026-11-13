@@ -16,6 +16,7 @@ script/doctor      # read-only health check: symlinks, .bak files, brew wrapper,
 script/audit-defaults   # flag config.yml Apple defaults keys that no system binary contains (likely dead)
 script/audit-baseline   # read-only audit against NIST mSCP's CIS Level 1 rules, with config.yml's overrides and exceptions
 script/bench-shell      # time zsh startup and command lag with zsh-bench, against its noticeable thresholds
+script/claude-ai-prefs  # copy claude/preferences.md for pasting into claude.ai; doctor warns when the pasted copy is stale
 script/install-git-hooks # copy the gitleaks pre-commit hook (.config/git/template) into existing repos under ~/projects
 ```
 

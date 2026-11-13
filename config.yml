@@ -88,6 +88,8 @@ dotfiles_files_macos:
 dotfile_links_common:
   - src: claude/CLAUDE.md
     dest: .claude/CLAUDE.md
+  - src: claude/preferences.md
+    dest: .claude/rules/preferences.md
   - src: claude/skills/credit-contributors
     dest: .claude/skills/credit-contributors
   - src: claude/skills/draft-for-paste

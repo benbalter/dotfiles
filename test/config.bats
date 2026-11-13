@@ -136,13 +136,25 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 		fail "move these to npm: entries in .config/mise/config.toml"
 }
 
-@test "claude/CLAUDE.md links are full URLs" {
-	# It's read through the ~/.claude/CLAUDE.md symlink, where a relative link
-	# resolves against the wrong directory. Code spans hold examples, not links.
-	# shellcheck disable=SC2016
-	links=$(sed 's/`[^`]*`//g' "$REPO_ROOT/claude/CLAUDE.md" |
-		grep -oE '\]\([^)]*\)' | grep -vE '^\]\(https?://') || true
-	[ -z "$links" ] || fail "relative links in claude/CLAUDE.md: $links"
+@test "claude/CLAUDE.md and preferences.md links are full URLs" {
+	# Both are read through symlinks in ~/.claude, where a relative link
+	# resolves against the wrong directory, and preferences.md is also pasted
+	# into claude.ai, which can't resolve one at all. Code spans hold examples,
+	# not links.
+	for file in claude/CLAUDE.md claude/preferences.md; do
+		# shellcheck disable=SC2016
+		links=$(sed 's/`[^`]*`//g' "$REPO_ROOT/$file" |
+			grep -oE '\]\([^)]*\)' | grep -vE '^\]\(https?://') || true
+		[ -z "$links" ] || fail "relative links in $file: $links"
+	done
+}
+
+@test "claude/preferences.md is linked into Claude Code's user rules" {
+	# Claude Code loads ~/.claude/rules/*.md every session; this link is the
+	# only way the shared preferences reach it. Without it they'd silently
+	# apply to claude.ai alone.
+	yq -e '.dotfile_links_common[] | select(.src == "claude/preferences.md" and .dest == ".claude/rules/preferences.md")' \
+		"$REPO_ROOT/config.yml" >/dev/null || fail "config.yml must link claude/preferences.md to ~/.claude/rules/preferences.md"
 }
 
 @test "macos_defaults all_users entries don't use this account's home" {
