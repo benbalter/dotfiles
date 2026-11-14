@@ -317,6 +317,18 @@ if command -v mole >/dev/null && [ -t 1 ]; then
 	step mole optimize
 fi
 
+# claude.ai can't read claude/preferences.md, so its pasted copy goes stale
+# when a pull changes the file, privacy rules included. Remind rather than
+# fail: the paste is manual. Headless, the log goes unread, so also post a
+# notification. Informational, so not a step.
+if [ -x script/claude-ai-prefs ] && command -v pbcopy >/dev/null && ! script/claude-ai-prefs --check; then
+	msg="claude/preferences.md changed since it was last pasted into claude.ai; run script/claude-ai-prefs"
+	echo "==> $msg"
+	if [ ! -t 1 ] && command -v osascript >/dev/null; then
+		osascript -e "display notification \"$msg\" with title \"Dotfiles\"" || true
+	fi
+fi
+
 echo "==> Finished $(date)"
 echo "finished=$(date '+%Y-%m-%d %H:%M')" >>"$STATUS"
 if [ -n "$failed" ]; then

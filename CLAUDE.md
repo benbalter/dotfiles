@@ -16,7 +16,7 @@ script/doctor      # read-only health check: symlinks, .bak files, brew wrapper,
 script/audit-defaults   # flag config.yml Apple defaults keys that no system binary contains (likely dead)
 script/audit-baseline   # read-only audit against NIST mSCP's CIS Level 1 rules, with config.yml's overrides and exceptions
 script/bench-shell      # time zsh startup and command lag with zsh-bench, against its noticeable thresholds
-script/claude-ai-prefs  # copy claude/preferences.md for pasting into claude.ai; doctor warns when the pasted copy is stale
+script/claude-ai-prefs  # copy claude/preferences.md for pasting into claude.ai; doctor and update warn when the pasted copy is stale
 script/install-git-hooks # copy the gitleaks pre-commit hook (.config/git/template) into existing repos under ~/projects
 ```
 
@@ -62,6 +62,7 @@ script/install-git-hooks # copy the gitleaks pre-commit hook (.config/git/templa
 **`claude/`** holds the global Claude Code config:
 
 - `CLAUDE.md` is symlinked to `~/.claude/CLAUDE.md`.
+- `preferences.md` holds the rules shared with claude.ai. It's symlinked to `~/.claude/rules/preferences.md`, which Claude Code loads every session (an `@` import from `CLAUDE.md` was skipped as external in `claude -p`). `script/claude-ai-prefs` copies it for pasting into claude.ai, and `script/doctor` and `script/update` flag a stale paste. Like everything here it's public, so personal context for claude.ai stays out of it.
 - `settings.json` is *merged* into `~/.claude/settings.json` by the playbook's `claude` tag. It isn't symlinked because Claude Code replaces the file when it saves.
 - Install third-party skills as plugins when they ship one: add them to `enabledPlugins` and `extraKnownMarketplaces` in `claude/settings.json`, and the playbook installs them while `script/update` keeps them current. Vendor installers like `npx impeccable install` copy files into `~/.claude` that nothing tracks or updates, and write their hooks into whichever project you ran them from.
 - Keep `autoMode` and `permissions` out of `claude/settings.json`. They name private hosts and this repo is public; a test enforces it.

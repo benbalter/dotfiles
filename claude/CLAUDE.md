@@ -2,7 +2,7 @@
 
 Managed in [benbalter/dotfiles](https://github.com/benbalter/dotfiles) (public) and symlinked to `~/.claude/CLAUDE.md`; edit the file the symlink points to, not the link. Don't put anything private here. The same dotfiles also set up GitHub Codespaces, where the repo isn't at `~/.files` and nothing under macOS below applies.
 
-How I like to work, write, and handle privacy is in [`preferences.md`](https://github.com/benbalter/dotfiles/blob/main/claude/preferences.md), linked to `~/.claude/rules/preferences.md`, where Claude Code loads it alongside this file. It's shared with claude.ai, where I paste it as my instructions (`script/claude-ai-prefs`), so keep it free of anything that only makes sense in Claude Code; Claude Code–specific additions go in the matching sections below.
+How I like to work, write, and handle privacy is in [`preferences.md`](https://github.com/benbalter/dotfiles/blob/main/claude/preferences.md), linked to `~/.claude/rules/preferences.md`, where Claude Code loads it alongside this file. It's shared with claude.ai, where I paste it as my instructions (`script/claude-ai-prefs`), so keep it free of anything that only makes sense in Claude Code; Claude Code–specific additions go in the matching sections below. It's just as public as this file, so the "nothing private" rule covers it too: personal context for claude.ai (job, family, health) goes in claude.ai's memory or a private Project, not here.
 
 ## Environment
 
