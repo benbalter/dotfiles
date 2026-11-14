@@ -43,6 +43,8 @@ setup() {
 	# Interactive-only steps must never run headless; log it if they do.
 	printf '#!/bin/sh\necho "audit-casks $*" >>"$LOG"\n' >"$FAKE_ROOT/script/audit-casks"
 	chmod +x "$FAKE_ROOT/script/audit-casks"
+	printf '#!/bin/sh\necho "script/ansible $*" >>"$LOG"\n' >"$FAKE_ROOT/script/ansible"
+	chmod +x "$FAKE_ROOT/script/ansible"
 	printf '#!/bin/sh\n' >"$FAKE_ROOT/script/blocking-io"
 	chmod +x "$FAKE_ROOT/script/blocking-io"
 
@@ -296,11 +298,14 @@ refute_called() {
 	assert_called "mas upgrade"
 	assert_called "mole clean"
 	# Re-applies defaults and security settings, but not app preferences.
-	assert_called "ansible-playbook playbook.yml --tags defaults,security --skip-tags app-preferences --ask-become-pass"
+	# Through script/ansible, whose longer sudo timeout covers the Touch ID dialog.
+	assert_called "script/ansible --tags defaults,security --skip-tags app-preferences"
+	refute_called '^ansible-playbook'
 }
 
 @test "headless update doesn't re-apply the playbook" {
 	run_update 0
 	[ "$status" -eq 0 ] || fail "update exited $status: $output"
 	refute_called '^ansible-playbook'
+	refute_called '^script/ansible'
 }
