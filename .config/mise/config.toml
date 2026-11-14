@@ -15,6 +15,9 @@ package_manager = "npm"
 node = "26"
 python = "3.15.2"
 ruby = "3.4"
+# Builds the go: tools below (Pat ships no Apple Silicon binary). Homebrew's go
+# was only here as a dependency, so CI had none and mise install failed.
+go = "latest"
 
 # Global npm CLIs (managed by mise so they survive node upgrades; Brewfile
 # `npm` entries also failed against Workbrew's node prefix)
