@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+Privacy restrictions for a personal, unsupervised iPhone or iPad: the iOS side
+of the Mac settings in config.yml. Install and the manual checklist are in
+ios/README.md. Only keys Apple's schema allows without supervision
+(github.com/apple/device-management, com.apple.applicationaccess.yaml);
+test/ios-profile.bats rejects any other. A locked setting shows greyed out
+until the profile is removed. The UUIDs are fixed so a reinstall replaces the
+installed copy instead of adding a second one; change them never.
+
+- allowApplePersonalizedAdvertising false: Apple Advertising > Personalized Ads off
+- allowDiagnosticSubmission false: Analytics & Improvements > Share iPhone/iPad Analytics off
+- forceLimitAdTracking true: Tracking > Allow Apps to Request to Track off
+- safariForceFraudWarning true: Safari > Fraudulent Website Warning on
+- safariAcceptCookies 1.5: Safari > Prevent Cross-Site Tracking locked on;
+  Block All Cookies stays your choice. Apple marks unsupervised support for
+  this key deprecated, so a future iOS may ignore it.
+-->
+<plist version="1.0">
+<dict>
+	<key>PayloadType</key>
+	<string>Configuration</string>
+	<key>PayloadVersion</key>
+	<integer>1</integer>
+	<key>PayloadIdentifier</key>
+	<string>com.github.dotfiles.ios.privacy</string>
+	<key>PayloadUUID</key>
+	<string>8658548A-7480-4F14-A63B-F094367E4122</string>
+	<key>PayloadDisplayName</key>
+	<string>Privacy</string>
+	<key>PayloadDescription</key>
+	<string>Turns off personalized ads, analytics sharing and app tracking requests, and keeps Safari's fraud warning and cross-site tracking prevention on.</string>
+	<key>PayloadRemovalDisallowed</key>
+	<false/>
+	<key>PayloadContent</key>
+	<array>
+		<dict>
+			<key>PayloadType</key>
+			<string>com.apple.applicationaccess</string>
+			<key>PayloadVersion</key>
+			<integer>1</integer>
+			<key>PayloadIdentifier</key>
+			<string>com.github.dotfiles.ios.privacy.restrictions</string>
+			<key>PayloadUUID</key>
+			<string>96513392-DA30-45EB-96AE-320D6C3430DB</string>
+			<key>PayloadDisplayName</key>
+			<string>Privacy restrictions</string>
+			<key>allowApplePersonalizedAdvertising</key>
+			<false/>
+			<key>allowDiagnosticSubmission</key>
+			<false/>
+			<key>forceLimitAdTracking</key>
+			<true/>
+			<key>safariForceFraudWarning</key>
+			<true/>
+			<key>safariAcceptCookies</key>
+			<real>1.5</real>
+		</dict>
+	</array>
+</dict>
+</plist>

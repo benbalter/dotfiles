@@ -211,6 +211,13 @@
       }
     },
     {
+      "name": "Chrome on iOS gets these policies",
+      "schema": "chrome.users.ChromeOnIos",
+      "fields": {
+        "enableIosChromePolicies": true
+      }
+    },
+    {
       "name": "Shopping list off",
       "schema": "chrome.users.ShoppingListEnabled",
       "fields": {

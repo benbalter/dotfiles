@@ -103,6 +103,7 @@ What to expect:
   - **Location Services** (Privacy & Security): turn off apps that don't need it, and under System Services turn off at least Mac Analytics and Significant Locations & Routes. locationd's settings are protected.
   - **Camera, Microphone, Local Network, Full Disk Access and Files & Folders** (Privacy & Security): revoke what isn't used day to day. TCC, the permission database, is protected by System Integrity Protection, and Local Network permission isn't stored in TCC at all.
   - **Advanced Data Protection** (System Settings → your name → iCloud): an iCloud account setting with no API. Set up a recovery contact or key first.
+  - **iPhone and iPad:** install [`ios/privacy.mobileconfig`](ios/privacy.mobileconfig) and work through [the iOS checklist](ios/README.md).
 
 ## 5. Manual data transfer (after setup)
 

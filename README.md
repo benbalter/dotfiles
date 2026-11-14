@@ -31,6 +31,7 @@
 - Shell aliases and globals (`lib/`)
 - Launch agents to keep Downloads tidy and dependencies up to date (`Library/`)
 - macOS system and user defaults (`config.yml`)
+- iPhone and iPad privacy: a profile to AirDrop and a checklist for the rest ([`ios/`](ios/README.md))
 - Homebrew packages, casks, Mac App Store apps, and VS Code extensions (`Brewfile`), minus `Brewfile.work-skip` on a work Mac
 - Per-machine profile and environment (untracked `~/.config/dotfiles/env`, read by `lib/profile`)
 
