@@ -249,6 +249,8 @@ cask 'elgato-control-center'
 # Web browser
 # cask 'firefox' # PROPOSED REMOVAL: last opened 54 days ago
 cask 'font-hack-nerd-font'
+# Command-line interface for Google Cloud
+cask 'gcloud-cli'
 # Terminal emulator that uses platform-native UI and GPU acceleration
 cask 'ghostty'
 # GIF recording and sharing
@@ -266,11 +268,11 @@ cask 'harper-desktop'
 # Reverse engineering tool that lets you disassemble, decompile and debug your app
 cask 'hopper-disassembler'
 # Keyboard customiser
-cask 'karabiner-elements'
+# cask 'karabiner-elements' # PROPOSED REMOVAL: last opened 15 days ago
 # Preview and audit Kindle eBooks
 cask 'kindle-previewer'
 # Tool to show what is persistently installed on the computer
-cask 'knockknock'
+# cask 'knockknock' # PROPOSED REMOVAL: last opened 14 days ago
 # Grammar, spelling and style suggestions in all the writing apps
 cask 'languagetool-desktop'
 # Open-source firewall to block unknown outgoing connections
@@ -318,7 +320,7 @@ cask 'whatcable'
 # Full-featured companion app to the YubiKey
 cask 'yubico-authenticator'
 # Multiplayer code editor
-cask 'zed'
+# cask 'zed' # PROPOSED REMOVAL: last opened 14 days ago
 # Video communication and virtual meeting platform
 cask 'zoom'
 mas '1Password for Safari', id: 1_569_813_296

@@ -52,3 +52,4 @@ rclone = "latest"
 # policy to balter.com. Its binary is `gam`, which the `gam` alias (git am)
 # shadows in interactive shells; scripts get the real one.
 "pipx:gam7" = "latest"
+"go:github.com/la5nta/pat" = "1.0.0"
