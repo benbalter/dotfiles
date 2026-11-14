@@ -699,7 +699,9 @@
 
     # A changed keyboard shortcut (com.apple.symbolichotkeys) otherwise waits
     # for the next login; until then macOS keeps ⌘⇧3/4/5 for its own
-    # screenshots instead of CleanShot.
+    # screenshots instead of CleanShot. Tagged with app-preferences because it
+    # reads that task's output: skipping one without the other (as `up` does)
+    # failed on app_preferences being undefined.
     - name: Activate keyboard shortcut changes
       ansible.builtin.command:
         cmd: /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
@@ -707,7 +709,7 @@
       when:
         - not is_ci and not ansible_check_mode
         - "'set   com.apple.symbolichotkeys' in app_preferences.stdout"
-      tags: [macos, defaults]
+      tags: [macos, defaults, app-preferences]
 
     # Read per-host values back from the ByHost domain, as the system defaults
     # are verified above. Skipped in check mode, where nothing was written.
