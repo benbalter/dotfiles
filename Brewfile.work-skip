@@ -6,8 +6,11 @@
 # means every App Store app.
 
 # Network filters: AdGuard's DNS proxy and content filter fight a corporate
-# VPN or secure web gateway for the same traffic.
+# VPN or secure web gateway for the same traffic. LuLu's outbound firewall is
+# another network extension in the same path, and it would prompt for every
+# agent IT's MDM installs.
 cask adguard
+cask lulu
 
 # Docker Desktop needs a paid subscription at larger companies; colima (with
 # the docker CLI) from the Brewfile covers the same workflows.
