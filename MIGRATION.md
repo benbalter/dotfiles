@@ -98,6 +98,11 @@ What to expect:
   ```
 - [ ] **Dock** matches `config.yml` (Chrome, Spotify, VS Code, Slack pinned; Mail / Calendar / Maps / etc. removed).
 - [ ] **Shell** is zsh with oh-my-zsh + starship prompt.
+- [ ] **Privacy settings no script can set.** The playbook covers the rest (firewall and stealth mode, analytics sharing, Siri audio, Safari fingerprint protection, Chrome policy). These stay manual on a personal Mac because only an MDM can manage them, or Apple offers no interface at all:
+  - **Private Wi-Fi address → Rotating** for public networks (System Settings → Wi-Fi → network → Details). It's set per network in a root-owned plist keyed by network name, and network names don't belong in this public repo.
+  - **Location Services** (Privacy & Security): turn off apps that don't need it, and under System Services turn off at least Mac Analytics and Significant Locations & Routes. locationd's settings are protected.
+  - **Camera, Microphone, Local Network, Full Disk Access and Files & Folders** (Privacy & Security): revoke what isn't used day to day. TCC, the permission database, is protected by System Integrity Protection, and Local Network permission isn't stored in TCC at all.
+  - **Advanced Data Protection** (System Settings → your name → iCloud): an iCloud account setting with no API. Set up a recovery contact or key first.
 
 ## 5. Manual data transfer (after setup)
 

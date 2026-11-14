@@ -162,6 +162,55 @@
       }
     },
     {
+      "name": "Block third-party cookies",
+      "schema": "chrome.users.ThirdPartyCookieBlocking",
+      "fields": {
+        "blockThirdPartyCookies": "TRUE"
+      }
+    },
+    {
+      "name": "Related Website Sets off",
+      "schema": "chrome.users.FirstPartySetsEnabled",
+      "fields": {
+        "firstPartySetsEnabled": false
+      }
+    },
+    {
+      "name": "URL-keyed data collection off (Make searches and browsing better)",
+      "schema": "chrome.users.UrlKeyedAnonymizedDataCollectionEnabled",
+      "fields": {
+        "urlKeyedAnonymizedDataCollectionEnabled": "FALSE"
+      }
+    },
+    {
+      "name": "Usage and crash reports off",
+      "schema": "chrome.users.MetricsReportingEnabled",
+      "fields": {
+        "metricsReportingEnabled": "FALSE"
+      }
+    },
+    {
+      "name": "Sites always ask for location",
+      "schema": "chrome.users.Geolocation",
+      "fields": {
+        "defaultGeolocationSetting": "ASK_GEOLOCATION"
+      }
+    },
+    {
+      "name": "Spelling service off (sends typed text to Google; Harper and LanguageTool cover it)",
+      "schema": "chrome.users.SpellCheckService",
+      "fields": {
+        "spellCheckServiceEnabled": "FALSE"
+      }
+    },
+    {
+      "name": "Alternate error pages off (sends failed URLs to Google)",
+      "schema": "chrome.users.AlternateErrorPages",
+      "fields": {
+        "alternateErrorPagesEnabled": "FALSE"
+      }
+    },
+    {
       "name": "Shopping list off",
       "schema": "chrome.users.ShoppingListEnabled",
       "fields": {

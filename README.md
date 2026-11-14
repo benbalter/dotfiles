@@ -20,7 +20,7 @@
 - `script/update-brewfile` — Sync the `Brewfile` with what's installed (personal Mac only: on a work Mac the dump would drop every skipped entry)
 - `script/clean` — Uninstall everything not in the `Brewfile` (`brew bundle cleanup --force`; destructive); aliased to `clean`
 - `script/install-tools` — Install delta, zoxide and fzf on Linux without Homebrew (Codespaces, devcontainer)
-- `script/app-preferences` — Merge the settings in `app-preferences/<domain>.plist` into each app's defaults (CleanShot X, Thaw, keyboard shortcuts), and `app-preferences/json/<path>` into JSON settings files under `$HOME` (Docker Desktop); `--check` shows drift. The playbook's `defaults` tag runs it
+- `script/app-preferences` — Merge the settings in `app-preferences/<domain>.plist` into each app's defaults (CleanShot X, Thaw, Safari, keyboard shortcuts), and `app-preferences/json/<path>` into JSON settings files under `$HOME` (Docker Desktop); `--check` shows drift. The playbook's `defaults` tag runs it
 - `script/lint` — Run all linters (see [Linting](#linting))
 - `script/test` — Run the BATS test suite
 - `install.sh` — Codespaces entry point; runs `script/setup` on macOS, a symlink-only install on Linux
@@ -104,7 +104,7 @@ These dotfiles are automatically applied to new Codespaces when configured in yo
 
 ### Updating
 
-Run `up` (alias for `script/update`). It pulls this repo (when the tree is clean), upgrades Homebrew and installs any new `Brewfile` entries, upgrades Mac App Store apps, mise tools (including global npm CLIs), oh-my-zsh, and tldr pages, refreshes this repo's npm/gem/Python/Ansible dependencies, clones or pulls the private `writing-style` Claude Code skill into `~/projects` (linking it into `~/.claude/skills`), and lists pending macOS updates without installing them.
+Run `up` (alias for `script/update`). It pulls this repo (when the tree is clean), upgrades Homebrew and installs any new `Brewfile` entries, upgrades Mac App Store apps, mise tools (including global npm CLIs), oh-my-zsh, and tldr pages, refreshes this repo's npm/gem/Python/Ansible dependencies, clones or pulls the private `writing-style` Claude Code skill into `~/projects` (linking it into `~/.claude/skills`), and lists pending macOS updates without installing them. From a terminal it also re-applies the playbook's `defaults` and `security` tags (asking for your sudo password; app preferences are left to `script/doctor` to flag) and, on a personal Mac, applies `chrome/policies.json` with `script/chrome-policy` when it has drifted.
 
 A launch agent also runs it nightly at midnight, logging to `~/Library/Logs/dotfiles-update.log`. It reads `~/.config/dotfiles/env` too, so machine-specific settings like a CA bundle apply headless. With no terminal attached, it skips anything that needs a human: cask and App Store upgrades, installing new casks and App Store apps, the `git pull`, `script/audit-casks`, and mole. A failed step doesn't stop the rest, but the run exits non-zero, and `script/doctor` reports which steps failed.
 

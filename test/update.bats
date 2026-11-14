@@ -34,7 +34,7 @@ setup() {
 
 	# The venv's commands (hyphenated ansible-galaxy can't be a POSIX function)
 	# come from a fake activate that puts PATH stubs first, after the prepends.
-	for cmd in ansible-galaxy uv pip; do
+	for cmd in ansible-galaxy ansible-playbook uv pip; do
 		printf '#!/bin/sh\necho "%s $*" >>"$LOG"\nexit "$STUB_STATUS"\n' "$cmd" >"$STUB_BIN/$cmd"
 		chmod +x "$STUB_BIN/$cmd"
 	done
@@ -295,4 +295,12 @@ refute_called() {
 	assert_called "audit-casks --comment"
 	assert_called "mas upgrade"
 	assert_called "mole clean"
+	# Re-applies defaults and security settings, but not app preferences.
+	assert_called "ansible-playbook playbook.yml --tags defaults,security --skip-tags app-preferences --ask-become-pass"
+}
+
+@test "headless update doesn't re-apply the playbook" {
+	run_update 0
+	[ "$status" -eq 0 ] || fail "update exited $status: $output"
+	refute_called '^ansible-playbook'
 }

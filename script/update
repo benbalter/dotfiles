@@ -272,7 +272,33 @@ if [ -d env ]; then
 	echo "==> Updating Ansible collections..."
 	script/blocking-io
 	step ansible-galaxy collection install -r requirements.yml
+
+	# Re-apply config.yml's macOS defaults and security settings, which only
+	# setup used to apply, so a setting changed by hand or added to config.yml
+	# since converged only on the next full playbook run. Terminal only: they
+	# need sudo, and a root job running code from this user-writable repo would
+	# be a privilege-escalation path. Headless, script/doctor still reports
+	# drift. app-preferences is skipped: it would revert app tweaks made in the
+	# UI before they could be copied into app-preferences/.
+	if [ -t 1 ] && [ "$(uname)" = "Darwin" ] && command -v ansible-playbook >/dev/null; then
+		echo "==> Re-applying macOS defaults and security settings (sudo)..."
+		step ansible-playbook playbook.yml --tags defaults,security \
+			--skip-tags app-preferences --ask-become-pass
+	fi
 	deactivate
+fi
+
+# Chrome policy lives in the Workspace org unit, not on this Mac, so a change
+# to chrome/policies.json (this run's pull included) applied only when
+# script/chrome-policy was run by hand. Terminal only: it reads GAM's
+# credentials from 1Password, which needs Touch ID. A work Mac's Chrome
+# belongs to the employer, and its 1Password may not hold the personal item.
+if [ -t 1 ] && [ "${DOTFILES_PROFILE:-personal}" != work ] && [ -x script/chrome-policy ] &&
+	command -v op >/dev/null && command -v gam >/dev/null; then
+	echo "==> Applying Chrome policy..."
+	if ! script/chrome-policy --check >/dev/null 2>&1; then
+		step script/chrome-policy
+	fi
 fi
 
 # .zshrc turns off oh-my-zsh's own update check, which ran a `git pull` as a

@@ -259,6 +259,48 @@ macos_defaults:
       type: bool
       value: false
       all_users: true
+    # Analytics & Improvements > "Improve Siri & Dictation" off: 2 is opted
+    # out, 1 opted in (mSCP system_settings_improve_siri_dictation_disable).
+    - name: Don't share Siri and Dictation audio
+      domain: com.apple.assistant.support
+      key: Siri Data Sharing Opt-In Status
+      type: integer
+      value: 2
+      all_users: true
+    # Safari > Settings > Advanced > "Use advanced tracking and fingerprint
+    # protection: in all browsing"; Safari's default covers private browsing
+    # only. The names are Safari's own
+    # WBSEnableEnhancedPrivacyIn*BrowsingPreferenceKey (mSCP has no rule).
+    # Not all_users: Safari's preferences live in its sandbox container, and
+    # writing another user's container needs Full Disk Access.
+    - name: Safari fingerprint protection in regular browsing
+      domain: com.apple.Safari
+      key: EnableEnhancedPrivacyInRegularBrowsing
+      type: bool
+      value: true
+    - name: Safari fingerprint protection in private browsing
+      domain: com.apple.Safari
+      key: EnableEnhancedPrivacyInPrivateBrowsing
+      type: bool
+      value: true
+    # Safari defaults, written so audit_baseline's Safari overrides have
+    # something to read (mSCP's own checks read an MDM profile). Values are
+    # mSCP's; the keys with dots are in app-preferences/com.apple.Safari.plist.
+    - name: Safari fraudulent website warning
+      domain: com.apple.Safari
+      key: WarnAboutFraudulentWebsites
+      type: bool
+      value: true
+    - name: Safari prevent cross-site tracking
+      domain: com.apple.Safari
+      key: BlockStoragePolicy
+      type: integer
+      value: 2
+    - name: Safari prevent cross-site tracking (WebKit)
+      domain: com.apple.Safari
+      key: WebKitStorageBlockingPolicy
+      type: integer
+      value: 1
     - name: Screenshot location
       domain: com.apple.screencapture
       key: location
@@ -511,6 +553,20 @@ macos_security_settings:
     reject: womp +0
     set: pmset -a womp 1
     hint: Find My can't lock or erase a sleeping Mac without it
+  # Privacy & Security > Analytics & Improvements > "Share Mac Analytics" and
+  # "Share with app developers". Here, not in macos_defaults.system: the file
+  # isn't in /Library/Preferences, so that list's NSUserDefaults read-back
+  # can't find it and reads empty. Turned off by hand once; listed so a new
+  # Mac starts that way. Single quotes: script/doctor reads this list through
+  # yq's @tsv, which CSV-quotes a field containing double quotes.
+  - name: Mac analytics opt-out
+    check: defaults read '/Library/Application Support/CrashReporter/DiagnosticMessagesHistory' AutoSubmit
+    expect: "^0$"
+    set: defaults write '/Library/Application Support/CrashReporter/DiagnosticMessagesHistory' AutoSubmit -bool false
+  - name: app developer analytics opt-out
+    check: defaults read '/Library/Application Support/CrashReporter/DiagnosticMessagesHistory' ThirdPartyDataSubmit
+    expect: "^0$"
+    set: defaults write '/Library/Application Support/CrashReporter/DiagnosticMessagesHistory' ThirdPartyDataSubmit -bool false
 
 # script/audit-baseline: audit this Mac against a baseline from NIST's macOS
 # Security Compliance Project (mSCP), whose rules map to CIS, read-only. mSCP
@@ -561,6 +617,17 @@ audit_baseline:
       expect: "^off$"
     os_software_update_app_update_enforce:
       check: defaults read /Library/Preferences/com.apple.commerce AutoUpdate
+      expect: "^1$"
+    # Safari's own preferences, set by macos_defaults.user and
+    # app-preferences/com.apple.Safari.plist.
+    os_safari_warn_fraudulent_website_enable:
+      check: defaults read com.apple.Safari WarnAboutFraudulentWebsites
+      expect: "^1$"
+    os_safari_prevent_cross-site_tracking_enable:
+      check: defaults read com.apple.Safari BlockStoragePolicy
+      expect: "^2$"
+    os_safari_advertising_privacy_protection_enable:
+      check: defaults read com.apple.Safari WebKitPreferences.privateClickMeasurementEnabled
       expect: "^1$"
   exceptions:
     system_settings_wake_network_access_disable: On so Find My can locate, lock or erase a sleeping Mac.

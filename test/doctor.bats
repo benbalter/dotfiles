@@ -76,7 +76,8 @@ STUB
 	# `defaults read <domain> <key>` answers from defaults.db, a tab-separated
 	# copy of config.yml's macos_defaults (so they all match until a test edits
 	# it). autoLoginUser isn't in it: reading it fails, as when the key is
-	# absent, unless DEFAULTS_STATUS says otherwise.
+	# absent, unless DEFAULTS_STATUS says otherwise. The analytics-sharing
+	# keys in macos_security_settings read 0, as on a Mac with sharing off.
 	yq -r '(.macos_defaults.system[], .macos_defaults.user[]) | [.domain, .key, .value] | @tsv' \
 		"$REPO_ROOT/config.yml" | sed "s|{{ ansible_facts\['user_dir'\] }}|$TEST_HOME|" >"$STUB_BIN/defaults.db"
 	# audit-defaults searches this instead of the host's system binaries: every
@@ -87,6 +88,7 @@ STUB
 #!/bin/sh
 [ "\$1" != -currentHost ] || shift
 [ "\$3" != autoLoginUser ] || exit "\${DEFAULTS_STATUS:-1}"
+case "\$2" in */CrashReporter/DiagnosticMessagesHistory) echo 0 && exit 0 ;; esac
 awk -F '\t' -v d="\$2" -v k="\$3" '\$1 == d && \$2 == k { print \$3; found = 1 } END { exit !found }' "$STUB_BIN/defaults.db"
 STUB
 	chmod +x "$STUB_BIN/defaults"

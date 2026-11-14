@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+Safari privacy keys with dots in them, which osx_defaults can't write; the rest
+are in config.yml's macos_defaults.user. Both are Safari defaults, written
+explicitly so script/audit-baseline can read them: mSCP's checks for them only
+read an MDM profile. Keys and values are mSCP's
+(os_safari_prevent_cross-site_tracking_enable,
+os_safari_advertising_privacy_protection_enable).
+-->
+<plist version="1.0">
+<dict>
+	<key>WebKitPreferences.storageBlockingPolicy</key>
+	<integer>1</integer>
+	<key>WebKitPreferences.privateClickMeasurementEnabled</key>
+	<true/>
+</dict>
+</plist>
