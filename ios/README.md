@@ -18,6 +18,8 @@ After editing the file, AirDrop it again. Its UUIDs are fixed, so the new copy r
 
 ### Safari
 
+Safari stays the default browser here even though Chrome is the Mac's. Outside the EU, Chrome on iOS runs on Safari's engine anyway, but without fingerprint protection, Private Relay, content blockers or this profile's Safari locks. If Chrome ever took over, check Settings → Apps → Safari → Default Browser App.
+
 Settings → Apps → Safari:
 
 - [ ] **Advanced → Advanced Tracking and Fingerprinting Protection → All Browsing.** The Mac sets the same thing in `config.yml`. iOS defaults to private browsing only.
