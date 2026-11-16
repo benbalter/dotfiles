@@ -56,6 +56,8 @@ dotfiles_files_common:
   - .config/git/allowed_signers
   - .config/git/attributes
   - .config/mise/config.toml
+  # OpenCode doesn't read ~/.claude/rules; this loads preferences.md
+  - .config/opencode/opencode.json
   - .config/starship.toml
   - .config/zed/settings.json
 
@@ -90,6 +92,9 @@ dotfile_links_common:
     dest: .claude/CLAUDE.md
   - src: claude/preferences.md
     dest: .claude/rules/preferences.md
+  # OpenCode reads only AGENTS.md, never CLAUDE.md, for global rules
+  - src: claude/CLAUDE.md
+    dest: .config/opencode/AGENTS.md
   - src: claude/skills/credit-contributors
     dest: .claude/skills/credit-contributors
   - src: claude/skills/draft-for-paste

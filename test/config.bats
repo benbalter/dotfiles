@@ -157,6 +157,16 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 		"$REPO_ROOT/config.yml" >/dev/null || fail "config.yml must link claude/preferences.md to ~/.claude/rules/preferences.md"
 }
 
+@test "OpenCode loads the same global instructions as Claude Code" {
+	# OpenCode reads only ~/.config/opencode/AGENTS.md (it has no CLAUDE.md
+	# fallback) and never looks in ~/.claude/rules, so without these the
+	# global rules and shared preferences would silently skip it.
+	yq -e '.dotfile_links_common[] | select(.src == "claude/CLAUDE.md" and .dest == ".config/opencode/AGENTS.md")' \
+		"$REPO_ROOT/config.yml" >/dev/null || fail "config.yml must link claude/CLAUDE.md to ~/.config/opencode/AGENTS.md"
+	jq -e '.instructions | index("~/.claude/rules/preferences.md")' \
+		"$REPO_ROOT/.config/opencode/opencode.json" >/dev/null || fail "opencode.json must load ~/.claude/rules/preferences.md"
+}
+
 @test "macos_defaults all_users entries don't use this account's home" {
 	# all_users entries are also written for other local logins, where
 	# user_dir would point at the playbook runner's home instead of theirs.

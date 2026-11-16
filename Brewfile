@@ -138,6 +138,8 @@ brew 'mtr'
 brew 'nmap'
 # Adds an OCR text layer to scanned PDF files
 brew 'ocrmypdf'
+# AI coding agent, built for the terminal
+brew 'opencode'
 # Swiss-army knife of markup format conversion
 brew 'pandoc'
 # Port of pdftk in java

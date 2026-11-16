@@ -61,7 +61,7 @@ script/install-git-hooks # copy the gitleaks pre-commit hook (.config/git/templa
 
 **`claude/`** holds the global Claude Code config:
 
-- `CLAUDE.md` is symlinked to `~/.claude/CLAUDE.md`.
+- `CLAUDE.md` is symlinked to `~/.claude/CLAUDE.md`, and to `~/.config/opencode/AGENTS.md` for [OpenCode](https://opencode.ai), which reads only `AGENTS.md`. OpenCode doesn't look in `~/.claude/rules` either, so [`.config/opencode/opencode.json`](.config/opencode/opencode.json) loads `preferences.md` through its `instructions`; it already finds skills in `~/.claude/skills`.
 - `preferences.md` holds the rules shared with claude.ai. It's symlinked to `~/.claude/rules/preferences.md`, which Claude Code loads every session (an `@` import from `CLAUDE.md` was skipped as external in `claude -p`). `script/claude-ai-prefs` copies it for pasting into claude.ai, and `script/doctor` and `script/update` flag a stale paste. Like everything here it's public, so personal context for claude.ai stays out of it.
 - `settings.json` is *merged* into `~/.claude/settings.json` by the playbook's `claude` tag. It isn't symlinked because Claude Code replaces the file when it saves.
 - Install third-party skills as plugins when they ship one: add them to `enabledPlugins` and `extraKnownMarketplaces` in `claude/settings.json`, and the playbook installs them while `script/update` keeps them current. Vendor installers like `npx impeccable install` copy files into `~/.claude` that nothing tracks or updates, and write their hooks into whichever project you ran them from.
