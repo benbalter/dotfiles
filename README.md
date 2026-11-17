@@ -57,6 +57,7 @@ The same repo sets up two kinds of Mac. Each machine's profile lives in the untr
 | Security and update policy | Set and verified by the playbook | Firewall, FileVault, remote access, System Settings lockdown and update policy left to IT's MDM (`script/doctor` only warns); Gatekeeper, TouchID for `sudo` and no auto-login still applied |
 | Login window, computer name | From `config.yml` | Left to IT |
 | Nightly `script/update` | Runs from a launch agent | Disabled; run `up` by hand |
+| Commit and tag signing | Through 1Password | Off for now (in `~/.gitconfig.local`) |
 | Other local accounts | Get the security baseline | Left alone (usually IT's admin account) |
 | `script/update-brewfile` | Runs | Refuses, so a dump can't delete the skipped entries |
 

@@ -212,6 +212,24 @@
             - item.stat.islnk | default(false)
             - item.stat.lnk_source.startswith(playbook_dir ~ '/')
 
+    # .gitconfig.macos signs commits and tags through 1Password's op-ssh-sign,
+    # and a work Mac doesn't install 1Password, so every commit there failed.
+    # Signing stays off on a work Mac for now, set in the untracked
+    # ~/.gitconfig.local because .gitconfig includes it last; a Mac switched
+    # back to personal has the override removed.
+    - name: Turn commit and tag signing off on a work Mac
+      community.general.git_config:
+        scope: file
+        file: "{{ ansible_facts['user_dir'] }}/.gitconfig.local"
+        name: "{{ item }}"
+        value: "{{ 'false' if is_work else omit }}"
+        state: "{{ 'present' if is_work else 'absent' }}"
+      loop:
+        - commit.gpgSign
+        - tag.gpgSign
+      when: not is_ci
+      tags: [dotfiles]
+
     # Symlinking a plist into ~/Library/LaunchAgents doesn't load it until the
     # next login, so on a fresh machine the nightly update never ran until
     # script/doctor flagged it. Bootstrap only jobs that aren't loaded:
