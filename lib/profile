@@ -19,18 +19,28 @@ export DOTFILES_PROFILE
 
 # Add the Brewfile entries listed in Brewfile.work-skip to brew bundle's
 # HOMEBREW_BUNDLE_*_SKIP variables on a work Mac, keeping any skips the caller
-# already set. `mas *` skips every App Store app, since a managed Mac may not
-# allow a personal Apple ID, and one failed mas install stops `brew bundle`.
+# already set. `<type> *` skips every Brewfile entry of that type except the
+# ones opted back in with `!<type> <name>` (a mas entry's name is its id), so
+# a work Mac installs only the casks and App Store apps chosen for it.
 # Usage: dotfiles_bundle_skip <dotfiles root>
 dotfiles_bundle_skip() {
 	[ "$DOTFILES_PROFILE" = work ] || return 0
 	_skip_list="$1/Brewfile.work-skip"
 	[ -r "$_skip_list" ] || return 0
 	for _type in brew cask mas tap; do
-		_names=$(sed -n "s/^$_type  *\([^ #]*\).*/\1/p" "$_skip_list" | tr '\n' ' ')
-		if [ "$_type" = mas ] && printf ' %s ' "$_names" | grep -q ' \* '; then
-			_names=$(sed -n 's/^mas .*id: *\([0-9_]*\).*/\1/p' "$1/Brewfile" | tr -d _ | tr '\n' ' ')
+		_names=$(sed -n "s/^$_type  *\([^ #]*\).*/\1/p" "$_skip_list")
+		if printf '%s\n' "$_names" | grep -qx '\*'; then
+			_keep=$(sed -n "s/^!$_type  *\([^ #]*\).*/\1/p" "$_skip_list")
+			if [ "$_type" = mas ]; then
+				_names=$(sed -n 's/^mas .*id: *\([0-9_]*\).*/\1/p' "$1/Brewfile" | tr -d _)
+				_keep=$(printf '%s' "$_keep" | tr -d _)
+			else
+				_names=$(sed -n "s/^$_type '\([^']*\)'.*/\1/p" "$1/Brewfile")
+			fi
+			# An empty pattern list would match, and drop, every name.
+			[ -z "$_keep" ] || _names=$(printf '%s\n' "$_names" | grep -vxF "$_keep" || true)
 		fi
+		_names=$(printf '%s' "$_names" | tr '\n' ' ')
 		[ -n "$_names" ] || continue
 		_var="HOMEBREW_BUNDLE_$(printf %s "$_type" | tr '[:lower:]' '[:upper:]')_SKIP"
 		eval "_have=\${$_var:-}"
@@ -38,7 +48,7 @@ dotfiles_bundle_skip() {
 		eval "$_var=\"\${_have:+\$_have }\$_names\""
 		export "${_var?}"
 	done
-	unset _skip_list _type _names _var _have
+	unset _skip_list _type _names _keep _var _have
 }
 
 # Record a profile in the env file, replacing any DOTFILES_PROFILE line already

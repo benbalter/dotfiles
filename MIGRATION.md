@@ -68,7 +68,7 @@ script/setup --work   # employer-managed Mac: do the Work Mac "Before setup" ste
 What to expect:
 
 - Bootstrap creates a Python venv and installs Ansible.
-- Ansible installs every formula, cask, Mac App Store app, and VS Code extension from `Brewfile` (a work Mac skips `Brewfile.work-skip` and every App Store app). **First run takes 20–60 minutes.**
+- Ansible installs every formula, cask, Mac App Store app, and VS Code extension from `Brewfile` (a work Mac installs only the casks `Brewfile.work-skip` opts in, and no App Store apps). **First run takes 20–60 minutes.**
 - You will be prompted for `sudo` (system defaults, firewall) and may see App Store prompts if any `mas` app needs review.
 - Re-running is safe — every task is idempotent.
 
@@ -138,7 +138,7 @@ These are **not** managed by the playbook — copy or restore as needed.
 
 An employer-managed Mac runs the same playbook with `DOTFILES_PROFILE=work` ([`lib/profile`](lib/profile)). That profile:
 
-- Skips the [`Brewfile.work-skip`](Brewfile.work-skip) entries: personal and hobby apps, network filters, security tools that overlap IT's, Caddy, Docker Desktop, some paid apps, local LLMs and every Mac App Store app.
+- Installs only the casks opted in with `!cask` lines in [`Brewfile.work-skip`](Brewfile.work-skip) and no Mac App Store apps, and skips the formulae it lists (hobby and network-probing tools, Caddy). To add an app, add a `!cask` line there. An app already installed by hand needs `brew install --cask --adopt <name>` once, or brew bundle fails on it.
 - Leaves the firewall, FileVault, remote-access and System Settings lockdowns, update policy, the login window and the computer name to the MDM, and `script/doctor` only warns about them. Gatekeeper, TouchID for `sudo`, and turning off automatic login still apply.
 - Switches back with `script/setup --personal`.
 - Refuses `script/update-brewfile`, because a dump would delete the skipped entries from the shared Brewfile.

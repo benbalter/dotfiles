@@ -139,15 +139,48 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 	rm -rf "$home" "$root"
 	[ "$status" -eq 0 ] || fail "$output"
 	# Whitespace is irrelevant to brew bundle, which splits on it.
-	[ "$(echo "$output" | tr -s ' ')" = "work|already game |1234567 " ] || fail "$output"
+	[ "$(echo "$output" | tr -s ' ')" = "work|already game|1234567" ] || fail "$output"
+}
+
+@test "lib/profile opts entries back in under a wildcard skip" {
+	home=$(mktemp -d) root=$(mktemp -d)
+	mkdir -p "$home/.config/dotfiles"
+	echo 'DOTFILES_PROFILE=work' >"$home/.config/dotfiles/env"
+	printf "brew 'tool'\ncask 'a'\ncask 'b'\ncask 'c'\nmas 'X', id: 1_111\nmas 'Y', id: 2_222\n" >"$root/Brewfile"
+	printf 'cask *\nmas *\n!cask b # wanted\n!mas 2_222\ncask c\n' >"$root/Brewfile.work-skip"
+	run env -i HOME="$home" PATH="$PATH" sh -c "
+		. '$REPO_ROOT/lib/profile'
+		dotfiles_bundle_skip '$root'
+		echo \"\${HOMEBREW_BUNDLE_BREW_SKIP:-}|\$HOMEBREW_BUNDLE_CASK_SKIP|\$HOMEBREW_BUNDLE_MAS_SKIP\"
+	"
+	rm -rf "$home" "$root"
+	[ "$status" -eq 0 ] || fail "$output"
+	[ "$(echo "$output" | tr -s ' ')" = "|a c|1111" ] || fail "$output"
 }
 
 @test "Brewfile.work-skip names only entries the Brewfile has" {
 	while read -r type name _; do
 		case "$type" in '' | '#'*) continue ;; esac
 		[ "$name" = '*' ] && continue
-		grep -q "^$type '$name'" "$REPO_ROOT/Brewfile" || fail "$type $name is not in the Brewfile"
+		type=${type#!}
+		if [ "$type" = mas ]; then
+			sed -n 's/^mas .*id: *\([0-9_]*\).*/\1/p' "$REPO_ROOT/Brewfile" | tr -d _ | grep -qx "$(printf %s "$name" | tr -d _)" ||
+				fail "mas $name is not in the Brewfile"
+		else
+			grep -q "^$type '$name'" "$REPO_ROOT/Brewfile" || fail "$type $name is not in the Brewfile"
+		fi
 	done <"$REPO_ROOT/Brewfile.work-skip"
+}
+
+@test "Brewfile.work-skip doesn't opt in to an entry it gives a reason to skip" {
+	skips=$(cat "$REPO_ROOT/Brewfile.work-skip")
+	while read -r type name _; do
+		case "$type" in '!'*) ;; *) continue ;; esac
+		! printf '%s\n' "$skips" | grep -qx "${type#!} $name" ||
+			fail "${type#!} $name is both skipped and opted in"
+	done <<EOF
+$skips
+EOF
 }
 
 @test "dotfiles_set_profile replaces the profile and keeps the rest of the env file" {

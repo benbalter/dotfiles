@@ -2,8 +2,34 @@
 # ~/.config/dotfiles/env) doesn't install. A separate file because
 # script/update-brewfile regenerates the Brewfile with `brew bundle dump`,
 # which would erase any conditionals written into it. See lib/profile.
-# Format: <type> <name>, where type is brew, cask, mas or tap. For mas, `*`
-# means every App Store app.
+# Format: <type> <name>, where type is brew, cask, mas or tap. `<type> *`
+# skips every entry of that type, and `!<type> <name>` opts one back in (a mas
+# entry's name is its id).
+
+# Casks and App Store apps are opt-in on a work Mac: it starts with a minimal
+# app set and grows as needed. Add a `!cask` line to install one there. App
+# Store apps also need a personal Apple ID, which a managed Mac may not allow,
+# and a failed mas install stops brew bundle partway.
+cask *
+mas *
+
+!cask font-hack-nerd-font
+!cask ghostty
+!cask visual-studio-code
+
+# Desk hardware: docks, lights, mute buttons and mice that move between Macs
+!cask displaylink
+!cask elgato-control-center
+!cask mutedeck
+!cask openlogi
+
+# Already on the work Mac, installed by hand; adopt it once with
+# `brew install --cask --adopt spotify` so brew bundle doesn't trip over it
+!cask spotify
+
+# Formulae are still installed unless listed below. The casks below are
+# skipped by `cask *` anyway; they stay as the reasons never to opt them in,
+# and a test rejects opting in to one of them.
 
 # Network filters: AdGuard's DNS proxy and content filter fight a corporate
 # VPN or secure web gateway for the same traffic. LuLu's outbound firewall is
@@ -59,7 +85,6 @@ cask ollama-app
 cask google-drive
 cask kindle-previewer
 cask signal
-cask spotify
 cask steam
 cask textream
 brew epubcheck
@@ -70,7 +95,3 @@ brew esphome
 brew hackrf
 brew librtlsdr
 brew soapyhackrf
-
-# A managed Mac may not allow signing in with a personal Apple ID, and a
-# failed mas install stops brew bundle partway.
-mas *

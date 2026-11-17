@@ -53,7 +53,7 @@ The same repo sets up two kinds of Mac. Each machine's profile lives in the untr
 
 | | Personal (default) | Work (`DOTFILES_PROFILE=work`) |
 | --- | --- | --- |
-| Apps | Everything in the `Brewfile` | Skips [`Brewfile.work-skip`](Brewfile.work-skip): personal and hobby apps, network filters, security tools that overlap IT's, Caddy, Docker Desktop (use Colima), some paid apps and local LLMs, and all Mac App Store apps |
+| Apps | Everything in the `Brewfile` | Casks and Mac App Store apps are opt-in: only the `!cask` lines in [`Brewfile.work-skip`](Brewfile.work-skip) install. It also skips hobby, network-probing and personal formulae and Caddy |
 | Security and update policy | Set and verified by the playbook | Firewall, FileVault, remote access, System Settings lockdown and update policy left to IT's MDM (`script/doctor` only warns); Gatekeeper, TouchID for `sudo` and no auto-login still applied |
 | Login window, computer name | From `config.yml` | Left to IT |
 | `script/update-brewfile` | Runs | Refuses, so a dump can't delete the skipped entries |
