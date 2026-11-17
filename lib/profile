@@ -51,6 +51,22 @@ dotfiles_bundle_skip() {
 	unset _skip_list _type _names _keep _var _have
 }
 
+# Disable the mise tools Brewfile.work-skip lists (`mise <tool>`) on a work
+# Mac, through mise's own MISE_DISABLE_TOOLS, so `mise install` and `mise
+# upgrade` leave them out and doctor doesn't call them missing. lib/profile
+# calls it as it's sourced, so shells, update and doctor all agree.
+# Usage: dotfiles_mise_skip <dotfiles root>
+dotfiles_mise_skip() {
+	[ "$DOTFILES_PROFILE" = work ] || return 0
+	[ -r "$1/Brewfile.work-skip" ] || return 0
+	_names=$(sed -n 's/^mise  *\([^ #]*\).*/\1/p' "$1/Brewfile.work-skip" | tr '\n' ',')
+	_names=${_names%,}
+	[ -n "$_names" ] || return 0
+	MISE_DISABLE_TOOLS="${MISE_DISABLE_TOOLS:+$MISE_DISABLE_TOOLS,}$_names"
+	export MISE_DISABLE_TOOLS
+	unset _names
+}
+
 # Record a profile in the env file, replacing any DOTFILES_PROFILE line already
 # there and keeping the rest (a CA bundle, say). script/setup --work calls it,
 # so a new work Mac can't run setup on the personal profile by mistake.
@@ -72,3 +88,7 @@ dotfiles_set_profile() {
 	DOTFILES_PROFILE=$1
 	export DOTFILES_PROFILE
 }
+
+# The repo root: lib/globals sets DOTFILES_ROOT, and every macOS checkout (the
+# only place a work profile exists) lives at ~/.files.
+dotfiles_mise_skip "${DOTFILES_ROOT:-$HOME/.files}"

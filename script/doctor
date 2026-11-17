@@ -122,11 +122,24 @@ if command -v launchctl >/dev/null; then
 	# Every agent the repo ships, not just the update job: tmpreaper once ran
 	# nightly for months deleting almost nothing, and nobody could tell, because
 	# it exited 0 and logged nowhere.
+	work_off=""
+	if [ "$DOTFILES_PROFILE" = work ] && command -v yq >/dev/null; then
+		work_off=" $(yq -r '.launch_agents_work_disabled[]?' "$CONFIG" | tr '\n' ' ')"
+	fi
 	for plist in "$DOTFILES_ROOT"/Library/LaunchAgents/*.plist; do
 		[ -f "$plist" ] || continue
 		label=$(plist_string "$plist" Label)
 		log=$(plist_log "$plist")
 		job="gui/$(id -u)/$label"
+		case "$work_off" in *" $label "*)
+			if launchctl print-disabled "gui/$(id -u)" 2>/dev/null | grep -Eq "\"$label\" => (disabled|true)"; then
+				ok "$label disabled on a work Mac"
+			else
+				bad "$label should be disabled on a work Mac (re-run: script/ansible --tags launchagents)"
+			fi
+			continue
+			;;
+		esac
 		if info=$(launchctl print "$job" 2>/dev/null); then
 			code=$(echo "$info" | sed -n 's/^[[:space:]]*last exit code = //p' | head -1)
 			case "$code" in
@@ -175,7 +188,7 @@ EOF
 	# Only macOS schedules script/update (the launch agent); on Linux it runs
 	# when you run `up`, so a quiet week isn't a fault there.
 	if [ -n "$(find "$STATUS" -mtime +1)" ]; then
-		if [ "$(uname)" = "Darwin" ]; then
+		if [ "$(uname)" = "Darwin" ] && [ "$DOTFILES_PROFILE" != work ]; then
 			bad "no update has run in 2+ days (last started $started); is the job loaded?"
 		else
 			warn "no update has run in 2+ days (last started $started); run up"
@@ -385,7 +398,10 @@ SETTINGS
 	# changing security settings needs this account's approval. Each also needs
 	# a secure token, or it can't unlock FileVault after a restart. Warnings,
 	# not failures: both can be deliberate, and the playbook doesn't set them.
-	for user in $("$DOTFILES_ROOT/script/other-users" 2>/dev/null); do
+	# Not on a work Mac, whose other login is usually IT's admin account.
+	others=""
+	[ "$DOTFILES_PROFILE" = work ] || others=$("$DOTFILES_ROOT/script/other-users" 2>/dev/null)
+	for user in $others; do
 		if dsmemberutil checkmembership -U "$user" -G admin 2>/dev/null | grep -q 'is a member'; then
 			warn "$user is an administrator (System Settings > Users & Groups to make it standard)"
 		else

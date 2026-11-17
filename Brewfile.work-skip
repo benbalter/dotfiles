@@ -2,7 +2,8 @@
 # ~/.config/dotfiles/env) doesn't install. A separate file because
 # script/update-brewfile regenerates the Brewfile with `brew bundle dump`,
 # which would erase any conditionals written into it. See lib/profile.
-# Format: <type> <name>, where type is brew, cask, mas or tap. `<type> *`
+# Format: <type> <name>, where type is brew, cask, mas or tap, or mise for a
+# tool in .config/mise/config.toml. `<type> *`
 # skips every entry of that type, and `!<type> <name>` opts one back in (a mas
 # entry's name is its id).
 
@@ -62,8 +63,19 @@ cask languagetool-desktop
 
 # Network probing: a port scan or bandwidth test from a corporate Mac can
 # trip intrusion alerts, and acceptable-use policies often forbid scanning.
+# mtr and gping are milder, but send the same kind of probe traffic.
 brew iperf
 brew nmap
+brew mtr
+brew gping
+
+# Data-loss prevention watches for tools that move files off the Mac: rclone
+# syncs to cloud storage, and restic backs up to a remote store (script/backup
+# refuses to run on a work Mac anyway). GAM administers a Google Workspace
+# domain; it's only here for script/chrome-policy, which skips a work Mac.
+mise rclone
+brew restic
+mise pipx:gam7
 
 # Caddy runs as a Homebrew service, and nothing here configures it: a
 # listening web server on a work Mac draws questions and serves nothing.

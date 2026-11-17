@@ -503,6 +503,13 @@ backup_paths:
   - .claude/projects/*/memory
   - Library/Application Support/com.elgato.StreamDeck/ProfilesV3
 
+# This repo's own launch agents that a work Mac keeps disabled, by label. An
+# agent that pulls this public repo nightly and upgrades packages unattended is
+# the kind of persistence endpoint security flags, so a work Mac runs `up` by
+# hand instead.
+launch_agents_work_disabled:
+  - com.balter.ben.update
+
 # Launch agents third-party apps install in ~/Library/LaunchAgents to start
 # themselves at login, by label. The playbook unloads and deletes them, and
 # script/doctor warns if one comes back. Camera Hub has no setting for this:

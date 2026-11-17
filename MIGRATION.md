@@ -138,8 +138,10 @@ These are **not** managed by the playbook — copy or restore as needed.
 
 An employer-managed Mac runs the same playbook with `DOTFILES_PROFILE=work` ([`lib/profile`](lib/profile)). That profile:
 
-- Installs only the casks opted in with `!cask` lines in [`Brewfile.work-skip`](Brewfile.work-skip) and no Mac App Store apps, and skips the formulae it lists (hobby and network-probing tools, Caddy). To add an app, add a `!cask` line there. An app already installed by hand needs `brew install --cask --adopt <name>` once, or brew bundle fails on it.
+- Installs only the casks opted in with `!cask` lines in [`Brewfile.work-skip`](Brewfile.work-skip) and no Mac App Store apps, and skips the formulae and mise tools it lists (hobby and network-probing tools, Caddy, and file-sync tools like rclone and restic that data-loss prevention watches for). To add an app, add a `!cask` line there. An app already installed by hand needs `brew install --cask --adopt <name>` once, or brew bundle fails on it.
 - Leaves the firewall, FileVault, remote-access and System Settings lockdowns, update policy, the login window and the computer name to the MDM, and `script/doctor` only warns about them. Gatekeeper, TouchID for `sudo`, and turning off automatic login still apply.
+- Keeps the nightly update job (`com.balter.ben.update`) disabled, since an agent that pulls a public repo and upgrades packages unattended looks like persistence to endpoint security. Run `up` by hand.
+- Leaves other local accounts alone, because on a work Mac that's usually IT's admin account.
 - Switches back with `script/setup --personal`.
 - Refuses `script/update-brewfile`, because a dump would delete the skipped entries from the shared Brewfile.
 

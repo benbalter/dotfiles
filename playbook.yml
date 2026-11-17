@@ -225,9 +225,43 @@
       when: not is_ci
       tags: [dotfiles, launchagents]
       vars:
-        launch_agents: "{{ dotfiles_files_macos | select('match', '^Library/LaunchAgents/') | list }}"
+        launch_agents_off: "{{ launch_agents_work_disabled if is_work else [] }}"
+        launch_agents: >-
+          {{ dotfiles_files_macos | select('match', '^Library/LaunchAgents/')
+             | reject('in', launch_agents_off | map('regex_replace', '^', 'Library/LaunchAgents/')
+                                              | map('regex_replace', '$', '.plist') | list)
+             | list }}
         launch_agent_stamp_dir: "{{ ansible_facts['user_dir'] }}/.local/state/dotfiles/launchagents"
       block:
+        # The plist stays linked, so `launchctl disable` (which persists across
+        # logins) is what keeps launchd from loading it at the next login. A
+        # Mac switched back to personal re-enables it before the bootstrap
+        # below.
+        - name: Disable or re-enable launch agents for the machine profile
+          ansible.builtin.shell:
+            cmd: |
+              set -eu -o pipefail
+              domain="gui/$(id -u)"
+              # Read the whole list first: grep -q exiting early could SIGPIPE
+              # launchctl and make a disabled job look enabled.
+              disabled="$(launchctl print-disabled "$domain")"
+              if printf '%s\n' "$disabled" | grep -E "\"$LABEL\" => (disabled|true)" >/dev/null; then
+                [ "$TURN_OFF" = True ] && exit 0
+                launchctl enable "$domain/$LABEL"
+              else
+                [ "$TURN_OFF" = True ] || exit 0
+                launchctl disable "$domain/$LABEL"
+                launchctl bootout "$domain/$LABEL" 2>/dev/null || true
+              fi
+              echo changed
+          environment:
+            LABEL: "{{ item }}"
+            TURN_OFF: "{{ item in launch_agents_off }}"
+          loop: "{{ launch_agents_work_disabled }}"
+          register: launch_agents_profile
+          changed_when: "'changed' in launch_agents_profile.stdout"
+          when: not ansible_check_mode
+
         - name: Check launch agent status
           ansible.builtin.command:
             cmd: "launchctl print gui/{{ ansible_facts['user_uid'] }}/{{ item | basename | splitext | first }}"
@@ -388,9 +422,16 @@
     # entries. Supersedes those entries and the old standalone copilot npm task.
     # Runs from $HOME so mise uses the symlinked global config and needn't trust
     # the repo checkout.
+    # lib/profile sets MISE_DISABLE_TOOLS, so a work Mac leaves out the tools
+    # Brewfile.work-skip lists.
     - name: Install mise tools
       ansible.builtin.command:
-        cmd: mise install
+        argv:
+          - sh
+          - -c
+          - 'DOTFILES_ROOT="$1" && . "$1/lib/profile" && exec mise install'
+          - sh
+          - "{{ playbook_dir }}"
         chdir: "{{ ansible_facts['env']['HOME'] }}"
       become: false
       register: mise_install
@@ -592,7 +633,9 @@
       register: other_users
       check_mode: false
       changed_when: false
-      when: not is_ci
+      # On a work Mac the other logins are usually IT's admin account, which
+      # isn't this playbook's to change.
+      when: not is_ci and not is_work
       tags: [macos, defaults]
 
     # Same reason as this account's home: macOS creates each home 0750 with
@@ -756,6 +799,9 @@
       ansible.builtin.shell:
         cmd: |
           set -eu -o pipefail
+          # Skip an app that isn't installed (Chrome on a work Mac that
+          # doesn't opt it in) rather than fail the play.
+          utiluti app types "$WANT" >/dev/null 2>&1 || { echo "skipped: $WANT is not installed"; exit 0; }
           have="$(utiluti "$KIND" get "$NAME" --bundle-id 2>/dev/null || true)"
           # LaunchServices may report a bundle ID in a different case.
           [ "$(echo "$have" | tr '[:upper:]' '[:lower:]')" != "$(echo "$WANT" | tr '[:upper:]' '[:lower:]')" ] || exit 0
