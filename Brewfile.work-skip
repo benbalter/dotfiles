@@ -18,10 +18,9 @@ mas *
 !cask ghostty
 !cask visual-studio-code
 
-# Desk hardware: docks, lights, mute buttons and mice that move between Macs
+# Desk hardware: docks, lights and mice that move between Macs
 !cask displaylink
 !cask elgato-control-center
-!cask mutedeck
 !cask openlogi
 
 # Already on the work Mac, installed by hand; adopt it once with
@@ -31,6 +30,10 @@ mas *
 # Formulae are still installed unless listed below. The casks below are
 # skipped by `cask *` anyway; they stay as the reasons never to opt them in,
 # and a test rejects opting in to one of them.
+
+# MuteDeck runs a local API server for its integrations, and listening
+# ports on a corporate network draw IT's scanners.
+cask mutedeck
 
 # Network filters: AdGuard's DNS proxy and content filter fight a corporate
 # VPN or secure web gateway for the same traffic. LuLu's outbound firewall is
