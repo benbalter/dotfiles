@@ -140,7 +140,7 @@ An employer-managed Mac runs the same playbook with `DOTFILES_PROFILE=work` ([`l
 
 - Installs only the casks opted in with `!cask` lines in [`Brewfile.work-skip`](Brewfile.work-skip) and no Mac App Store apps, and skips the formulae and mise tools it lists (hobby and network-probing tools, Caddy, and file-sync tools like rclone and restic that data-loss prevention watches for). To add an app, add a `!cask` line there. An app already installed by hand needs `brew install --cask --adopt <name>` once, or brew bundle fails on it.
 - Leaves the firewall, FileVault, remote-access and System Settings lockdowns, update policy, the login window and the computer name to the MDM, and `script/doctor` only warns about them. Gatekeeper, TouchID for `sudo`, and turning off automatic login still apply.
-- Keeps the nightly update job (`com.balter.ben.update`) disabled, since an agent that pulls a public repo and upgrades packages unattended looks like persistence to endpoint security. Run `up` by hand.
+- Keeps the nightly update job (`com.balter.ben.update`) disabled, since an agent that pulls a public repo and upgrades packages unattended looks like persistence to endpoint security. Run `up` by hand. The tmpreaper job, which deletes week-old files from `~/Downloads`, stays off too.
 - Turns commit and tag signing off in `~/.gitconfig.local` for now, since signing goes through 1Password, which a work Mac doesn't install.
 - Leaves other local accounts alone, because on a work Mac that's usually IT's admin account.
 - Switches back with `script/setup --personal`.

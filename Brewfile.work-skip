@@ -81,6 +81,48 @@ mise pipx:gam7
 # listening web server on a work Mac draws questions and serves nothing.
 brew caddy
 
+# The writing and PDF pipeline for personal publishing, about 2 GB with
+# OCR's language packs and Java. LanguageTool's server also runs as a
+# Homebrew service listening on a local port, which a work Mac doesn't need
+# for Vale and Harper to lint prose in the editor.
+brew languagetool
+brew openjdk
+brew maven
+brew pandoc
+brew weasyprint
+brew diction
+brew ocrmypdf
+brew tesseract-lang
+brew img2pdf
+brew pdftk-java
+brew ghostscript
+
+# Media conversion. exiftool stays: the media-privacy-pass skill needs it to
+# strip metadata before a screenshot goes anywhere public.
+brew ffmpeg
+brew imagemagick
+brew vips
+brew exif
+
+# Toolchains and cloud CLIs for personal projects, several hundred MB each.
+# Opt one back in (delete its line) if a work project needs it.
+brew rust
+brew cmake
+brew protobuf
+brew jsonnet
+brew hivemind
+brew azure-cli
+
+# Unused on a work Mac: mas installs App Store apps, all skipped above, and
+# GPG has nothing to sign, since signing uses SSH keys (and is off there).
+brew mas
+brew gnupg
+brew pinentry-mac
+
+# tmpreaper deletes anything in ~/Downloads older than five days, work files
+# included. Its launch agent is in config.yml's launch_agents_work_disabled.
+brew tmpreaper
+
 # Docker Desktop needs a paid subscription at larger companies; colima (with
 # the docker CLI) from the Brewfile covers the same workflows.
 cask docker-desktop

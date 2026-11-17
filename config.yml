@@ -506,9 +506,11 @@ backup_paths:
 # This repo's own launch agents that a work Mac keeps disabled, by label. An
 # agent that pulls this public repo nightly and upgrades packages unattended is
 # the kind of persistence endpoint security flags, so a work Mac runs `up` by
-# hand instead.
+# hand instead. tmpreaper's agent would delete work files from ~/Downloads,
+# and Brewfile.work-skip leaves tmpreaper itself out.
 launch_agents_work_disabled:
   - com.balter.ben.update
+  - com.balter.ben.tmpreaper
 
 # Launch agents third-party apps install in ~/Library/LaunchAgents to start
 # themselves at login, by label. The playbook unloads and deletes them, and
