@@ -34,6 +34,11 @@ brew mole
 # checks on-device and stays.
 cask languagetool-desktop
 
+# Network probing: a port scan or bandwidth test from a corporate Mac can
+# trip intrusion alerts, and acceptable-use policies often forbid scanning.
+brew iperf
+brew nmap
+
 # Caddy runs as a Homebrew service, and nothing here configures it: a
 # listening web server on a work Mac draws questions and serves nothing.
 brew caddy
