@@ -40,8 +40,6 @@ brew 'dust'
 brew 'openjdk'
 # Validate EPUB files, version 2.0 and later
 brew 'epubcheck'
-# Speech synthesizer that supports more than hundred languages and accents
-brew 'espeak-ng'
 # Make creating custom firmwares for ESP32/ESP8266 super easy
 brew 'esphome'
 # Read, write, modify, and display EXIF data on the command-line
@@ -130,8 +128,6 @@ brew 'mas'
 brew 'maven'
 # Polyglot runtime manager (asdf rust clone)
 brew 'mise'
-# Program for MPEG audio stream validation
-brew 'mp3val'
 # 'traceroute' and 'ping' in a single tool
 brew 'mtr'
 # Port scanning utility for large networks
@@ -160,16 +156,6 @@ brew 'restic'
 brew 'ripgrep'
 # Safe, concurrent, practical language
 brew 'rust'
-# SDL2 graphics drawing primitives and other support functions
-brew 'sdl2_gfx'
-# Library for loading images as SDL surfaces and textures
-brew 'sdl2_image'
-# Sample multi-channel audio mixer library
-brew 'sdl2_mixer'
-# Small sample cross-platform networking library
-brew 'sdl2_net'
-# Library for using TrueType fonts in SDL applications
-brew 'sdl2_ttf'
 # Autoformat shell script source code
 brew 'shfmt'
 # SoapySDR HackRF module
