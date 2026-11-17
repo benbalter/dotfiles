@@ -53,8 +53,8 @@ The same repo sets up two kinds of Mac. Each machine's profile lives in the untr
 
 | | Personal (default) | Work (`DOTFILES_PROFILE=work`) |
 | --- | --- | --- |
-| Apps | Everything in the `Brewfile` | Skips [`Brewfile.work-skip`](Brewfile.work-skip): personal apps, network filters, Docker Desktop (use Colima), and all Mac App Store apps |
-| Security and update policy | Set and verified by the playbook | Firewall, FileVault, remote access, System Settings lockdown and update policy left to IT's MDM (`script/doctor` only warns); Gatekeeper, TouchID for `sudo`, no auto-login and no wake for network still applied |
+| Apps | Everything in the `Brewfile` | Skips [`Brewfile.work-skip`](Brewfile.work-skip): personal and hobby apps, network filters, security tools that overlap IT's, Caddy, Docker Desktop (use Colima), some paid apps and local LLMs, and all Mac App Store apps |
+| Security and update policy | Set and verified by the playbook | Firewall, FileVault, remote access, System Settings lockdown and update policy left to IT's MDM (`script/doctor` only warns); Gatekeeper, TouchID for `sudo` and no auto-login still applied |
 | Login window, computer name | From `config.yml` | Left to IT |
 | `script/update-brewfile` | Runs | Refuses, so a dump can't delete the skipped entries |
 
@@ -80,7 +80,7 @@ sudo -v
 ~/.files/script/setup --work   # employer-managed Mac
 ```
 
-The playbook installs Homebrew and the `Brewfile`, Mac App Store apps, dotfile symlinks, oh-my-zsh, mise runtimes and CLIs, Claude Code settings, the Dock, system and user defaults, and security settings (firewall, Gatekeeper, TouchID for `sudo`, and FileVault). On a work Mac it leaves the firewall, FileVault, remote-access and System Settings lockdowns, update policy, the login window and the computer name to IT. Gatekeeper, TouchID for `sudo`, and turning off automatic login and wake for network access still apply. Setup then runs `up` (`script/update`) once. It is macOS-only; on Linux, use `install.sh`.
+The playbook installs Homebrew and the `Brewfile`, Mac App Store apps, dotfile symlinks, oh-my-zsh, mise runtimes and CLIs, Claude Code settings, the Dock, system and user defaults, and security settings (firewall, Gatekeeper, TouchID for `sudo`, and FileVault). On a work Mac it leaves the firewall, FileVault, remote-access and System Settings lockdowns, update policy, the login window and the computer name to IT. Gatekeeper, TouchID for `sudo`, and turning off automatic login still apply. Setup then runs `up` (`script/update`) once. It is macOS-only; on Linux, use `install.sh`.
 
 To run part of the playbook, pass tags (`dotfiles`, `packages`, `homebrew`, `mise`, `claude`, `macos`, `defaults`, `dock`, `security`, `ohmyzsh`, …), and add `--check --diff` to preview:
 

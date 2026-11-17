@@ -255,7 +255,9 @@ fi
 if [ -n "${DOTFILES_BACKUP_REPOSITORY:-}" ]; then
 	echo "==> Backup"
 	last="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/backup-last"
-	if [ ! -s "$last" ]; then
+	if [ "$DOTFILES_PROFILE" = work ]; then
+		bad "backups are set up on a work Mac, which script/backup refuses (remove DOTFILES_BACKUP_REPOSITORY from $DOTFILES_ENV_FILE)"
+	elif [ ! -s "$last" ]; then
 		bad "no backup has finished yet (script/backup --setup, then script/backup)"
 	elif [ $(($(date +%s) - $(cat "$last"))) -gt 172800 ]; then
 		bad "no backup has finished in 2+ days (run script/backup to see why)"

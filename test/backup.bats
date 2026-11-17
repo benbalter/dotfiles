@@ -36,6 +36,18 @@ backup() {
 	echo "$output" | grep -q "not set up" || fail "$output"
 }
 
+@test "backup refuses on a work Mac, so employer data stays off personal storage" {
+	mkdir -p "$TMP/config/dotfiles"
+	echo 'DOTFILES_PROFILE=work' >"$TMP/config/dotfiles/env"
+	for args in "" --setup; do
+		# shellcheck disable=SC2086
+		backup $args
+		[ "$status" -ne 0 ] || fail "exit 0 for '$args': $output"
+		echo "$output" | grep -q "work Mac" || fail "$output"
+	done
+	[ ! -e "$TMP/repo" ] || fail "created a repository"
+}
+
 @test "backup stores the configured paths, never transcripts, and restores them" {
 	command -v restic >/dev/null || skip "restic not installed"
 	restic init --quiet

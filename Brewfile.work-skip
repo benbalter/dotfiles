@@ -12,14 +12,59 @@
 cask adguard
 cask lulu
 
+# Security tools that overlap the employer's: BlockBlock alerts on every
+# persistent agent IT's MDM or EDR installs, OverSight duplicates their
+# camera and mic monitoring, and mitmproxy's TLS-intercepting CA is the kind of
+# thing corporate security flags.
+cask blockblock
+cask oversight
+cask mitmproxy
+
+# Tools that work around or reach into what IT manages: Caffeine keeps the Mac
+# awake, so the MDM's idle screen lock never fires; mole (run by `up` from a
+# terminal) uses sudo to tweak the system and sweeps logs and caches that IT's
+# agents may rely on; Hammerspoon needs Accessibility to run arbitrary
+# scripts, with no tracked config to run here.
+cask caffeine
+cask hammerspoon
+brew mole
+
+# Reads everything typed in every app, and nothing here points it at the local
+# LanguageTool server, so work text may go to LanguageTool's cloud. Harper
+# checks on-device and stays.
+cask languagetool-desktop
+
+# Caddy runs as a Homebrew service, and nothing here configures it: a
+# listening web server on a work Mac draws questions and serves nothing.
+brew caddy
+
 # Docker Desktop needs a paid subscription at larger companies; colima (with
 # the docker CLI) from the Brewfile covers the same workflows.
 cask docker-desktop
 
+# Paid licences that may not cover a second Mac, and reverse-engineering
+# tools an acceptable-use policy may not allow
+cask hopper-disassembler
+cask gifox
+
+# Local LLMs: company AI policies often restrict them, and models are large
+cask ollama-app
+
 # Personal and consumer apps
 cask google-drive
+cask kindle-previewer
 cask signal
+cask spotify
 cask steam
+cask textream
+brew epubcheck
+brew gmailctl
+
+# Radio and home-automation hobby tools
+brew esphome
+brew hackrf
+brew librtlsdr
+brew soapyhackrf
 
 # A managed Mac may not allow signing in with a personal Apple ID, and a
 # failed mas install stops brew bundle partway.

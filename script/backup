@@ -47,6 +47,16 @@ if [ -z "${DOTFILES_BACKUP_REPOSITORY:-}" ]; then
 	echo "backup: not set up on this machine (no DOTFILES_BACKUP_REPOSITORY); skipping"
 	exit 0
 fi
+# backup_paths includes Claude Code's memory, which on an employer's Mac holds
+# the employer's details, and the repository is personal storage. Refuse
+# loudly rather than skip, so a work Mac that has it set shows up in the
+# update's failed steps. Listing and restoring stay allowed.
+if [ "$DOTFILES_PROFILE" = work ]; then
+	case "${1:-}" in "" | --setup)
+		die "a work Mac (DOTFILES_PROFILE=work) doesn't back up to personal storage; remove DOTFILES_BACKUP_REPOSITORY from $DOTFILES_ENV_FILE"
+		;;
+	esac
+fi
 command -v restic >/dev/null || die "restic isn't installed (brew bundle installs it)"
 
 export RESTIC_REPOSITORY="$DOTFILES_BACKUP_REPOSITORY"

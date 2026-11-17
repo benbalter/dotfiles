@@ -138,8 +138,8 @@ These are **not** managed by the playbook — copy or restore as needed.
 
 An employer-managed Mac runs the same playbook with `DOTFILES_PROFILE=work` ([`lib/profile`](lib/profile)). That profile:
 
-- Skips the [`Brewfile.work-skip`](Brewfile.work-skip) entries: personal apps, network filters, Docker Desktop and every Mac App Store app.
-- Leaves the firewall, FileVault, remote-access and System Settings lockdowns, update policy, the login window and the computer name to the MDM, and `script/doctor` only warns about them. Gatekeeper, TouchID for `sudo`, and turning off automatic login and wake for network access still apply.
+- Skips the [`Brewfile.work-skip`](Brewfile.work-skip) entries: personal and hobby apps, network filters, security tools that overlap IT's, Caddy, Docker Desktop, some paid apps, local LLMs and every Mac App Store app.
+- Leaves the firewall, FileVault, remote-access and System Settings lockdowns, update policy, the login window and the computer name to the MDM, and `script/doctor` only warns about them. Gatekeeper, TouchID for `sudo`, and turning off automatic login still apply.
 - Switches back with `script/setup --personal`.
 - Refuses `script/update-brewfile`, because a dump would delete the skipped entries from the shared Brewfile.
 
