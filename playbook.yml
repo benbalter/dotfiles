@@ -1,6 +1,14 @@
 - name: Configure development environment
   hosts: localhost
   connection: local
+  # Every fact the play and its roles read (user, env, platform, distribution,
+  # pkg_mgr) is in the min subset. The rest, hardware above all, took about
+  # 70s per gathering on a CI macOS runner, and the homebrew role's
+  # `setup: filter: pkg_mgr` gathered everything a second time.
+  gather_subset: [min]
+  module_defaults:
+    ansible.builtin.setup:
+      gather_subset: [min]
   # The play inherits the caller's PATH, and on a fresh Mac setup runs before
   # any shell has put Homebrew or mise's shims on it, so the bare mise, npx
   # and claude commands below would fail with "command not found". lookup,
