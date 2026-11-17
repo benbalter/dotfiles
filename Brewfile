@@ -2,8 +2,6 @@
 
 # Run your GitHub Actions locally
 brew 'act'
-# Improved shell history for zsh, bash, fish and nushell
-brew 'atuin'
 # Static analysis and lint tool, for (ba)sh scripts
 brew 'shellcheck'
 # Static checker for GitHub Actions workflow files

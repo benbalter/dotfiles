@@ -61,7 +61,7 @@ import sys, tomllib
 for f in sys.argv[1:]:
     with open(f, "rb") as fh:
         tomllib.load(fh)
-' .config/mise/config.toml .config/starship.toml .config/atuin/config.toml
+' .config/mise/config.toml .config/starship.toml
 
 deactivate
 

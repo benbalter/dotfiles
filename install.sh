@@ -50,7 +50,7 @@ chmod 700 "$HOME/.gnupg"
 for file in \
 	.bundle/config .gnupg/gpg.conf .config/mise/config.toml .config/starship.toml \
 	.config/git/attributes .config/git/allowed_signers .config/bat/config \
-	.config/atuin/config.toml .config/zed/settings.json .config/opencode/opencode.json; do
+	.config/zed/settings.json .config/opencode/opencode.json; do
 	link "$file"
 done
 link claude/CLAUDE.md .claude/CLAUDE.md

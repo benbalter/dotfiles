@@ -51,7 +51,6 @@ dotfiles_files_common:
   - .zprofile
   - .zshenv
   - .zshrc
-  - .config/atuin/config.toml
   - .config/bat/config
   - .config/git/allowed_signers
   - .config/git/attributes
@@ -119,6 +118,9 @@ dotfiles_retired:
   # Mackup's Dropbox backup went stale for years, and a `mackup restore`
   # would replace repo-managed links (.pryrc, .npmrc) with old copies.
   - .mackup.cfg
+  # atuin was dropped for fzf's Ctrl-R; its history database in
+  # ~/.local/share/atuin is left in place.
+  - .config/atuin/config.toml
 
 dotfile_root_dirs:
   - ""

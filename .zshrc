@@ -66,7 +66,7 @@ source "$DOTFILES_ROOT/lib/aliases"
 export PATH="$PATH:$HOME/.local/bin"
 
 # _cached_init <name> <command>...: source a tool's shell init script from a
-# cache instead of forking mise, starship, fzf and atuin on every start (about
+# cache instead of forking mise, starship and fzf on every start (about
 # 25ms). The cache's first line records the binary's resolved path, which
 # includes Homebrew's Cellar version, and the command: an upgrade or a changed
 # flag regenerates it. (Not an mtime check: bottles keep their build time.) It
@@ -101,7 +101,7 @@ fi
 # --print-full-init: plain `init zsh` prints a stub that forks starship again.
 _cached_init starship starship init zsh --print-full-init
 
-# fzf: Ctrl-T (files), Alt-C (cd). Sourced BEFORE atuin so atuin keeps Ctrl-R.
+# fzf: Ctrl-T (files), Alt-C (cd), Ctrl-R (history).
 # Each helper only if installed: install-tools (Codespaces) provides fzf but
 # not fd, bat or eza, and fzf's defaults beat a command that doesn't exist.
 # Only on a terminal: fzf's script saves and restores every option, and
@@ -119,9 +119,6 @@ if [[ -t 0 ]] && command -v fzf >/dev/null; then
     export FZF_ALT_C_OPTS="--preview 'eza --tree --level=2 --color=always {}'"
   _cached_init fzf fzf --zsh
 fi
-
-# Better shell history (Ctrl-R). Leave the up-arrow to history-substring-search.
-_cached_init atuin atuin init zsh --disable-up-arrow
 
 # ── Loaded shell (ORDER MATTERS) ──────────────────────────────────
 # Notify when a >Ns command finishes in an unfocused terminal (bgnotify plugin;
