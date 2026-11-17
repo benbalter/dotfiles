@@ -57,6 +57,17 @@ jobs:
       - name: Bootstrap
         run: script/bootstrap
 
+      # Fact gathering took about 70s on this runner even with gather_subset
+      # min, twice per playbook run (the play's, then the homebrew role's
+      # setup), in each of the three runs below. Ansible's platform facts call
+      # socket.getfqdn(), whose DNS lookup of the runner's hostname looks like
+      # the wait, so resolve the hostname locally. The timing shows the lookup
+      # is now instant.
+      - name: Resolve the runner's hostname locally
+        run: |
+          echo "127.0.0.1 $(hostname) $(hostname -s)" | sudo tee -a /etc/hosts
+          time python3 -c 'import socket; print(socket.getfqdn())'
+
       - name: Run playbook
         run: script/ansible
 
