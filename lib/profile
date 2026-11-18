@@ -67,6 +67,27 @@ dotfiles_mise_skip() {
 	unset _names
 }
 
+# Install the Brewfile's missing VS Code extensions with `code` itself when the
+# env file points NODE_EXTRA_CA_CERTS at a TLS-inspecting proxy's CA. brew
+# bundle runs `code --install-extension` in Homebrew's filtered environment,
+# which drops that variable, and VS Code's CLI ignores its system-certificate
+# settings, so every extension fails on the proxy's self-signed chain. Once
+# they're installed here, bundle finds them and moves on. Failures are left
+# for bundle to report.
+# Usage: dotfiles_vscode_extensions <dotfiles root>
+dotfiles_vscode_extensions() {
+	[ -n "${NODE_EXTRA_CA_CERTS:-}" ] || return 0
+	_code=$(command -v code || echo /opt/homebrew/bin/code)
+	[ -x "$_code" ] || return 0
+	_have=$("$_code" --list-extensions 2>/dev/null | tr '[:upper:]' '[:lower:]')
+	# xargs splits the list, which zsh (sourcing this file) wouldn't do for an
+	# unquoted variable. -r: with nothing missing, a bare `code` opens a window.
+	sed -n "s/^vscode '\([^']*\)'.*/\1/p" "$1/Brewfile" | tr '[:upper:]' '[:lower:]' |
+		grep -vxF "${_have:-.}" | sed 's/^/--install-extension /' |
+		xargs -r "$_code" >/dev/null 2>&1 || true
+	unset _code _have
+}
+
 # Record a profile in the env file, replacing any DOTFILES_PROFILE line already
 # there and keeping the rest (a CA bundle, say). script/setup --work calls it,
 # so a new work Mac can't run setup on the personal profile by mistake.

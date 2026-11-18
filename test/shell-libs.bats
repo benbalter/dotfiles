@@ -215,3 +215,19 @@ EOF
 	echo "$output" | grep -qx 'now=work' || fail "$output"
 	[ "$env_file" = "$(printf 'export SSL_CERT_FILE=/ca.pem\nDOTFILES_PROFILE=work')" ] || fail "$env_file"
 }
+
+@test "dotfiles_vscode_extensions installs only missing extensions, and only behind a proxy CA" {
+	home=$(mktemp -d) root=$(mktemp -d) bin=$(mktemp -d)
+	printf "vscode 'Have.It'\nvscode 'need.one'\nvscode 'need.two'\n" >"$root/Brewfile"
+	# shellcheck disable=SC2016 # the stub expands $1 and $@, not this shell
+	printf '#!/bin/sh\n[ "$1" = --list-extensions ] && { echo have.it; exit; }\necho "$@" >>"%s/calls"\n' "$root" >"$bin/code"
+	chmod +x "$bin/code"
+	run env -i HOME="$home" PATH="$bin:$PATH" sh -c ". '$REPO_ROOT/lib/profile'; dotfiles_vscode_extensions '$root'"
+	[ "$status" -eq 0 ] || fail "$output"
+	[ ! -e "$root/calls" ] || fail "ran without NODE_EXTRA_CA_CERTS: $(cat "$root/calls")"
+	run env -i HOME="$home" PATH="$bin:$PATH" NODE_EXTRA_CA_CERTS=/ca.pem sh -c ". '$REPO_ROOT/lib/profile'; dotfiles_vscode_extensions '$root'"
+	calls=$(cat "$root/calls")
+	rm -rf "$home" "$root" "$bin"
+	[ "$status" -eq 0 ] || fail "$output"
+	[ "$calls" = "--install-extension need.one --install-extension need.two" ] || fail "$calls"
+}

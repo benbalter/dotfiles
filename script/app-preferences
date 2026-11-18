@@ -18,7 +18,18 @@ set -eu
 # shellcheck disable=SC3040
 (set -o pipefail) 2>/dev/null && set -o pipefail || true
 
-PREFS_DIR="${APP_PREFERENCES_DIR:-$(cd "$(dirname "$0")/.." && pwd)/app-preferences}"
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+PREFS_DIR="${APP_PREFERENCES_DIR:-$ROOT/app-preferences}"
+
+# A work Mac leaves config.yml's defaults_work_skip_domains alone (Safari,
+# whose sandboxed preferences need Full Disk Access to write; see there).
+# shellcheck source=lib/profile
+. "$ROOT/lib/profile"
+APP_PREFERENCES_SKIP=
+if [ "$DOTFILES_PROFILE" = work ]; then
+	APP_PREFERENCES_SKIP=$(yq -r '.defaults_work_skip_domains[]' "$ROOT/config.yml" | tr '\n' ' ')
+fi
+export APP_PREFERENCES_SKIP
 
 exec python3 -I - "$PREFS_DIR" "$@" <<'PY'
 import json
@@ -30,6 +41,7 @@ from pathlib import Path
 
 prefs_dir, check = Path(sys.argv[1]), "--check" in sys.argv[2:]
 drifted = False
+skip = set(os.environ.get("APP_PREFERENCES_SKIP", "").split())
 
 
 def report(name, changed, apply):
@@ -48,6 +60,9 @@ def report(name, changed, apply):
 
 for frag in sorted(prefs_dir.glob("*.plist")):
     domain = frag.stem
+    if domain in skip:
+        print(f"  skip  {domain}: a work Mac leaves it alone (config.yml)")
+        continue
     want = plistlib.loads(frag.read_bytes())
     # An app that has never run has no domain yet; export then fails.
     out = subprocess.run(["defaults", "export", domain, "-"], capture_output=True)

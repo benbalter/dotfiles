@@ -1,0 +1,22 @@
+#!/bin/sh
+# Ask for the sudo password in a macOS dialog, for sudo's -A (SUDO_ASKPASS).
+#
+# The playbook's brew bundle task has no terminal, so a cask whose installer
+# runs sudo (displaylink's .pkg) failed with "a terminal is required to read
+# the password". Homebrew passes SUDO_ASKPASS through its filtered environment
+# and adds -A when it's set, so pointing it here gets a prompt instead. The
+# password goes straight from the dialog to sudo and is never written anywhere.
+#
+# sudo passes its prompt as $1. Cancel makes osascript exit non-zero, which
+# sudo treats as a failed authentication.
+
+set -eu
+# shellcheck disable=SC3040
+(set -o pipefail) 2>/dev/null && set -o pipefail || true
+
+exec osascript - "${1:-Password:}" <<'EOF'
+on run argv
+	display dialog "Homebrew needs your password to install a package." & return & return & (item 1 of argv) default answer "" with hidden answer with title "Dotfiles setup (sudo)" with icon caution
+	return text returned of result
+end run
+EOF

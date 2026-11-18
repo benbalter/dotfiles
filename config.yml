@@ -514,6 +514,15 @@ launch_agents_work_disabled:
   - com.balter.ben.update
   - com.balter.ben.tmpreaper
 
+# Preference domains a work Mac leaves alone: the playbook skips their
+# macos_defaults.user entries and app-preferences/<domain>.plist, and
+# script/doctor doesn't check them. Safari keeps its preferences in its sandbox
+# container, which only a terminal with Full Disk Access can write ("Could not
+# write domain" otherwise), and granting a terminal that on an employer's Mac
+# is the employer's call.
+defaults_work_skip_domains:
+  - com.apple.Safari
+
 # Launch agents third-party apps install in ~/Library/LaunchAgents to start
 # themselves at login, by label. The playbook unloads and deletes them, and
 # script/doctor warns if one comes back. Camera Hub has no setting for this:

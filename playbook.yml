@@ -388,13 +388,17 @@
           - sh
           - -c
           # dotfiles_bundle_skip leaves Brewfile.work-skip's entries out on a
-          # work Mac.
-          - '. "$1/lib/profile" && dotfiles_bundle_skip "$1" && exec "$2/brew" bundle install --file="$1/Brewfile" --no-upgrade'
+          # work Mac. dotfiles_vscode_extensions installs extensions first
+          # behind a TLS-inspecting proxy, which bundle can't (see lib/profile).
+          - '. "$1/lib/profile" && dotfiles_bundle_skip "$1" && dotfiles_vscode_extensions "$1" && exec "$2/brew" bundle install --file="$1/Brewfile" --no-upgrade'
           - sh
           - "{{ playbook_dir }}"
           - "{{ homebrew_brew_bin_path }}"
       environment:
         HOMEBREW_NO_AUTO_UPDATE: "1"
+        # A cask installer that runs sudo has no terminal to prompt in here;
+        # script/askpass asks in a dialog instead.
+        SUDO_ASKPASS: "{{ playbook_dir }}/script/askpass"
       register: brew_bundle_macos
       changed_when: "'Installing' in brew_bundle_macos.stdout"
       when: not is_ci
@@ -642,7 +646,8 @@
         type: "{{ item.type }}"
         value: "{{ item.value }}"
         host: "{{ item.host | default(omit) }}"
-      loop: "{{ macos_defaults.user }}"
+      # A work Mac skips config.yml's defaults_work_skip_domains (Safari).
+      loop: "{{ macos_defaults.user | rejectattr('domain', 'in', defaults_work_skip_domains if is_work else []) | list }}"
       loop_control:
         label: "{{ item.name }}"
       tags: [macos, defaults]
