@@ -53,7 +53,7 @@ script/install-git-hooks # copy the gitleaks pre-commit hook (.config/git/templa
 
 **`lib/`** (`globals`, `aliases`, `auto-complete`) is sourced by interactive `.zshrc`, so never add `set -e` or `set -u` there.
 
-**Per-machine settings** that shouldn't be in this public repo go in untracked `~/.zshrc.local` and `~/.gitconfig.local`, which `.zshrc` and `.gitconfig` load last. Environment that the headless `script/update` also needs (a CA bundle) goes in `~/.config/dotfiles/env`, which [`lib/profile`](lib/profile) sources for shells, `update`, `doctor` and the playbook.
+**Per-machine settings** that shouldn't be in this public repo go in untracked `~/.zshrc.local` and `~/.gitconfig.local`, which `.zshrc` and `.gitconfig` load last, and `~/.ssh/config.local`, which `.ssh/config` includes first (ssh keeps the first value it sees). Environment that the headless `script/update` also needs (a CA bundle) goes in `~/.config/dotfiles/env`, which [`lib/profile`](lib/profile) sources for shells, `update`, `doctor` and the playbook.
 
 **Backups.** [`script/backup`](script/backup) runs nightly from `script/update` and backs up `config.yml`'s `backup_paths` (Claude Code memory and plans, Stream Deck profiles) with [restic](https://restic.net), encrypted before anything leaves the Mac. Everything that identifies the storage stays out of this public repo: `DOTFILES_BACKUP_REPOSITORY` and `DOTFILES_BACKUP_OP_ITEM` go in the env file, and the restic password and S3 credentials live in the Keychain (service `dotfiles-backup`), copied there from 1Password by `script/backup --setup` so headless runs need no prompt. Never add Claude Code transcripts or `history.jsonl`; `test/backup.bats` rejects them. `script/doctor` fails when no backup has finished in two days.
 
