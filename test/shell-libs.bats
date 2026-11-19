@@ -1,5 +1,6 @@
 #!/usr/bin/env bats
 # Validate that shell library files source without errors.
+# shellcheck disable=SC2030,SC2031 # each test sets GIT_CONFIG_GLOBAL for itself alone
 
 load test_helper
 
