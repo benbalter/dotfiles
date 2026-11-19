@@ -51,7 +51,7 @@ for file in \
 	.bundle/config .gnupg/gpg.conf .config/mise/config.toml .config/starship.toml \
 	.config/git/attributes .config/git/allowed_signers .config/bat/config \
 	.config/zed/settings.json .config/opencode/opencode.json \
-	.config/opencode/plugins/guard-bash.ts; do
+	.config/opencode/plugins/claude-code.ts; do
 	link "$file"
 done
 link claude/CLAUDE.md .claude/CLAUDE.md

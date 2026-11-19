@@ -180,27 +180,24 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 		"$REPO_ROOT/.config/opencode/opencode.json" >/dev/null || fail "opencode.json uses a deprecated v1 key"
 }
 
-@test "OpenCode loads skills only from Claude Code plugins that are enabled" {
-	# OpenCode reads plugin skills straight from Claude Code's marketplace
-	# clones, so enabledPlugins stays the one switch: disabling a plugin for
-	# Claude Code must drop its skills from OpenCode too.
-	markets=$(jq -r '.skills[]? | select(startswith("~/.claude/plugins/marketplaces/")) | split("/")[4]' \
-		"$REPO_ROOT/.config/opencode/opencode.json")
-	[ -n "$markets" ] || fail "expected opencode.json to load skills from Claude Code plugins"
-	stray=$(jq -r --arg markets "$markets" '($markets | split("\n")) - [.enabledPlugins | to_entries[] | select(.value == true) | .key | split("@")[1]] | .[]' \
-		"$REPO_ROOT/claude/settings.json")
-	[ -z "$stray" ] || fail "opencode.json loads skills from marketplaces with no enabled plugin in claude/settings.json: $stray"
+@test "OpenCode takes plugins and MCP servers from Claude Code, not copies" {
+	# claude-code.ts mirrors enabled Claude Code plugins' skills and MCP servers,
+	# plus ~/.claude.json's, at runtime. A hand-written skills or mcp block here
+	# would be a second copy that drifts from Claude Code.
+	jq -e 'has("skills") or has("mcp") | not' "$REPO_ROOT/.config/opencode/opencode.json" >/dev/null ||
+		fail "opencode.json must leave skills and MCP servers to plugins/claude-code.ts"
 }
 
-@test "OpenCode runs guard-bash on shell calls" {
-	# OpenCode doesn't read Claude Code's hooks, so without this plugin the
-	# commands claude/CLAUDE.md forbids run there unchecked.
-	plugin=.config/opencode/plugins/guard-bash.ts
+@test "OpenCode's claude-code plugin is linked and reads Claude Code's config" {
+	# OpenCode doesn't read Claude Code's hooks, plugins or MCP servers itself,
+	# so without this plugin guard-bash's rules and those tools skip it.
+	plugin=.config/opencode/plugins/claude-code.ts
 	yq -e ".dotfiles_files_common[] | select(. == \"$plugin\")" "$REPO_ROOT/config.yml" >/dev/null ||
 		fail "config.yml must link $plugin"
 	grep -q "$plugin" "$REPO_ROOT/install.sh" || fail "install.sh must link $plugin"
-	grep -q 'claude/hooks/guard-bash' "$REPO_ROOT/$plugin" || fail "$plugin must call claude/hooks/guard-bash"
-	grep -q 'tool_input' "$REPO_ROOT/$plugin" || fail "$plugin must pass guard-bash Claude's hook input shape"
+	for source in PreToolUse enabledPlugins installed_plugins.json mcpServers tool_input; do
+		grep -q "$source" "$REPO_ROOT/$plugin" || fail "$plugin must read $source"
+	done
 }
 
 @test "macos_defaults all_users entries don't use this account's home" {

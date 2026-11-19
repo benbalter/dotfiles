@@ -57,8 +57,8 @@ dotfiles_files_common:
   - .config/mise/config.toml
   # OpenCode doesn't read ~/.claude/rules; this loads preferences.md
   - .config/opencode/opencode.json
-  # Runs claude/hooks/guard-bash on OpenCode's shell calls
-  - .config/opencode/plugins/guard-bash.ts
+  # Mirrors Claude Code's Bash hooks, plugins and MCP servers into OpenCode
+  - .config/opencode/plugins/claude-code.ts
   - .config/starship.toml
   - .config/zed/settings.json
 

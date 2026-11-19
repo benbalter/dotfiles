@@ -2,10 +2,6 @@
   "$schema": "https://opencode.ai/config.json",
   "instructions": ["~/.claude/rules/preferences.md"],
   "model": "anthropic/claude-opus-5-5",
-  "skills": [
-    "~/.claude/plugins/marketplaces/cloudflare/skills",
-    "~/.claude/plugins/marketplaces/impeccable/.opencode/skills"
-  ],
   "share": "disabled",
   "update": "disable",
   "permissions": [
@@ -16,14 +12,5 @@
     { "action": "shell", "resource": "gh repo edit *", "effect": "ask" },
     { "action": "shell", "resource": "gh repo delete *", "effect": "ask" },
     { "action": "shell", "resource": "gh release *", "effect": "ask" }
-  ],
-  "mcp": {
-    "servers": {
-      "context7": { "type": "remote", "url": "https://mcp.context7.com/mcp" },
-      "cloudflare-docs": {
-        "type": "remote",
-        "url": "https://docs.mcp.cloudflare.com/mcp"
-      }
-    }
-  }
+  ]
 }
