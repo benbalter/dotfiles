@@ -58,6 +58,10 @@ EOF
 		>"$plugin_dir/hooks/hooks.json"
 	jq -n '{hooks: {Stop: [{hooks: [{type: "command", command: "\"$CLAUDE_PROJECT_DIR\"/.claude/stop"}]}]}}' \
 		>"$project/.claude/settings.json"
+	# Claude Code's record of folders whose "trust this folder" prompt was
+	# accepted: only these projects' own hooks may run.
+	jq -n --arg project "$project" '{projects: {($project): {hasTrustDialogAccepted: true}}}' \
+		>"$CLAUDE_CONFIG_DIR/.claude.json"
 	# shellcheck disable=SC2016 # $ARGUMENTS is for the command, not this shell
 	printf -- '---\ndescription: Say hello\n---\nGreet $ARGUMENTS warmly.\n' >"$plugin_dir/commands/hello.md"
 
@@ -142,4 +146,18 @@ field() { printf '%s' "$out" | jq -r "$1"; }
 @test "plugin commands become OpenCode commands" {
 	[ "$(field '.commands[0] | join(" ")')" = "hello Say hello" ] || fail "command not loaded: $out"
 	[ "$(field '.prompts[0]')" = "Greet Ben warmly." ] || fail "arguments not filled in: $out"
+}
+
+@test "an untrusted project's own hooks never run" {
+	# Same project files, but a folder Claude Code's trust prompt never
+	# approved, as with a freshly cloned repo. Trusting "/" mustn't count either.
+	untrusted="$BATS_TEST_TMPDIR/untrusted"
+	cp -R "$project" "$untrusted"
+	jq --arg project "$project" '.projects = {($project): {hasTrustDialogAccepted: true}, "/": {hasTrustDialogAccepted: true}}' \
+		"$CLAUDE_CONFIG_DIR/.claude.json" >"$BATS_TEST_TMPDIR/claude.json" && mv "$BATS_TEST_TMPDIR/claude.json" "$CLAUDE_CONFIG_DIR/.claude.json"
+	out=$(node --experimental-strip-types --no-warnings "$BATS_TEST_TMPDIR/drive.mjs" \
+		"$REPO_ROOT/.config/opencode/plugins/claude-code.ts" "$untrusted")
+	[ "$(field '.synthetic | length')" = 0 ] || fail "untrusted project's Stop hook ran: $out"
+	# User-level hooks still apply there.
+	[ "$(field .forbidden)" = "no forbidden commands" ] || fail "user hooks stopped running: $out"
 }

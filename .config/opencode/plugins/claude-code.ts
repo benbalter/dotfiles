@@ -244,9 +244,23 @@ function projectRoot(dir: string) {
 	return dir
 }
 
+// A project's own hooks are commands from whoever wrote the repo, so they run
+// only once Claude Code's "trust this folder" prompt has been accepted for
+// that exact folder, which it records in ~/.claude.json. Without this,
+// opening OpenCode in a freshly cloned repo would run its hooks on the first
+// tool call. Only an exact match counts, not a trusted parent: "/" and
+// ~/projects can be marked trusted there, which would trust everything below.
+function trustedProject(project: string) {
+	const projects = readJson(claudeJson)?.projects
+	if (!projects || typeof projects !== "object") return false
+	const candidates = new Set([project, realDir(project)])
+	return [...candidates].some((dir) => projects[dir]?.hasTrustDialogAccepted === true)
+}
+
 // Project settings are read on each call, so a hook added mid-session counts.
 function projectSources(project: string): HookSource[] {
 	if (path.join(project, ".claude") === configDir) return []
+	if (!trustedProject(project)) return []
 	return ["settings.json", "settings.local.json"].map((f) => ({
 		hooks: readJson(path.join(project, ".claude", f))?.hooks,
 	}))
