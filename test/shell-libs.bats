@@ -233,6 +233,28 @@ EOF
 	[ "$calls" = "--install-extension need.one --install-extension need.two" ] || fail "$calls"
 }
 
+@test "dotfiles_load_signing_key loads the work key from the Keychain only when the agent lacks it" {
+	home=$(mktemp -d) bin=$(mktemp -d)
+	ssh-keygen -q -t ed25519 -N '' -C test -f "$home/sign" || fail "ssh-keygen failed"
+	fp=$(ssh-keygen -lf "$home/sign.pub" | awk '{ print $2 }')
+	# A stub ssh-add: -l lists $AGENT_HAS, anything else is logged.
+	# shellcheck disable=SC2016 # the stub expands these, not this shell
+	printf '#!/bin/sh\n[ "$1" = -l ] && { echo "256 $AGENT_HAS test"; exit; }\necho "$@" >>"%s/calls"\n' "$home" >"$bin/ssh-add"
+	chmod +x "$bin/ssh-add"
+	load() { # <profile> <fingerprint the agent has>
+		env -i HOME="$home" PATH="$bin:$PATH" AGENT_HAS="$2" DOTFILES_PROFILE="$1" \
+			DOTFILES_SSH_SIGNING_KEY="$home/sign.pub" sh -c ". '$REPO_ROOT/lib/profile'; dotfiles_load_signing_key"
+	}
+	load personal none || fail "personal profile failed"
+	[ ! -e "$home/calls" ] || fail "loaded on a personal Mac: $(cat "$home/calls")"
+	load work "$fp" || fail "work profile failed"
+	[ ! -e "$home/calls" ] || fail "reloaded a key the agent had: $(cat "$home/calls")"
+	load work SHA256:other || fail "work profile failed"
+	calls=$(cat "$home/calls")
+	rm -rf "$home" "$bin"
+	[ "$calls" = "--apple-load-keychain -q" ] || fail "$calls"
+}
+
 @test "gb opens non-GitHub remotes as web URLs and leaves GitHub to gh" {
 	export GIT_CONFIG_GLOBAL=/dev/null
 	bin=$(mktemp -d) repo=$(mktemp -d)

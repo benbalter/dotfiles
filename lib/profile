@@ -88,6 +88,22 @@ dotfiles_vscode_extensions() {
 	unset _code _have
 }
 
+# Load a work Mac's local commit-signing key (DOTFILES_SSH_SIGNING_KEY, its
+# public key) into the system agent from the Keychain when it isn't there.
+# git signs through ssh-keygen, which asks the agent, and after a reboot the
+# agent is empty until an ssh connection loads the key, so the first commit
+# of the day failed to sign. lib/globals calls it for interactive shells.
+# Usage: dotfiles_load_signing_key
+dotfiles_load_signing_key() {
+	[ "$DOTFILES_PROFILE" = work ] || return 0
+	[ -r "${DOTFILES_SSH_SIGNING_KEY:-}" ] || return 0
+	_fp=$(ssh-keygen -lf "$DOTFILES_SSH_SIGNING_KEY" 2>/dev/null | awk '{ print $2 }')
+	[ -n "$_fp" ] || return 0
+	ssh-add -l 2>/dev/null | grep -qF "$_fp" ||
+		ssh-add --apple-load-keychain -q >/dev/null 2>&1 || true
+	unset _fp
+}
+
 # Record a profile in the env file, replacing any DOTFILES_PROFILE line already
 # there and keeping the rest (a CA bundle, say). script/setup --work calls it,
 # so a new work Mac can't run setup on the personal profile by mistake.

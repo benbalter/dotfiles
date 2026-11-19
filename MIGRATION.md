@@ -142,7 +142,7 @@ An employer-managed Mac runs the same playbook with `DOTFILES_PROFILE=work` ([`l
 - Leaves the firewall, FileVault, remote-access and System Settings lockdowns, update policy, the login window and the computer name to the MDM, and `script/doctor` only warns about them. Gatekeeper, TouchID for `sudo`, and turning off automatic login still apply.
 - Keeps the nightly update job (`com.balter.ben.update`) disabled, since an agent that pulls a public repo and upgrades packages unattended looks like persistence to endpoint security. Run `up` by hand. The tmpreaper job, which deletes week-old files from `~/Downloads`, stays off too.
 - Gives repos whose remote is the employer's the work email, through [`script/git-work-identity`](script/git-work-identity), which writes `~/.config/git/work` from the env file. Every other repo keeps the personal email.
-- Turns commit and tag signing off in `~/.gitconfig.local` for now, since signing goes through 1Password, which a work Mac doesn't install.
+- Signs commits and tags with a local SSH key instead of 1Password, which a work Mac doesn't install, once `DOTFILES_SSH_SIGNING_KEY` is set (see below), by writing the key to `~/.gitconfig.local`. Until then, signing is off and `script/doctor` warns.
 - Leaves other local accounts alone, because on a work Mac that's usually IT's admin account.
 - Switches back with `script/setup --personal`.
 - Refuses `script/update-brewfile`, because a dump would delete the skipped entries from the shared Brewfile.
@@ -157,7 +157,14 @@ An employer-managed Mac runs the same playbook with `DOTFILES_PROFILE=work` ([`l
   ```
 - [ ] Run setup as `~/.files/script/setup --work` (in section 3), which writes `DOTFILES_PROFILE=work` to `~/.config/dotfiles/env` before anything else runs. Plain `script/setup` would apply the personal profile's security and update settings over the MDM's.
 - [ ] Skip section 2's App Store sign-in, Apple ID and Google Drive steps. Use the managed Apple Account if IT issues one.
-- [ ] Decide where the SSH and commit-signing keys come from. The tracked config uses the personal 1Password SSH agent and signing key. If policy keeps personal keys off this Mac, override `user.signingkey` in `~/.gitconfig.local` and add the key to GitHub.
+- [ ] Decide where the SSH keys come from. Without 1Password, `.ssh/config` falls back to the system agent, so keys added with `ssh-add --apple-use-keychain` work there.
+- [ ] Create a local commit-signing key, held by the system agent with its passphrase in the Keychain, and point the env file at its public key. Use `$HOME`, not `~`, so the path expands when the file is sourced:
+  ```sh
+  ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_signing -C "work-mac signing"
+  ssh-add --apple-use-keychain ~/.ssh/id_ed25519_signing
+  echo 'DOTFILES_SSH_SIGNING_KEY="$HOME/.ssh/id_ed25519_signing.pub"' >> ~/.config/dotfiles/env
+  ```
+  Add it as a signing key to each GitHub account this Mac commits as (`gh ssh-key add ~/.ssh/id_ed25519_signing.pub --type signing`, once per account). Interactive shells reload it into the agent after a reboot. It stays out of the tracked `allowed_signers`, whose line would carry the work email, so local `git log --show-signature` calls these commits unverified while GitHub verifies them.
 
 ### After setup
 

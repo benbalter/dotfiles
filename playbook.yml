@@ -222,19 +222,44 @@
 
     # .gitconfig.macos signs commits and tags through 1Password's op-ssh-sign,
     # and a work Mac doesn't install 1Password, so every commit there failed.
-    # Signing stays off on a work Mac for now, set in the untracked
-    # ~/.gitconfig.local because .gitconfig includes it last; a Mac switched
-    # back to personal has the override removed.
-    - name: Turn commit and tag signing off on a work Mac
+    # A work Mac signs with a local SSH key instead when the env file sets
+    # DOTFILES_SSH_SIGNING_KEY (its public key, held by the system agent with
+    # the passphrase in the Keychain), and turns signing off otherwise. Set in
+    # the untracked ~/.gitconfig.local because .gitconfig includes it last; a
+    # Mac switched back to personal has the overrides removed.
+    - name: Read the work Mac's local signing key
+      ansible.builtin.command:
+        argv:
+          - sh
+          - -c
+          - '. "$1/lib/profile" && printf %s "${DOTFILES_SSH_SIGNING_KEY:-}"'
+          - sh
+          - "{{ playbook_dir }}"
+      register: dotfiles_signing_key
+      check_mode: false
+      changed_when: false
+      when: is_work and not is_ci
+      tags: [dotfiles]
+
+    - name: Sign commits on a work Mac with its local key, or turn signing off
+      vars:
+        signing_key: "{{ dotfiles_signing_key.stdout | default('') if is_work else '' }}"
+        signing_values:
+          commit.gpgSign: "{{ ('true' if signing_key else 'false') if is_work else '' }}"
+          tag.gpgSign: "{{ ('true' if signing_key else 'false') if is_work else '' }}"
+          user.signingkey: "{{ signing_key }}"
+          gpg.ssh.program: "{{ 'ssh-keygen' if signing_key else '' }}"
       community.general.git_config:
         scope: file
         file: "{{ ansible_facts['user_dir'] }}/.gitconfig.local"
         name: "{{ item }}"
-        value: "{{ 'false' if is_work else omit }}"
-        state: "{{ 'present' if is_work else 'absent' }}"
+        value: "{{ signing_values[item] if signing_values[item] else omit }}"
+        state: "{{ 'present' if signing_values[item] else 'absent' }}"
       loop:
         - commit.gpgSign
         - tag.gpgSign
+        - user.signingkey
+        - gpg.ssh.program
       when: not is_ci
       tags: [dotfiles]
 

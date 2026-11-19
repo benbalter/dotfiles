@@ -444,6 +444,29 @@ write_status() {
 	echo "$identity_output" | grep -q "warn  .*left over from the work profile" || fail "$identity_output"
 }
 
+@test "doctor checks a work Mac's local commit signing" {
+	export DOTFILES_PROFILE=work DOTFILES_WORK_EMAIL=me@work.example DOTFILES_WORK_GIT_REMOTES=gitlab.work.example
+	signing() {
+		run_doctor
+		echo "$output" | sed -n '/^==> Git identity/,/^==> /p'
+	}
+	signing | grep -q "warn  commit signing is off" || fail "$(signing)"
+
+	ssh-keygen -q -t ed25519 -N '' -C test -f "$TEST_HOME/sign" || fail "ssh-keygen failed"
+	export DOTFILES_SSH_SIGNING_KEY="$TEST_HOME/sign.pub"
+	signing | grep -q "warn  commit signing isn't set to" || fail "$(signing)"
+
+	printf '[commit]\n\tgpgsign = true\n[user]\n\tsigningkey = %s\n' "$DOTFILES_SSH_SIGNING_KEY" >"$TEST_HOME/.gitconfig.local"
+	# shellcheck disable=SC2016 # expands when the stub runs
+	printf '#!/bin/sh\necho "256 ${AGENT_HAS:-none} test"\n' >"$STUB_BIN/ssh-add"
+	chmod +x "$STUB_BIN/ssh-add"
+	signing | grep -q "warn  signing key isn't in the SSH agent" || fail "$(signing)"
+
+	AGENT_HAS=$(ssh-keygen -lf "$DOTFILES_SSH_SIGNING_KEY" | awk '{ print $2 }')
+	export AGENT_HAS
+	signing | grep -q "ok    commits are signed with" || fail "$(signing)"
+}
+
 @test "doctor skips the git identity check on a personal Mac" {
 	run_doctor
 	! echo "$output" | grep -q "==> Git identity" || fail "$output"

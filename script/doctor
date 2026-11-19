@@ -506,6 +506,26 @@ if [ "$DOTFILES_PROFILE" = work ] || [ -e "$HOME/.config/git/work" ]; then
 	else
 		warn "${drift#git-work-identity: }"
 	fi
+	# A work Mac signs with a local key from the env file (no 1Password
+	# there), which the playbook writes to ~/.gitconfig.local; without one,
+	# signing is off. Run from / so a repo's own config can't answer.
+	if [ "$DOTFILES_PROFILE" = work ]; then
+		key=${DOTFILES_SSH_SIGNING_KEY:-}
+		sign=$(cd / && git config --get commit.gpgsign || true)
+		have=$(cd / && git config --get user.signingkey || true)
+		if [ -z "$key" ]; then
+			warn "commit signing is off (create a local key and set DOTFILES_SSH_SIGNING_KEY in $DOTFILES_ENV_FILE; see MIGRATION.md#work-mac)"
+		elif [ ! -r "$key" ]; then
+			bad "DOTFILES_SSH_SIGNING_KEY points at $key, which doesn't exist"
+		elif [ "$sign" != true ] || [ "$have" != "$key" ]; then
+			warn "commit signing isn't set to $key (re-run: script/ansible --tags dotfiles)"
+		elif fp=$(ssh-keygen -lf "$key" 2>/dev/null | awk '{ print $2 }') &&
+			! ssh-add -l 2>/dev/null | grep -qF "$fp"; then
+			warn "signing key isn't in the SSH agent, so commits fail to sign (ssh-add --apple-load-keychain)"
+		else
+			ok "commits are signed with $key"
+		fi
+	fi
 fi
 
 echo "==> Dotfiles repo"

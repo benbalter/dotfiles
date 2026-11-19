@@ -12,6 +12,9 @@ export DOTFILES_ROOT
 # shellcheck source=lib/profile
 [ -r "$DOTFILES_ROOT/lib/profile" ] && . "$DOTFILES_ROOT/lib/profile"
 
+# A work Mac's commit-signing key, back in the agent after a reboot.
+command -v dotfiles_load_signing_key >/dev/null 2>&1 && dotfiles_load_signing_key
+
 # Resolve the Homebrew prefix by probing known paths rather than shelling out
 # to `brew --prefix`. Under Workbrew, `brew` is a setuid wrapper that can fail
 # outright (Homebrew 7.0 refuses to run when real and effective UIDs differ),
