@@ -255,7 +255,15 @@ export default {
 				if (event.effect !== "allow" || typeof event.action !== "string") return
 				for (const name of mirrored) {
 					if (READ_ONLY_MCP.has(name)) continue
-					const prefixes = new Set([name, name.replace(/[^A-Za-z0-9_]/g, "_")])
+					// OpenCode names an MCP tool's action `${server with "." → "_"}_${tool}`
+					// (tool/runtime.ts in v2.3.2). The other spellings cover a future
+					// release that sanitizes the server name like the tool name.
+					const prefixes = new Set([
+						name,
+						name.replaceAll(".", "_"),
+						name.replace(/[^A-Za-z0-9_-]/g, "_"),
+						name.replace(/[^A-Za-z0-9_]/g, "_"),
+					])
 					if ([...prefixes].some((prefix) => event.action.startsWith(`${prefix}_`))) {
 						event.effect = "ask"
 						event.message = `${name} is a Claude Code MCP server mirrored into OpenCode; its tools ask before running.`
