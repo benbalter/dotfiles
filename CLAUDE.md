@@ -82,3 +82,9 @@ script/install-git-hooks # copy the gitleaks pre-commit hook (.config/git/templa
 - `script/lint` runs every linter and lists all failures; add new linters with its `lint` helper rather than a bare command, so one failure can't hide the rest.
 - `script/update`, `script/doctor` and `script/clean` read the repo's `Brewfile` directly (not `--global`), so they work before setup links `~/.Brewfile`. Headless, `update` skips casks and `mas` apps.
 - In `lib/aliases`, `clean` runs `script/clean`; the git merged-branch cleanup is `gclean`, and `git reset --hard` + `git clean` is `greset`.
+
+## Pending one-time steps
+
+Cleanups for a specific Mac that nothing in the playbook automates. When working on that Mac, check whether the step still applies, do it (telling Ben first if it's destructive), then delete its bullet here and commit, and delete this section once it's empty.
+
+- **Work Mac: drop the `anomalyco/tap` opencode.** dc5fb04 switched the Brewfile from `anomalyco/tap/opencode-v2` to homebrew/core's `opencode`, and both install `bin/opencode`, so `brew bundle` fails to link the core formula while the tap's is installed. If `brew list --formula | grep opencode-v2` finds it, run `brew uninstall opencode-v2 && brew untap anomalyco/tap`, then `brew bundle --global` (or `up`) and check `opencode --version`. The personal Mac never had the tap installed.
