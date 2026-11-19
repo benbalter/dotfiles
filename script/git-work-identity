@@ -1,0 +1,93 @@
+#!/bin/sh
+# Give a work Mac's work repos the work email, chosen by remote URL, while
+# everything else keeps .gitconfig's personal one. Writes two untracked files
+# that .gitconfig includes: ~/.config/git/work, one
+# includeIf "hasconfig:remote.*.url:…" per pattern, and
+# ~/.config/git/work-identity, the [user] email they point to.
+#
+# The inputs live in the untracked env file (lib/profile), since the employer
+# isn't named in this public repo:
+#   DOTFILES_WORK_EMAIL=<work-email>
+#   DOTFILES_WORK_GIT_REMOTES="<gitlab-host> github.com/<org>"
+# Each entry is a host, or a host and path prefix.
+#
+# Matching on the remote replaced an includeIf "gitdir:~/work/" that nothing
+# used, because repos live in ~/projects and ~/github. The default stays
+# personal: a fresh `git init` has no remote at its first commit, and a work
+# default would put the employer into a new public repo.
+#
+# On the personal profile it removes both files, so a Mac switched back with
+# `script/setup --personal` loses the override. Prints "changed" when it
+# writes or removes anything, for the playbook's changed_when.
+# Usage: script/git-work-identity [--check]
+#   --check  change nothing; exit 1 if the files don't match the env file
+
+set -eu
+# shellcheck disable=SC3040
+(set -o pipefail) 2>/dev/null && set -o pipefail || true
+
+check=false
+[ "${1:-}" != --check ] || check=true
+
+# shellcheck source=lib/profile
+. "$(dirname "$0")/../lib/profile"
+
+# Not $XDG_CONFIG_HOME: .gitconfig includes this literal path.
+dir="$HOME/.config/git"
+selector="$dir/work"
+identity="$dir/work-identity"
+
+drift() {
+	echo "git-work-identity: $1" >&2
+	exit 1
+}
+
+if [ "$DOTFILES_PROFILE" != work ]; then
+	[ -e "$selector" ] || [ -e "$identity" ] || exit 0
+	$check && drift "$selector or $identity is left over from the work profile (run script/git-work-identity)"
+	rm -f "$selector" "$identity"
+	echo changed
+	exit 0
+fi
+
+for var in DOTFILES_WORK_EMAIL DOTFILES_WORK_GIT_REMOTES; do
+	eval "val=\${$var:-}"
+	# shellcheck disable=SC2154
+	[ -n "$val" ] || drift "set $var in $DOTFILES_ENV_FILE, or work repos commit with the personal email (see MIGRATION.md#work-mac)"
+done
+
+# The path is written with ~ so the file doesn't depend on the account name.
+want_identity=$(printf '[user]\n\temail = %s\n' "$DOTFILES_WORK_EMAIL")
+want_selector=$(
+	echo "# Written by script/git-work-identity from $DOTFILES_ENV_FILE; edit that, not this."
+	# One entry per line, whether the list is space- or newline-separated.
+	printf '%s\n' "$DOTFILES_WORK_GIT_REMOTES" | xargs -n 1 | while read -r entry; do
+		entry=${entry%/}
+		host=${entry%%/*}
+		path=${entry#"$host"}
+		path=${path#/}
+		# HTTPS, scp-style SSH, and ssh:// with and without a port: a
+		# self-hosted GitLab often runs SSH on a port other than 22. git
+		# matches with wildmatch, where ** spans slashes only right after
+		# one, so the scp form's bare host needs `*/**` (group/repo).
+		for pattern in \
+			"https://$host/${path:+$path/}**" \
+			"git@$host:${path:-*}/**" \
+			"ssh://git@$host/${path:+$path/}**" \
+			"ssh://git@$host:*/${path:+$path/}**"; do
+			printf '[includeIf "hasconfig:remote.*.url:%s"]\n\tpath = ~/.config/git/work-identity\n' "$pattern"
+		done
+	done
+)
+
+changed=false
+sync() { # <file> <content>
+	[ -f "$1" ] && [ "$(cat "$1")" = "$2" ] && return 0
+	$check && drift "$1 doesn't match $DOTFILES_ENV_FILE (run script/git-work-identity)"
+	mkdir -p "$dir"
+	printf '%s\n' "$2" >"$1"
+	changed=true
+}
+sync "$selector" "$want_selector"
+sync "$identity" "$want_identity"
+! $changed || echo changed

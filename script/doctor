@@ -496,6 +496,18 @@ if [ "$(uname)" = "Darwin" ]; then
 		sed 's/^  drift \(.*\)/  warn  \1 differ from app-preferences\/ (script\/app-preferences applies them)/' || true
 fi
 
+# A work Mac without the env-file inputs commits to work repos with the
+# personal email, and a Mac switched back to personal may keep the work
+# override; both show as drift. Warn only: setup fixes it, nothing is broken.
+if [ "$DOTFILES_PROFILE" = work ] || [ -e "$HOME/.config/git/work" ]; then
+	echo "==> Git identity"
+	if drift=$("$DOTFILES_ROOT/script/git-work-identity" --check 2>&1); then
+		ok "work repos get the work email (by remote URL)"
+	else
+		warn "${drift#git-work-identity: }"
+	fi
+fi
+
 echo "==> Dotfiles repo"
 # script/update runs the Python/Ansible steps only when the venv exists, and
 # skips them silently otherwise. Only macOS needs it: install.sh never creates

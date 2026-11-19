@@ -156,6 +156,13 @@
 [include]
 	path = ~/.gitconfig.macos
 
+# A work Mac's email for repos whose remote is the employer's, written by
+# script/git-work-identity from the untracked env file so the employer isn't
+# named here. Every other repo keeps the personal email above. Missing (and
+# skipped) on a personal Mac and in Codespaces.
+[include]
+	path = ~/.config/git/work
+
 # Untracked, per-machine settings (a work email, a host-specific credential
 # helper) that shouldn't go in this public repo. Last, so it overrides
 # everything above; git skips it if it doesn't exist.

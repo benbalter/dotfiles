@@ -429,3 +429,22 @@ write_status() {
 	run_doctor
 	! echo "$output" | grep -q "==> Backup" || fail "$output"
 }
+
+@test "doctor warns when a work Mac's work email isn't set up" {
+	DOTFILES_PROFILE=work DOTFILES_WORK_EMAIL='' run_doctor
+	identity_output=$(echo "$output" | sed -n '/^==> Git identity/,/^==> /p')
+	echo "$identity_output" | grep -q "warn  set DOTFILES_WORK_EMAIL" || fail "$identity_output"
+	DOTFILES_PROFILE=work DOTFILES_WORK_EMAIL=me@work.example DOTFILES_WORK_GIT_REMOTES=gitlab.work.example \
+		HOME="$TEST_HOME" "$REPO_ROOT/script/git-work-identity" >/dev/null
+	DOTFILES_PROFILE=work DOTFILES_WORK_EMAIL=me@work.example DOTFILES_WORK_GIT_REMOTES=gitlab.work.example run_doctor
+	identity_output=$(echo "$output" | sed -n '/^==> Git identity/,/^==> /p')
+	echo "$identity_output" | grep -q "ok    work repos get the work email" || fail "$identity_output"
+	run_doctor
+	identity_output=$(echo "$output" | sed -n '/^==> Git identity/,/^==> /p')
+	echo "$identity_output" | grep -q "warn  .*left over from the work profile" || fail "$identity_output"
+}
+
+@test "doctor skips the git identity check on a personal Mac" {
+	run_doctor
+	! echo "$output" | grep -q "==> Git identity" || fail "$output"
+}

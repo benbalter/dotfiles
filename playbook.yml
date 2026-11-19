@@ -238,6 +238,22 @@
       when: not is_ci
       tags: [dotfiles]
 
+    # Work repos get the work email by remote URL, from the untracked env
+    # file; a personal Mac has the files removed. Fails on a work Mac without
+    # DOTFILES_WORK_EMAIL / DOTFILES_WORK_GIT_REMOTES, which would otherwise
+    # commit to work repos with the personal email. See
+    # script/git-work-identity.
+    - name: Give work repos the work email
+      ansible.builtin.command:
+        argv: "{{ [playbook_dir ~ '/script/git-work-identity'] + (['--check'] if ansible_check_mode else []) }}"
+      register: git_work_identity
+      # --check exits 1 on drift: a would-be change in a dry run, not an error.
+      changed_when: "'changed' in git_work_identity.stdout or (ansible_check_mode and git_work_identity.rc != 0)"
+      failed_when: git_work_identity.rc != 0 and not ansible_check_mode
+      check_mode: false
+      when: not is_ci
+      tags: [dotfiles]
+
     # Symlinking a plist into ~/Library/LaunchAgents doesn't load it until the
     # next login, so on a fresh machine the nightly update never ran until
     # script/doctor flagged it. Bootstrap only jobs that aren't loaded:

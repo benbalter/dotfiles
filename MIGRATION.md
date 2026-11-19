@@ -141,6 +141,7 @@ An employer-managed Mac runs the same playbook with `DOTFILES_PROFILE=work` ([`l
 - Installs only the casks opted in with `!cask` lines in [`Brewfile.work-skip`](Brewfile.work-skip) and no Mac App Store apps, and skips the formulae and mise tools it lists (hobby and network-probing tools, Caddy, and file-sync tools like rclone and restic that data-loss prevention watches for). To add an app, add a `!cask` line there. An app already installed by hand needs `brew install --cask --adopt <name>` once, or brew bundle fails on it.
 - Leaves the firewall, FileVault, remote-access and System Settings lockdowns, update policy, the login window and the computer name to the MDM, and `script/doctor` only warns about them. Gatekeeper, TouchID for `sudo`, and turning off automatic login still apply.
 - Keeps the nightly update job (`com.balter.ben.update`) disabled, since an agent that pulls a public repo and upgrades packages unattended looks like persistence to endpoint security. Run `up` by hand. The tmpreaper job, which deletes week-old files from `~/Downloads`, stays off too.
+- Gives repos whose remote is the employer's the work email, through [`script/git-work-identity`](script/git-work-identity), which writes `~/.config/git/work` from the env file. Every other repo keeps the personal email.
 - Turns commit and tag signing off in `~/.gitconfig.local` for now, since signing goes through 1Password, which a work Mac doesn't install.
 - Leaves other local accounts alone, because on a work Mac that's usually IT's admin account.
 - Switches back with `script/setup --personal`.
@@ -149,18 +150,17 @@ An employer-managed Mac runs the same playbook with `DOTFILES_PROFILE=work` ([`l
 ### Before `script/setup`
 
 - [ ] Check for admin rights (`sudo -v`). The playbook needs sudo. If IT grants it only for a while at a time, elevate just before running setup.
+- [ ] Tell the playbook which repos are work repos, in `~/.config/dotfiles/env`. Matching is by remote URL (HTTPS, `git@host:` and `ssh://`, with or without a port), and each entry is a host or a host and path prefix. Every other repo, including a new one with no remote yet, keeps the personal email. Setup fails on a work Mac without these, rather than commit to work repos with the personal email:
+  ```sh
+  DOTFILES_WORK_EMAIL=<work-email>
+  DOTFILES_WORK_GIT_REMOTES="<gitlab-host> github.com/<org>"
+  ```
 - [ ] Run setup as `~/.files/script/setup --work` (in section 3), which writes `DOTFILES_PROFILE=work` to `~/.config/dotfiles/env` before anything else runs. Plain `script/setup` would apply the personal profile's security and update settings over the MDM's.
 - [ ] Skip section 2's App Store sign-in, Apple ID and Google Drive steps. Use the managed Apple Account if IT issues one.
 - [ ] Decide where the SSH and commit-signing keys come from. The tracked config uses the personal 1Password SSH agent and signing key. If policy keeps personal keys off this Mac, override `user.signingkey` in `~/.gitconfig.local` and add the key to GitHub.
 
 ### After setup
 
-- [ ] Give work repos their own identity in the untracked `~/.gitconfig.local`, so personal commits keep the personal email:
-  ```ini
-  [includeIf "gitdir:~/work/"]
-  	path = ~/.gitconfig.work
-  ```
-  Put `[user] email = …` in `~/.gitconfig.work`.
 - [ ] Add the work GitHub account alongside the personal one: `gh auth login`, then `gh auth switch` between them.
 - [ ] Check for TLS inspection. If the issuer below is the employer's secure web gateway instead of a public CA, tools that bring their own CA list (Node, Python, Homebrew's curl and git, mise downloads) will fail until they trust its root certificate:
   ```sh
