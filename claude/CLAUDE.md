@@ -42,7 +42,7 @@ How I like to work, write, and handle privacy is in [`preferences.md`](https://g
   - "cpm" or "shipit": commit and push to main, which ships to production where main deploys.
   - "opr": open a pull request (commit, branch first if on the default branch, push, `gh pr create`).
   - "mag": merge all green. Merge every PR under discussion whose checks pass, and report the rest (failing, pending, blocked by review rules, conflicting) rather than forcing or admin-merging them.
-  - "gb": open the current repo on GitHub (`gh repo view --web`, like the [`gb` alias](https://github.com/benbalter/dotfiles/blob/main/lib/aliases)).
+  - "gb": open the current repo in the browser, on GitHub or GitLab (like the [`gb` function](https://github.com/benbalter/dotfiles/blob/main/lib/aliases)).
 - Write down the why. Commit messages, PR bodies, and comments should say why a change was made, not just what changed.
 - Never credit Claude in a commit or pull request: no `Co-Authored-By: Claude` trailer, even where a repo's older commits have one, and say so in every brief for an agent that commits. [`settings.json`](https://github.com/benbalter/dotfiles/blob/main/claude/settings.json) leaves `attribution` empty for this, and [`guard-bash`](https://github.com/benbalter/dotfiles/blob/main/claude/hooks/guard-bash) denies a commit that adds the trailer.
 - On my solo, personal repos, pushing straight to the default branch past its protection rules (required PR, required checks) is the normal workflow, since I bypass them as the admin. Don't warn about the "Bypassed rule violations" message; do check the CI run the push triggers.

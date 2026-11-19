@@ -12,7 +12,33 @@ alias gcm="git commit -m"
 alias gl="git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative"
 alias gp="git push"
 alias gd="git diff"
-alias gb="gh repo view --web"
+# Open the current repo in the browser. gh only knows GitHub, so for any other
+# origin (GitLab, self-hosted or not) turn the remote into its web URL. Any
+# credentials embedded in an https remote are dropped rather than handed to the
+# browser. With arguments (`gb owner/repo`) it's always a GitHub lookup. The
+# unalias drops the git plugin's `gb`, which zsh would expand over this name.
+unalias gb 2>/dev/null || true
+gb() (
+	url=$(git remote get-url origin 2>/dev/null)
+	case "$#:$url" in
+		0:*github.com[:/]* | 0:) ;;
+		0:*)
+			url=$(printf '%s\n' "$url" | sed -E \
+				-e 's#^(https?://)[^@/]+@#\1#' \
+				-e 's#^(ssh://)?[^@/:]+@([^:/]+)(:[0-9]+)?[:/]#https://\2/#' \
+				-e 's#\.git$##')
+			if [ -n "${BROWSER:-}" ]; then
+				"$BROWSER" "$url"
+			elif command -v open >/dev/null 2>&1; then
+				open "$url"
+			else
+				xdg-open "$url"
+			fi
+			return
+			;;
+	esac
+	gh repo view --web "$@"
+)
 alias gr="gh repo view"
 # Not `reset` or `clean`: typing `reset` to fix a garbled terminal threw away
 # uncommitted work, and script/audit-casks tells you to run `clean` to
@@ -102,6 +128,7 @@ alias clean="$DOTFILES_ROOT/script/clean"
 # Misc
 alias p="cd ~/projects"
 alias c="claude"
+alias oc="opencode"
 
 # Make rm, cp and mv interactive (-i) as a safety net, but not under Claude
 # Code: its shell inherits these aliases but has no TTY to answer the prompt,

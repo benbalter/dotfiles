@@ -231,3 +231,25 @@ EOF
 	[ "$status" -eq 0 ] || fail "$output"
 	[ "$calls" = "--install-extension need.one --install-extension need.two" ] || fail "$calls"
 }
+
+@test "gb opens non-GitHub remotes as web URLs and leaves GitHub to gh" {
+	export GIT_CONFIG_GLOBAL=/dev/null
+	bin=$(mktemp -d) repo=$(mktemp -d)
+	printf '#!/bin/sh\necho "gh $*"\n' >"$bin/gh"
+	printf '#!/bin/sh\necho "browse $*"\n' >"$bin/browse"
+	chmod +x "$bin/gh" "$bin/browse"
+	git -C "$repo" init -q
+	check() {
+		git -C "$repo" remote remove origin 2>/dev/null || true
+		[ -z "$1" ] || git -C "$repo" remote add origin "$1"
+		out=$(cd "$repo" && PATH="$bin:$PATH" BROWSER="$bin/browse" bash -c ". '$REPO_ROOT/lib/aliases'; gb $3")
+		[ "$out" = "$2" ] || fail "$1: expected '$2', got '$out'"
+	}
+	check git@gitlab.com:group/sub/repo.git "browse https://gitlab.com/group/sub/repo"
+	check https://oauth2:secret@gitlab.example.com/group/repo.git "browse https://gitlab.example.com/group/repo"
+	check ssh://git@gitlab.example.com:2222/group/repo.git "browse https://gitlab.example.com/group/repo"
+	check git@github.com:benbalter/dotfiles.git "gh repo view --web"
+	check git@gitlab.com:group/repo.git "gh repo view --web cli/cli" cli/cli
+	check "" "gh repo view --web"
+	rm -rf "$bin" "$repo"
+}
