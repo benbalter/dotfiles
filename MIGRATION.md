@@ -161,6 +161,13 @@ An employer-managed Mac runs the same playbook with `DOTFILES_PROFILE=work` ([`l
 
 ### After setup
 
+- [ ] On a work Mac set up before the work email existed (or after a change to the two variables above), apply it without a full setup. `up` won't, since it reruns only the playbook's `defaults,security` tags:
+  1. Add `DOTFILES_WORK_EMAIL` and `DOTFILES_WORK_GIT_REMOTES` to `~/.config/dotfiles/env`, as above.
+  2. Run `~/.files/script/git-work-identity`. It prints `changed` when it writes `~/.config/git/work`.
+  3. In a work repo and in `~/.files`, run `git config --show-origin user.email`. Expect the work email, then the personal one.
+  4. Check for commits already made with the wrong email (`git log --format='%h %ae %s' @{u}..` in each repo touched since setup). Amend unpushed ones with `git commit --amend --reset-author`. Decide case by case before rewriting a pushed commit that has the work email in a public repo.
+
+  `script/doctor`'s Git identity section warns until this is done.
 - [ ] Add the work GitHub account alongside the personal one: `gh auth login`, then `gh auth switch` between them.
 - [ ] Check for TLS inspection. If the issuer below is the employer's secure web gateway instead of a public CA, tools that bring their own CA list (Node, Python, Homebrew's curl and git, mise downloads) will fail until they trust its root certificate:
   ```sh
