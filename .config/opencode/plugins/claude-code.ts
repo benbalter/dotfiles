@@ -1,17 +1,29 @@
 // OpenCode plugin: read Claude Code's own config at runtime instead of keeping
 // copies of it in opencode.json, so the two agents can't drift apart.
 //
-// - Bash hooks: runs the PreToolUse hooks Claude Code runs for Bash (such as
-//   claude/hooks/guard-bash) on OpenCode's shell calls, in Claude's hook format.
-// - Plugins: loads the skills and MCP servers of every Claude Code plugin that
-//   enabledPlugins turns on, from the copies Claude Code keeps updated.
+// - Hooks: runs Claude Code's PreToolUse, PostToolUse, Stop and
+//   UserPromptSubmit hooks at the matching OpenCode points, in Claude's hook
+//   format. They come from ~/.claude/settings{,.local}.json, the project's
+//   .claude/settings{,.local}.json, and each enabled plugin's hooks.json, so
+//   guard-bash, this repo's lint-file and check-drift, and plugin hooks like
+//   security-guidance all fire. Writing a plan file runs the ExitPlanMode
+//   hooks (require-prior-art), since OpenCode has no plan-exit tool.
+// - Plugins: loads the skills, commands and MCP servers of every Claude Code
+//   plugin that enabledPlugins turns on, from the copies Claude Code keeps
+//   updated, plus ~/.claude/commands.
 // - MCP: loads the user-level MCP servers from ~/.claude.json. They're read
 //   here at runtime, so private hosts never land in this public repo.
 //
+// Not mirrored: plugin subagents (OpenCode 2.3.2's agent editor can update and
+// remove agents but not add them), and SessionStart hooks (no matching hook).
+// @hamzaabili/opencode-claude-hooks covers more hook events, but it was a week
+// old with one maintainer when this was written, and it would run guard-bash
+// from an unpinned npm install. Worth another look once it matures.
+//
 // Everything fails open: a missing or unreadable file skips that part rather
 // than breaking OpenCode. Config set in opencode.json always wins.
-import { spawnSync } from "node:child_process"
-import { existsSync, readdirSync, readFileSync } from "node:fs"
+import { spawn } from "node:child_process"
+import { existsSync, readdirSync, readFileSync, realpathSync } from "node:fs"
 import os from "node:os"
 import path from "node:path"
 
@@ -37,51 +49,6 @@ function readJson(file: string): any {
 }
 
 const settings = [readJson(path.join(configDir, "settings.json")), readJson(path.join(configDir, "settings.local.json"))]
-
-// --- Bash hooks ---
-
-function matchesTool(matcher: unknown, tool: string) {
-	if (matcher === undefined || matcher === "" || matcher === "*") return true
-	if (typeof matcher !== "string") return false
-	try {
-		return new RegExp(`^(?:${matcher})$`).test(tool)
-	} catch {
-		return false
-	}
-}
-
-const bashHooks: { command: string; timeout?: number }[] = settings
-	.flatMap((s) => s?.hooks?.PreToolUse ?? [])
-	.filter((entry: any) => matchesTool(entry?.matcher, "Bash"))
-	.flatMap((entry: any) => entry?.hooks ?? [])
-	.filter((hook: any) => hook?.type === "command" && typeof hook.command === "string")
-
-type Verdict = { effect: "deny" | "ask"; reason: string } | undefined
-
-function runHook(hook: { command: string; timeout?: number }, command: string, cwd: string): Verdict {
-	const input = JSON.stringify({ hook_event_name: "PreToolUse", tool_name: "Bash", tool_input: { command }, cwd })
-	const run = spawnSync("/bin/sh", ["-c", hook.command], {
-		input,
-		cwd: existsSync(cwd) ? cwd : undefined,
-		encoding: "utf8",
-		timeout: (hook.timeout ?? 60) * 1000,
-		env: { ...process.env, CLAUDE_PROJECT_DIR: cwd },
-	})
-	// Exit 2 is Claude's "block, and show stderr to the model".
-	if (run.status === 2) return { effect: "deny", reason: run.stderr.trim() || `Blocked by ${hook.command}` }
-	if (run.status !== 0 || !run.stdout.trim()) return undefined
-	let out: any
-	try {
-		out = JSON.parse(run.stdout)
-	} catch {
-		return undefined
-	}
-	const specific = out?.hookSpecificOutput
-	const reason = specific?.permissionDecisionReason || out?.reason || `Blocked by ${hook.command}`
-	if (specific?.permissionDecision === "deny" || out?.decision === "block") return { effect: "deny", reason }
-	if (specific?.permissionDecision === "ask") return { effect: "ask", reason }
-	return undefined
-}
 
 // --- Enabled plugins ---
 
@@ -212,6 +179,270 @@ for (const root of pluginRoots) {
 	}
 }
 
+// --- Commands ---
+
+// Claude Code slash commands are Markdown prompts: optional frontmatter, then a
+// body where $ARGUMENTS (and $1, $2...) stand for what follows the command.
+type Command = { name: string; description?: string; body: string }
+const commands = new Map<string, Command>()
+for (const dir of [path.join(configDir, "commands"), ...pluginRoots.map((root) => path.join(root, "commands"))]) {
+	let entries: string[] = []
+	try {
+		entries = readdirSync(dir).filter((entry) => entry.endsWith(".md"))
+	} catch {
+		continue
+	}
+	for (const entry of entries) {
+		const name = entry.slice(0, -3)
+		if (commands.has(name)) continue
+		let text: string
+		try {
+			text = readFileSync(path.join(dir, entry), "utf8").replace(/^﻿/, "")
+		} catch {
+			continue
+		}
+		const match = /^---\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/.exec(text)
+		const frontmatter = match ? parseFrontmatter(match[1]) : {}
+		commands.set(name, {
+			name,
+			...(frontmatter.description ? { description: frontmatter.description } : {}),
+			body: match ? text.slice(match[0].length) : text,
+		})
+	}
+}
+
+function renderCommand(body: string, args: string) {
+	const trimmed = args.trim()
+	const positional = trimmed ? trimmed.split(/\s+/) : []
+	const usesArgs = /\$ARGUMENTS|\$\d/.test(body)
+	const text = body.replace(/\$ARGUMENTS/g, trimmed).replace(/\$(\d+)/g, (_, n) => positional[Number(n) - 1] ?? "")
+	// Claude Code appends the arguments when the body never asks for them.
+	return !usesArgs && trimmed ? `${text.trimEnd()}\n\nARGUMENTS: ${trimmed}` : text
+}
+
+// --- Hooks ---
+
+type Hook = { command: string; timeout?: number; root?: string }
+type HookSource = { hooks: any; root?: string }
+
+// User settings and enabled plugins don't change while OpenCode runs; Claude
+// Code also reads them once at startup.
+const staticSources: HookSource[] = [
+	...settings.map((s) => ({ hooks: s?.hooks })),
+	...pluginRoots.map((root) => ({ hooks: readJson(path.join(root, "hooks", "hooks.json"))?.hooks, root })),
+]
+
+// The project is the nearest folder with Claude Code settings, else the git
+// root, else the session's own folder. ~/.claude is user config, not a project.
+function projectRoot(dir: string) {
+	for (let d = dir; ; d = path.dirname(d)) {
+		if (d === os.homedir()) break
+		if (["settings.json", "settings.local.json"].some((f) => existsSync(path.join(d, ".claude", f)))) return d
+		if (existsSync(path.join(d, ".git"))) return d
+		if (path.dirname(d) === d) break
+	}
+	return dir
+}
+
+// Project settings are read on each call, so a hook added mid-session counts.
+function projectSources(project: string): HookSource[] {
+	if (path.join(project, ".claude") === configDir) return []
+	return ["settings.json", "settings.local.json"].map((f) => ({
+		hooks: readJson(path.join(project, ".claude", f))?.hooks,
+	}))
+}
+
+function matchesTool(matcher: unknown, tool: string) {
+	if (matcher === undefined || matcher === "" || matcher === "*") return true
+	if (typeof matcher !== "string") return false
+	try {
+		return new RegExp(`^(?:${matcher})$`).test(tool)
+	} catch {
+		return false
+	}
+}
+
+// tool is undefined for events without a matcher (Stop, UserPromptSubmit).
+function hooksFor(event: string, tool: string | undefined, sources: HookSource[]): Hook[] {
+	const seen = new Set<string>()
+	const out: Hook[] = []
+	for (const { hooks, root } of sources) {
+		const entries = hooks?.[event]
+		if (!Array.isArray(entries)) continue
+		for (const entry of entries) {
+			if (tool !== undefined && !matchesTool(entry?.matcher, tool)) continue
+			for (const hook of entry?.hooks ?? []) {
+				if (hook?.type !== "command" || typeof hook.command !== "string") continue
+				// Claude Code runs an identical command once, even when several
+				// matchers pick it.
+				const key = `${root ?? ""}\0${hook.command}`
+				if (seen.has(key)) continue
+				seen.add(key)
+				out.push({ command: hook.command, timeout: hook.timeout, ...(root ? { root } : {}) })
+			}
+		}
+	}
+	return out
+}
+
+type Run = { status: number | null; stdout: string; stderr: string }
+
+// Async, unlike spawnSync, so a slow hook (check-drift runs bats) doesn't
+// freeze the OpenCode server for every other session.
+function runHook(hook: Hook, input: object, cwd: string, project: string): Promise<Run> {
+	return new Promise((resolve) => {
+		let stdout = ""
+		let stderr = ""
+		let child: ReturnType<typeof spawn>
+		try {
+			child = spawn("/bin/sh", ["-c", hook.command], {
+				cwd: existsSync(cwd) ? cwd : undefined,
+				env: {
+					...process.env,
+					CLAUDE_PROJECT_DIR: project,
+					...(hook.root ? { CLAUDE_PLUGIN_ROOT: hook.root } : {}),
+				},
+				stdio: ["pipe", "pipe", "pipe"],
+			})
+		} catch {
+			return resolve({ status: null, stdout, stderr })
+		}
+		const timer = setTimeout(() => child.kill("SIGKILL"), (hook.timeout ?? 60) * 1000)
+		child.stdout?.on("data", (chunk) => (stdout += chunk))
+		child.stderr?.on("data", (chunk) => (stderr += chunk))
+		child.stdin?.on("error", () => {})
+		child.on("error", () => {
+			clearTimeout(timer)
+			resolve({ status: null, stdout, stderr })
+		})
+		child.on("close", (status) => {
+			clearTimeout(timer)
+			resolve({ status, stdout, stderr })
+		})
+		child.stdin?.end(JSON.stringify(input))
+	})
+}
+
+type Outcome = { block: string[]; ask: string[]; context: string[] }
+
+// Claude's hook protocol: exit 2 blocks and hands stderr to the model; exit 0
+// may print JSON with a decision or extra context; anything else is a
+// non-blocking error that Claude Code only shows the user.
+function interpret(run: Run, event: string, command: string, outcome: Outcome) {
+	if (run.status === 2) {
+		outcome.block.push(run.stderr.trim() || `Blocked by ${command}`)
+		return
+	}
+	if (run.status !== 0) return
+	const stdout = run.stdout.trim()
+	if (!stdout) return
+	let out: any
+	try {
+		out = JSON.parse(stdout)
+	} catch {
+		// Plain stdout becomes context only for prompt hooks, as in Claude Code.
+		if (event === "UserPromptSubmit") outcome.context.push(stdout)
+		return
+	}
+	const specific = out?.hookSpecificOutput
+	const reason = specific?.permissionDecisionReason || out?.reason || out?.stopReason || `Blocked by ${command}`
+	if (specific?.permissionDecision === "deny" || out?.decision === "block" || out?.continue === false) {
+		outcome.block.push(reason)
+	} else if (specific?.permissionDecision === "ask") {
+		outcome.ask.push(reason)
+	}
+	if (typeof specific?.additionalContext === "string" && specific.additionalContext.trim()) {
+		outcome.context.push(specific.additionalContext.trim())
+	}
+}
+
+async function runAll(hooks: Hook[], event: string, input: object, cwd: string, project: string) {
+	const outcome: Outcome = { block: [], ask: [], context: [] }
+	const runs = await Promise.all(
+		hooks.map((hook) => runHook(hook, { hook_event_name: event, cwd, ...input }, cwd, project)),
+	)
+	runs.forEach((run, i) => interpret(run, event, hooks[i].command, outcome))
+	return outcome
+}
+
+// OpenCode's built-in tools under Claude Code's names and input fields, so
+// matchers like "Edit|Write" and hooks reading tool_input.file_path just work.
+const CLAUDE_TOOLS: Record<string, string> = {
+	shell: "Bash",
+	edit: "Edit",
+	write: "Write",
+	read: "Read",
+	grep: "Grep",
+	glob: "Glob",
+	webfetch: "WebFetch",
+	websearch: "WebSearch",
+	subagent: "Task",
+	skill: "Skill",
+	question: "AskUserQuestion",
+}
+
+function toClaude(tool: string, input: any, cwd: string): { name: string; input: any } {
+	const i = input && typeof input === "object" ? input : {}
+	const file = typeof i.path === "string" ? path.resolve(cwd, i.path) : undefined
+	const name = CLAUDE_TOOLS[tool] ?? tool
+	switch (tool) {
+		case "shell":
+			return { name, input: { command: i.command, ...(i.background ? { run_in_background: true } : {}) } }
+		case "edit":
+			return {
+				name,
+				input: { file_path: file, old_string: i.oldString, new_string: i.newString, replace_all: !!i.replaceAll },
+			}
+		case "write":
+			return { name, input: { file_path: file, content: i.content } }
+		case "read":
+			return { name, input: { file_path: file, offset: i.offset, limit: i.limit } }
+		default:
+			return { name, input: i }
+	}
+}
+
+function realDir(dir: string) {
+	try {
+		return realpathSync(dir)
+	} catch {
+		return path.resolve(dir)
+	}
+}
+
+// OpenCode's plan agent writes to ~/.opencode/plan, which the dotfiles link to
+// Claude Code's plans folder; check both, through any symlinks.
+const planDirs = [path.join(os.homedir(), ".opencode", "plan"), path.join(configDir, "plans")].map(realDir)
+
+function isPlanFile(file: unknown) {
+	if (typeof file !== "string" || !file.endsWith(".md")) return false
+	const dir = realDir(path.dirname(file))
+	return planDirs.some((plans) => dir === plans || dir.startsWith(plans + path.sep))
+}
+
+// Stop hooks that keep blocking get this many continuations before the
+// session is allowed to stop, so a hook that ignores stop_hook_active can't
+// loop forever.
+const MAX_STOP_BLOCKS = 3
+
+// Registers a hook OpenCode may not offer in every release (some are marked
+// experimental), so one rejected registration can't stop setup before the rest
+// of the plugin, guard-bash included, is in place.
+async function optional(register: () => Promise<unknown>) {
+	try {
+		await register()
+	} catch {}
+}
+
+function appendToResult(result: any, text: string) {
+	const content = result?.content
+	if (typeof content === "string") return { ...result, content: `${content}\n\n${text}` }
+	if (Array.isArray(content)) return { ...result, content: [...content, { type: "text", text }] }
+	const output = result?.output
+	const prior = output === undefined ? [] : [{ type: "text", text: typeof output === "string" ? output : JSON.stringify(output) }]
+	return { ...result, content: [...prior, { type: "text", text }] }
+}
+
 // --- Memory ---
 
 // Claude Code keeps each project's auto-memory under projects/<path with every
@@ -243,27 +474,152 @@ function memoryFor(directories: (string | undefined)[]): string | undefined {
 export default {
 	id: "dotfiles.claude-code",
 	async setup(ctx: any) {
-		if (bashHooks.length) {
-			await ctx.tool.hook("execute.before", async (event: any) => {
-				if (event.tool !== "shell") return
-				const { command, workdir } = (event.input ?? {}) as { command?: string; workdir?: string }
-				if (!command) return
-				const cwd = workdir ?? ctx.location?.directory ?? process.cwd()
-				for (const hook of bashHooks) {
-					const verdict = runHook(hook, command, cwd)
-					if (verdict?.effect === "deny") throw new Error(verdict.reason)
-					if (verdict?.effect === "ask") {
-						await ctx.permission.assert({
-							sessionID: event.sessionID,
-							agent: event.agent,
-							source: { type: "tool", messageID: event.messageID, id: event.id },
-							action: "shell",
-							resources: [command],
-							metadata: { reason: verdict.reason },
-						})
-					}
+		// Each session's folder, which can differ from the plugin's location.
+		const sessions = new Map<string, { directory: string; child: boolean }>()
+		const fallback = () => ctx.location?.directory ?? process.cwd()
+		async function sessionInfo(sessionID: string) {
+			const cached = sessions.get(sessionID)
+			if (cached) return cached
+			let info = { directory: fallback(), child: false }
+			try {
+				const session = await ctx.session.get({ sessionID })
+				const directory = session?.directory ?? session?.location?.directory
+				info = { directory: typeof directory === "string" ? directory : fallback(), child: !!session?.parentID }
+			} catch {}
+			sessions.set(sessionID, info)
+			return info
+		}
+
+		await ctx.tool.hook("execute.before", async (event: any) => {
+			const { directory } = await sessionInfo(event.sessionID)
+			const project = projectRoot(directory)
+			const sources = [...staticSources, ...projectSources(project)]
+			const claude = toClaude(event.tool, event.input, directory)
+			const workdir = (event.input as any)?.workdir
+			const cwd = event.tool === "shell" && typeof workdir === "string" ? path.resolve(directory, workdir) : directory
+			const base = { session_id: event.sessionID, tool_name: claude.name, tool_input: claude.input }
+			const outcome = await runAll(hooksFor("PreToolUse", claude.name, sources), "PreToolUse", base, cwd, project)
+			if (event.tool === "write" && isPlanFile(claude.input.file_path)) {
+				const plan = await runAll(
+					hooksFor("PreToolUse", "ExitPlanMode", sources),
+					"PreToolUse",
+					{
+						session_id: event.sessionID,
+						tool_name: "ExitPlanMode",
+						tool_input: { plan: claude.input.content, planFilePath: claude.input.file_path },
+					},
+					cwd,
+					project,
+				)
+				outcome.block.push(...plan.block)
+				outcome.ask.push(...plan.ask)
+			}
+			if (outcome.block.length) throw new Error(outcome.block.join("\n\n"))
+			if (outcome.ask.length) {
+				await ctx.permission.assert({
+					sessionID: event.sessionID,
+					agent: event.agent,
+					source: { type: "tool", messageID: event.messageID, id: event.id },
+					action: event.tool,
+					resources: [claude.input.command ?? claude.input.file_path ?? claude.name],
+					metadata: { reason: outcome.ask.join("\n\n") },
+				})
+			}
+		})
+
+		await optional(() => ctx.tool.hook("execute.after", async (event: any) => {
+			if (event.status !== "completed") return
+			try {
+				const { directory } = await sessionInfo(event.sessionID)
+				const project = projectRoot(directory)
+				const claude = toClaude(event.tool, event.input, directory)
+				const hooks = hooksFor("PostToolUse", claude.name, [...staticSources, ...projectSources(project)])
+				if (!hooks.length) return
+				const response = event.result?.output ?? event.result?.content
+				const outcome = await runAll(
+					hooks,
+					"PostToolUse",
+					{ session_id: event.sessionID, tool_name: claude.name, tool_input: claude.input, tool_response: response },
+					directory,
+					project,
+				)
+				// The tool already ran, so a block only reaches the model as
+				// feedback on the result, the same as in Claude Code.
+				const notes = [...outcome.block, ...outcome.context]
+				if (notes.length) event.result = appendToResult(event.result, `PostToolUse hook feedback:\n${notes.join("\n\n")}`)
+			} catch {}
+		}))
+
+		// Consecutive Stop blocks per session; cleared once a stop goes through.
+		const stopBlocks = new Map<string, number>()
+		await optional(() => ctx.session.hook("experimental.idle", async (event: any) => {
+			try {
+				// The session's own shell or subagent is still running; the hook
+				// runs again when that work finishes.
+				if ((event.background ?? []).some((work: any) => work?.sessionID === event.sessionID)) return
+				const { directory, child } = await sessionInfo(event.sessionID)
+				// Claude Code's Stop is for the main agent; subagents have SubagentStop.
+				if (child) return
+				const project = projectRoot(directory)
+				const hooks = hooksFor("Stop", undefined, [...staticSources, ...projectSources(project)])
+				if (!hooks.length) return
+				const attempts = stopBlocks.get(event.sessionID) ?? 0
+				const outcome = await runAll(
+					hooks,
+					"Stop",
+					{ session_id: event.sessionID, stop_hook_active: attempts > 0 },
+					directory,
+					project,
+				)
+				if (!outcome.block.length || attempts >= MAX_STOP_BLOCKS) {
+					stopBlocks.delete(event.sessionID)
+					return
 				}
-			})
+				stopBlocks.set(event.sessionID, attempts + 1)
+				await ctx.session.synthetic({
+					sessionID: event.sessionID,
+					text: `Stop hook feedback:\n${outcome.block.join("\n\n")}`,
+				})
+			} catch {}
+		}))
+
+		await optional(() => ctx.session.hook("prompt", async (event: any) => {
+			const { directory } = await sessionInfo(event.sessionID)
+			const project = projectRoot(directory)
+			const hooks = hooksFor("UserPromptSubmit", undefined, [...staticSources, ...projectSources(project)])
+			if (!hooks.length || typeof event.prompt?.text !== "string") return
+			const outcome = await runAll(
+				hooks,
+				"UserPromptSubmit",
+				{ session_id: event.sessionID, prompt: event.prompt.text },
+				directory,
+				project,
+			)
+			if (outcome.block.length) throw new Error(outcome.block.join("\n\n"))
+			if (outcome.context.length) {
+				event.prompt.text += `\n\n<system-reminder>\n${outcome.context.join("\n\n")}\n</system-reminder>`
+			}
+		}))
+
+		if (commands.size) {
+			await optional(() => ctx.command.transform((editor: any) => {
+				for (const command of commands.values()) {
+					try {
+						editor.add({
+							name: command.name,
+							...(command.description ? { description: command.description } : {}),
+							execute: async ({ sessionID, prompt, delivery }: any) => {
+								await ctx.session.prompt({
+									...prompt,
+									sessionID,
+									text: renderCommand(command.body, prompt?.text ?? ""),
+									delivery,
+								})
+							},
+						})
+					} catch {}
+				}
+			}))
 		}
 
 		// Names actually mirrored, so a server opencode.json defines itself keeps
