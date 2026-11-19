@@ -1,9 +1,10 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "instructions": ["~/.claude/rules/preferences.md"],
-  "model": "anthropic/claude-opus-5-5",
+  "model": "claude-agent/opus",
   "share": "disabled",
   "update": "disable",
+  "worktree": { "directory": ".claude/worktrees" },
   "permissions": [
     { "action": "shell", "resource": "git push *", "effect": "ask" },
     { "action": "shell", "resource": "gh pr create *", "effect": "ask" },

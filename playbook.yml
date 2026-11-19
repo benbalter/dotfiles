@@ -598,6 +598,49 @@
           when: claude_mcp_chrome_devtools.rc != 0
           changed_when: true
 
+        # OpenCode's plan agent writes to ~/.opencode/plan, which nothing backs
+        # up and Claude Code never sees. Pointing it at ~/.claude/plans
+        # (backup_paths) lets a plan started in one agent be finished in the
+        # other. A real directory there is moved to .bak first, like any
+        # dotfile, so its plans aren't lost.
+        - name: Share Claude Code's plans folder with OpenCode
+          ansible.builtin.shell:
+            executable: /bin/bash
+            cmd: |
+              set -euo pipefail
+              plans="$HOME/.claude/plans" dest="$HOME/.opencode/plan"
+              [ "$(readlink "$dest" 2>/dev/null)" = "$plans" ] && exit 0
+              mkdir -p "$plans" "$(dirname "$dest")"
+              if [ -e "$dest" ] && [ ! -L "$dest" ]; then
+                bak="$dest.bak"
+                [ ! -e "$bak" ] || bak="$bak.$(date +%s)"
+                mv "$dest" "$bak"
+              fi
+              ln -sfn "$plans" "$dest"
+              echo changed
+          register: opencode_plans_link
+          changed_when: "'changed' in opencode_plans_link.stdout"
+
+        # OpenCode's Claude Agent provider bills Opus to the Claude plan by
+        # running the local `claude`, but the OpenCode background service
+        # doesn't get mise's shims on PATH, so without this it finds no models
+        # ("Model unavailable: claude-agent/opus"). This lives in OpenCode's
+        # service.json, next to a generated password, so it can't be a
+        # tracked dotfile.
+        - name: Point OpenCode's service at the mise-managed claude
+          ansible.builtin.shell:
+            executable: /bin/bash
+            cmd: |
+              set -euo pipefail
+              command -v opencode >/dev/null || exit 0
+              want="$HOME/.local/share/mise/shims/claude"
+              have=$(opencode service get 2>/dev/null | jq -r '.env.OPENCODE_CLAUDE_PATH // empty')
+              [ "$have" = "$want" ] && exit 0
+              opencode service set env OPENCODE_CLAUDE_PATH "$want"
+              echo changed
+          register: opencode_claude_path
+          changed_when: "'changed' in opencode_claude_path.stdout"
+
     # dockutil fails on an app that isn't there, and a work Mac skips some
     # (Brewfile.work-skip), so pin only what's installed. CI installs no apps
     # but still exercises the role with the full list.

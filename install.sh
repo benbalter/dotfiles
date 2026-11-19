@@ -57,6 +57,14 @@ done
 link claude/CLAUDE.md .claude/CLAUDE.md
 link claude/preferences.md .claude/rules/preferences.md
 link claude/CLAUDE.md .config/opencode/AGENTS.md
+# OpenCode's plan agent writes to ~/.opencode/plan; share Claude Code's plans
+# folder instead (the playbook does the same on macOS).
+mkdir -p "$HOME/.claude/plans"
+if [ -e "$HOME/.opencode/plan" ] && [ ! -L "$HOME/.opencode/plan" ]; then
+	mv "$HOME/.opencode/plan" "$HOME/.opencode/plan.bak.$(date +%s)"
+fi
+mkdir -p "$HOME/.opencode"
+ln -sfn "$HOME/.claude/plans" "$HOME/.opencode/plan"
 link claude/skills/credit-contributors .claude/skills/credit-contributors
 link claude/skills/draft-for-paste .claude/skills/draft-for-paste
 link claude/skills/media-privacy-pass .claude/skills/media-privacy-pass

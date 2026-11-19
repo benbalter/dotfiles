@@ -212,6 +212,32 @@ for (const root of pluginRoots) {
 	}
 }
 
+// --- Memory ---
+
+// Claude Code keeps each project's auto-memory under projects/<path with every
+// non-alphanumeric character turned into "-">/memory, indexed by MEMORY.md.
+function memoryFor(directories: (string | undefined)[]): string | undefined {
+	for (const directory of directories) {
+		if (!directory) continue
+		const dir = path.join(configDir, "projects", directory.replace(/[^A-Za-z0-9]/g, "-"), "memory")
+		let index: string
+		try {
+			index = readFileSync(path.join(dir, "MEMORY.md"), "utf8").trim()
+		} catch {
+			continue
+		}
+		if (!index) continue
+		// Read-only on purpose: Claude Code stays the one writer, so the format
+		// can't drift. Linked entries are read on demand, as Claude Code does.
+		return [
+			`Claude Code's memory for this project, from ${dir}. Each line links to a file in that folder; read one when it's relevant. Treat it as background that was true when written, and don't edit these files from OpenCode.`,
+			"",
+			index,
+		].join("\n")
+	}
+	return undefined
+}
+
 // --- Plugin ---
 
 export default {
@@ -278,5 +304,26 @@ export default {
 				for (const skill of skills) if (!editor.get(skill.id)) editor.add(skill)
 			})
 		}
+
+		// Attach the project's Claude Code memory to each new session. Session
+		// instruction entries are an experimental OpenCode API, so any failure
+		// just leaves the session without it.
+		const controller = new AbortController()
+		void (async () => {
+			try {
+				for await (const event of ctx.event.subscribe({ types: ["session.created"], signal: controller.signal })) {
+					try {
+						const data = event?.data ?? event?.properties ?? event
+						const sessionID = data?.sessionID
+						if (!sessionID) continue
+						let directory = data?.location?.directory
+						if (!directory) directory = (await ctx.session.get({ sessionID }))?.directory
+						const value = memoryFor([directory, ctx.location?.project?.canonical, ctx.location?.directory])
+						if (value) await ctx.session.instructions.entry.put({ sessionID, key: "claude-code-memory", value })
+					} catch {}
+				}
+			} catch {}
+		})()
+		return () => controller.abort()
 	},
 }

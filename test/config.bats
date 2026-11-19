@@ -200,6 +200,16 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 	done
 }
 
+# shellcheck disable=SC2016 # the grep patterns match a literal $
+@test "OpenCode and Claude Code share a plans folder" {
+	# OpenCode's plan agent writes to ~/.opencode/plan, which nothing backs up
+	# and Claude Code never sees; both installers point it at ~/.claude/plans.
+	grep -q 'ln -sfn "$plans" "$dest"' "$REPO_ROOT/playbook.yml" ||
+		fail "playbook.yml must link ~/.opencode/plan to ~/.claude/plans"
+	grep -q 'ln -sfn "$HOME/.claude/plans" "$HOME/.opencode/plan"' "$REPO_ROOT/install.sh" ||
+		fail "install.sh must link ~/.opencode/plan to ~/.claude/plans"
+}
+
 @test "macos_defaults all_users entries don't use this account's home" {
 	# all_users entries are also written for other local logins, where
 	# user_dir would point at the playbook runner's home instead of theirs.

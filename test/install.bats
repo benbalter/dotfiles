@@ -83,7 +83,9 @@ teardown() {
 		yq -r '.dotfiles_files_common[]' "$REPO_ROOT/config.yml"
 		yq -r '.dotfile_links_common[].dest' "$REPO_ROOT/config.yml"
 	)
-	actual=$(cd "$TEST_HOME" && find . -type l | sed 's|^\./||')
+	# ~/.opencode/plan links to ~/.claude/plans, not into the repo, so it isn't
+	# a config.yml dotfile (the plans test in config.bats covers it).
+	actual=$(cd "$TEST_HOME" && find . -type l | sed 's|^\./||' | grep -vx '.opencode/plan')
 
 	missing=$(comm -23 <(echo "$expected" | sort) <(echo "$actual" | sort))
 	extra=$(comm -13 <(echo "$expected" | sort) <(echo "$actual" | sort))

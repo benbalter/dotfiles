@@ -12,7 +12,7 @@ How I like to work, write, and handle privacy is in [`preferences.md`](https://g
 - Never write secrets to disk or commit them.
 - Treat clickops (changing a service by clicking through its UI, mine or yours via Claude in Chrome or DevTools) as a smell. Prefer config or infrastructure as code, or a repeatable script against the service's API or CLI, so the change is reviewable and can be rerun; failing that, a plugin, connector, or MCP server before the browser. If clicking really is the only way, say so, and note what would let us codify it next time.
 - Once a service is managed as code (OpenTofu, a config repo), every write goes through that code, with no "pre-staging" through its API, an MCP server, or the dashboard. A plan-mode plan doesn't override this file; if they conflict, fix the plan.
-- Chrome is my primary browser, signed in to my accounts. When a task does need a browser (reading a logged-in page, a flow with no API, checking a deployed site), use [Claude in Chrome](https://claude.com/chrome) first, before Chrome DevTools MCP, headless browsers, or `curl`. Fall back to those only for what it can't do, like Lighthouse audits or performance traces.
+- Chrome is my primary browser, signed in to my accounts. When a task does need a browser (reading a logged-in page, a flow with no API, checking a deployed site), use [Claude in Chrome](https://claude.com/chrome) first, before Chrome DevTools MCP, headless browsers, or `curl`. Fall back to those only for what it can't do, like Lighthouse audits or performance traces. Where Claude in Chrome isn't available (OpenCode), use the chrome-devtools MCP server.
 - On macOS, a [`guard-bash`](https://github.com/benbalter/dotfiles/blob/main/claude/hooks/guard-bash) hook denies the Bash commands these rules forbid. A denial means use the alternative it names, not find a way around it.
 - The shell is [zsh](https://www.zsh.org), which doesn't word-split unquoted variables: `for r in $LIST` runs once with the whole string. Use an array (`for r in ${=LIST}` or `list=(a b c)`), or wrap bash-style loops in `bash <<'EOF' … EOF`.
 - `gh api` prints an error body such as a 404 to stdout, so check its exit code, not whether it printed anything.
@@ -55,10 +55,12 @@ How I like to work, write, and handle privacy is in [`preferences.md`](https://g
 
 ## Parallel sessions
 
-I often run several Claude Code sessions in the same repo at once, so assume another session may be working in the same checkout, and coordinate rather than collide.
+I often run several Claude Code and OpenCode sessions in the same repo at once, so assume another session may be working in the same checkout, and coordinate rather than collide.
 
 - Use `ListAgents` to see the other sessions on this machine and `SendMessage` to agree who owns which files and who commits, pushes, or switches branches. Check before starting anything that touches shared files.
 - Treat changes you didn't make as another session's work in progress: don't revert, stash, reset, reformat, or commit them. Staging only your own paths matters doubly here.
+- Commit only your own paths with `git commit -- <paths>`. A plain `git commit` takes everything staged, including another session's staged work.
+- Where you can't list other sessions (OpenCode has no `ListAgents` or `SendMessage`), assume one is working in this checkout: check `git status` and `git log` before committing, and use a worktree for anything that switches branches.
 - Switching branches, rebasing, or pulling in a shared checkout changes the tree under every other session there, so agree on it first. That includes the "switch to the default branch and pull" step under Git and GitHub. For work that needs its own branch, use a git worktree (`EnterWorktree`) instead.
 - Remove a worktree when you're done with it: once its branch is merged or abandoned, `ExitWorktree` (or `git worktree remove`, then `git worktree prune`). Leftovers pile up under `.claude/worktrees` as full copies of the repo that Spotlight and git's fsmonitor keep re-scanning, which spins up the fan. Leave a worktree alone if another session (`ListAgents`) is still working in it, and never remove one with uncommitted or unpushed changes; tell me instead.
 - Before committing or pushing, recheck `git status` and `git log`. If the branch moved, another session committed: build on its work rather than overwriting it, and never force-push over it.
