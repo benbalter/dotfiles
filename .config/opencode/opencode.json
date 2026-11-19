@@ -1,4 +1,24 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "instructions": ["~/.claude/rules/preferences.md"]
+  "instructions": ["~/.claude/rules/preferences.md"],
+  "share": "disabled",
+  "update": "disable",
+  "permissions": [
+    { "action": "shell", "resource": "git push *", "effect": "ask" },
+    { "action": "shell", "resource": "gh pr create *", "effect": "ask" },
+    { "action": "shell", "resource": "gh pr merge *", "effect": "ask" },
+    { "action": "shell", "resource": "gh repo create *", "effect": "ask" },
+    { "action": "shell", "resource": "gh repo edit *", "effect": "ask" },
+    { "action": "shell", "resource": "gh repo delete *", "effect": "ask" },
+    { "action": "shell", "resource": "gh release *", "effect": "ask" }
+  ],
+  "mcp": {
+    "servers": {
+      "context7": { "type": "remote", "url": "https://mcp.context7.com/mcp" },
+      "cloudflare-docs": {
+        "type": "remote",
+        "url": "https://docs.mcp.cloudflare.com/mcp"
+      }
+    }
+  }
 }

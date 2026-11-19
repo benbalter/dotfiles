@@ -167,6 +167,28 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 		"$REPO_ROOT/.config/opencode/opencode.json" >/dev/null || fail "opencode.json must load ~/.claude/rules/preferences.md"
 }
 
+@test "OpenCode keeps sessions private and leaves upgrades to brew" {
+	# Shared sessions publish a transcript, and self-update would fight the
+	# Brewfile's opencode formula, which script/update upgrades.
+	jq -e '.share == "disabled" and .update == "disable"' \
+		"$REPO_ROOT/.config/opencode/opencode.json" >/dev/null ||
+		fail "opencode.json must set share to disabled and update to disable"
+	# V2 ignores or remaps these v1 keys, so a setting under one silently lapses.
+	jq -e 'has("autoupdate") or has("autoshare") or has("permission") or has("plugin") or has("mode") | not' \
+		"$REPO_ROOT/.config/opencode/opencode.json" >/dev/null || fail "opencode.json uses a deprecated v1 key"
+}
+
+@test "OpenCode runs guard-bash on shell calls" {
+	# OpenCode doesn't read Claude Code's hooks, so without this plugin the
+	# commands claude/CLAUDE.md forbids run there unchecked.
+	plugin=.config/opencode/plugins/guard-bash.ts
+	yq -e ".dotfiles_files_common[] | select(. == \"$plugin\")" "$REPO_ROOT/config.yml" >/dev/null ||
+		fail "config.yml must link $plugin"
+	grep -q "$plugin" "$REPO_ROOT/install.sh" || fail "install.sh must link $plugin"
+	grep -q 'claude/hooks/guard-bash' "$REPO_ROOT/$plugin" || fail "$plugin must call claude/hooks/guard-bash"
+	grep -q 'tool_input' "$REPO_ROOT/$plugin" || fail "$plugin must pass guard-bash Claude's hook input shape"
+}
+
 @test "macos_defaults all_users entries don't use this account's home" {
 	# all_users entries are also written for other local logins, where
 	# user_dir would point at the playbook runner's home instead of theirs.

@@ -2,6 +2,7 @@
 # Claude Code PreToolUse hook for Bash: deny the commands claude/CLAUDE.md
 # forbids, so those rules hold even when the instruction is missed. Each
 # denial names the alternative, so Claude can retry the right way.
+# OpenCode runs it too, through .config/opencode/plugins/guard-bash.ts.
 # Usage: (Claude Code passes the hook's JSON on stdin)
 
 set -eu
