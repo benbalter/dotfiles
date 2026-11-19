@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-tap 'anomalyco/tap'
 # Run your GitHub Actions locally
 brew 'act'
 # Static analysis and lint tool, for (ba)sh scripts
@@ -134,7 +133,7 @@ brew 'nmap'
 # Adds an OCR text layer to scanned PDF files
 brew 'ocrmypdf'
 # AI coding agent, built for the terminal
-brew 'anomalyco/tap/opencode-v2'
+brew 'opencode'
 # Swiss-army knife of markup format conversion
 brew 'pandoc'
 # Port of pdftk in java

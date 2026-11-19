@@ -158,9 +158,11 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 }
 
 @test "OpenCode loads the same global instructions as Claude Code" {
-	# OpenCode reads only ~/.config/opencode/AGENTS.md (it has no CLAUDE.md
-	# fallback) and never looks in ~/.claude/rules, so without these the
-	# global rules and shared preferences would silently skip it.
+	# OpenCode never looks in ~/.claude/rules, so preferences.md needs the
+	# instructions entry. Since 2.3.1 it also falls back to ~/.claude/CLAUDE.md
+	# when the global AGENTS.md is missing, but that fallback was dropped once
+	# before (v2.0) and restored only in 2.3.1, so the explicit link keeps the
+	# global rules from depending on it.
 	yq -e '.dotfile_links_common[] | select(.src == "claude/CLAUDE.md" and .dest == ".config/opencode/AGENTS.md")' \
 		"$REPO_ROOT/config.yml" >/dev/null || fail "config.yml must link claude/CLAUDE.md to ~/.config/opencode/AGENTS.md"
 	jq -e '.instructions | index("~/.claude/rules/preferences.md")' \
@@ -176,6 +178,18 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 	# V2 ignores or remaps these v1 keys, so a setting under one silently lapses.
 	jq -e 'has("autoupdate") or has("autoshare") or has("permission") or has("plugin") or has("mode") | not' \
 		"$REPO_ROOT/.config/opencode/opencode.json" >/dev/null || fail "opencode.json uses a deprecated v1 key"
+}
+
+@test "OpenCode loads skills only from Claude Code plugins that are enabled" {
+	# OpenCode reads plugin skills straight from Claude Code's marketplace
+	# clones, so enabledPlugins stays the one switch: disabling a plugin for
+	# Claude Code must drop its skills from OpenCode too.
+	markets=$(jq -r '.skills[]? | select(startswith("~/.claude/plugins/marketplaces/")) | split("/")[4]' \
+		"$REPO_ROOT/.config/opencode/opencode.json")
+	[ -n "$markets" ] || fail "expected opencode.json to load skills from Claude Code plugins"
+	stray=$(jq -r --arg markets "$markets" '($markets | split("\n")) - [.enabledPlugins | to_entries[] | select(.value == true) | .key | split("@")[1]] | .[]' \
+		"$REPO_ROOT/claude/settings.json")
+	[ -z "$stray" ] || fail "opencode.json loads skills from marketplaces with no enabled plugin in claude/settings.json: $stray"
 }
 
 @test "OpenCode runs guard-bash on shell calls" {
