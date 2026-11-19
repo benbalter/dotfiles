@@ -29,10 +29,11 @@ edit() {
 		CLAUDE_PROJECT_DIR="$PROJECT" "$LINT_FILE"
 }
 
-# bash_decision <command>: guard-bash's permission decision, empty if allowed.
+# bash_decision <command> [cwd]: guard-bash's permission decision, empty if
+# allowed. cwd is the session's working directory, as Claude Code sends it.
 bash_decision() {
-	jq -n --arg c "$1" '{tool_input: {command: $c}}' | "$GUARD_BASH" |
-		jq -r '.hookSpecificOutput.permissionDecision // empty'
+	jq -n --arg c "$1" --arg d "${2:-}" '{tool_input: {command: $c}} + (if $d == "" then {} else {cwd: $d} end)' |
+		"$GUARD_BASH" | jq -r '.hookSpecificOutput.permissionDecision // empty'
 }
 
 @test "lint-file reports shellcheck findings to Claude" {
@@ -166,6 +167,23 @@ EOF
 	[ -z "$(bash_decision "git commit -F $PROJECT/msg")" ] || fail "denied a human co-author in -F file"
 }
 
+@test "guard-bash resolves a relative message file against the session's cwd" {
+	# Claude usually writes the message to a file in the repo and passes a
+	# relative path, so checking only absolute paths would miss most trailers.
+	printf 'Fix\n\nCo-Authored-By: Claude <noreply@anthropic.com>\n' >"$PROJECT/msg"
+	[ "$(bash_decision "git commit -F msg" "$PROJECT")" = deny ] || fail "allowed relative -F file trailer"
+	[ "$(bash_decision "gh pr create --title x --body-file=msg" "$PROJECT")" = deny ] ||
+		fail "allowed --body-file= trailer"
+	[ "$(bash_decision "gh pr edit 1 --body-file msg" "$PROJECT")" = deny ] || fail "allowed gh pr edit trailer"
+	printf 'Fix\n\nCo-Authored-By: Jane Doe <jane@example.com>\n' >"$PROJECT/msg"
+	[ -z "$(bash_decision "git commit -F msg" "$PROJECT")" ] || fail "denied a human co-author in relative -F file"
+}
+
+@test "guard-bash denies a Claude trailer in an inline gh pr edit body" {
+	cmd=$(printf 'gh pr edit 1 --body "Why\n\nCo-Authored-By: Claude <noreply@anthropic.com>"')
+	[ "$(bash_decision "$cmd")" = deny ] || fail "allowed: $cmd"
+}
+
 # plan_decision <plan text>: require-prior-art's decision for a plan passed
 # the way Claude Code injects it, empty if allowed. No plans dir, so the
 # newest-file fallback can't pick up a real plan.
@@ -199,4 +217,33 @@ plan_decision() {
 @test "claude/settings.json runs require-prior-art on ExitPlanMode" {
 	jq -e '.hooks.PreToolUse[] | select(.matcher == "ExitPlanMode") | .hooks[].command | test("require-prior-art")' \
 		"$REPO_ROOT/claude/settings.json" >/dev/null || fail "hook not wired up"
+}
+
+# hook_scripts <settings.json>: each command hook's script, as a repo path.
+# Settings point at the checkout through $HOME/.files (global) or
+# $CLAUDE_PROJECT_DIR (this repo), so both map to $REPO_ROOT.
+hook_scripts() {
+	jq -r '.hooks[][].hooks[] | select(.type == "command") | .command' "$1" |
+		sed -e 's/"//g' -e "s#^\$HOME/\.files#$REPO_ROOT#" -e "s#^\$CLAUDE_PROJECT_DIR#$REPO_ROOT#" -e 's/ .*//'
+}
+
+@test "every command hook in the repo's settings runs a script that exists" {
+	# A renamed or deleted hook script fails silently in Claude Code: the hook
+	# errors, the tool call goes ahead, and the guard is just gone.
+	for settings in "$REPO_ROOT/claude/settings.json" "$REPO_ROOT/.claude/settings.json"; do
+		scripts=$(hook_scripts "$settings")
+		[ -n "$scripts" ] || fail "no command hooks found in $settings"
+		while IFS= read -r script; do
+			case $script in
+				"$REPO_ROOT"/*) ;;
+				*) fail "$settings runs a hook outside the repo: $script" ;;
+			esac
+			[ -x "$script" ] || fail "$settings runs $script, which isn't an executable file"
+		done <<<"$scripts"
+	done
+}
+
+@test "claude/settings.json runs guard-bash on Bash" {
+	jq -e '.hooks.PreToolUse[] | select(.matcher == "Bash") | .hooks[].command | test("guard-bash")' \
+		"$REPO_ROOT/claude/settings.json" >/dev/null || fail "guard-bash isn't wired to Bash in claude/settings.json"
 }

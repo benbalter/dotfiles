@@ -161,3 +161,190 @@ field() { printf '%s' "$out" | jq -r "$1"; }
 	# User-level hooks still apply there.
 	[ "$(field .forbidden)" = "no forbidden commands" ] || fail "user hooks stopped running: $out"
 }
+
+# config_fixtures: Claude Code config exercising MCP, enabledPlugins, skills
+# and memory, layered onto setup's fixtures. Hosts are example.com only: this
+# repo is public, and HOME/CLAUDE_CONFIG_DIR keep the real ~/.claude.json out.
+config_fixtures() {
+	# A dotted project path, like ~/.files, so the memory folder name shows
+	# the "." → "-" rule. Project hooks aren't under test here.
+	project="$BATS_TEST_TMPDIR/my.repo"
+	mkdir -p "$project"
+	other_dir="$BATS_TEST_TMPDIR/other"
+	scoped_dir="$BATS_TEST_TMPDIR/scoped"
+	mkdir -p "$other_dir/skills/other-skill" "$scoped_dir/skills/scoped-skill"
+	printf -- '---\nname: other-skill\ndescription: x\n---\n' >"$other_dir/skills/other-skill/SKILL.md"
+	printf -- '---\nname: scoped-skill\ndescription: x\n---\n' >"$scoped_dir/skills/scoped-skill/SKILL.md"
+
+	jq '.enabledPlugins += {"other@market": true, "scoped@market": true}' "$CLAUDE_CONFIG_DIR/settings.json" \
+		>"$BATS_TEST_TMPDIR/s.json" && mv "$BATS_TEST_TMPDIR/s.json" "$CLAUDE_CONFIG_DIR/settings.json"
+	# settings.local.json turns a plugin back off, as Claude Code layers them.
+	echo '{"enabledPlugins": {"other@market": false}}' >"$CLAUDE_CONFIG_DIR/settings.local.json"
+	jq --arg other "$other_dir" --arg scoped "$scoped_dir" '.plugins += {
+		"other@market": [{scope: "user", installPath: $other}],
+		"scoped@market": [{scope: "project", installPath: $scoped}]
+	}' "$CLAUDE_CONFIG_DIR/plugins/installed_plugins.json" >"$BATS_TEST_TMPDIR/i.json" &&
+		mv "$BATS_TEST_TMPDIR/i.json" "$CLAUDE_CONFIG_DIR/plugins/installed_plugins.json"
+
+	# shellcheck disable=SC2016 # Claude expands these ${...}, not this shell
+	jq '.mcpServers = {
+		"local-tool": {command: "npx", args: ["-y", "tool"], env: {TOKEN: "${DOTFILES_UNSET_TOKEN:-fallback}", USER_HOME: "${HOME}"}},
+		"docs.example": {type: "http", url: "https://docs.example.com/mcp", headers: {"X-Test": "1"}},
+		"stream": {type: "sse", url: "https://stream.example.com/sse"},
+		"context7": {type: "http", url: "https://context7.example.com/mcp"},
+		"shared": {command: "user-shared"},
+		"preset": {command: "user-preset"},
+		"broken": {type: "stdio"}
+	}' "$CLAUDE_CONFIG_DIR/.claude.json" >"$BATS_TEST_TMPDIR/c.json" && mv "$BATS_TEST_TMPDIR/c.json" "$CLAUDE_CONFIG_DIR/.claude.json"
+	# shellcheck disable=SC2016
+	echo '{"mcpServers": {"shared": {"command": "plugin-shared"}, "plugmcp": {"command": "${CLAUDE_PLUGIN_ROOT}/bin/server"}}}' \
+		>"$plugin_dir/.mcp.json"
+
+	skill() { mkdir -p "$plugin_dir/skills/$1" && printf '%b' "$2" >"$plugin_dir/skills/$1/SKILL.md"; }
+	skill quoted '---\nname: "Quoted: name"\ndescription: '"'"'It'"''"'s quoted'"'"'\n---\nBody\n'
+	skill literal '---\nname: literal\ndescription: |\n  Line one\n  Line two\n---\n'
+	skill folded '---\nname: folded\ndescription: >-\n  Folded\n  together\n---\n'
+	skill wrapped '---\nname: wrapped\ndescription: Starts here\n  and keeps going\n---\n'
+	skill crlf '\xef\xbb\xbf---\r\nname: crlf\r\ndescription: Windows\r\n---\r\nBody\r\n'
+	skill manual '---\nname: manual\ndescription: Only by hand\ndisable-model-invocation: true\n---\n'
+	skill nofront 'Just a body, no frontmatter\n'
+	skill taken '---\nname: taken\ndescription: From the plugin\n---\n'
+
+	# Claude Code's memory folder: every non-alphanumeric character of the
+	# project path becomes "-" (this repo's is -Users-<name>--files).
+	memory="$CLAUDE_CONFIG_DIR/projects/$(printf '%s' "$project" | sed 's/[^A-Za-z0-9]/-/g')/memory"
+	case $memory in *-my-repo/memory) ;; *) fail "fixture memory path lost the dotted name: $memory" ;; esac
+	mkdir -p "$memory"
+	echo '- [Note](note.md) — a remembered fact' >"$memory/MEMORY.md"
+
+	cat >"$BATS_TEST_TMPDIR/config.mjs" <<'EOF'
+const [plugin, project] = process.argv.slice(2)
+const mcp = new Map([["preset", { type: "local", command: ["opencode-own"] }]])
+const skills = new Map([["taken", { id: "taken", description: "OpenCode's own" }]])
+const memory = []
+let evaluate
+const ctx = {
+	location: { directory: project },
+	tool: { hook: async () => {} },
+	session: {
+		hook: async () => {},
+		get: async () => ({ directory: project }),
+		instructions: { entry: { put: async (entry) => void memory.push(entry) } },
+	},
+	command: { transform: async () => {} },
+	mcp: { transform: async (cb) => cb({ get: (n) => mcp.get(n), set: (n, c) => void mcp.set(n, c) }) },
+	skill: { transform: async (cb) => cb({ get: (id) => skills.get(id), add: (s) => void skills.set(s.id, s) }) },
+	permission: { hook: async (name, cb) => void (name === "evaluate" && (evaluate = cb)), assert: async () => {} },
+	event: {
+		subscribe: async function* () {
+			yield { data: { sessionID: "s1", location: { directory: project } } }
+		},
+	},
+}
+const { default: mod } = await import(plugin)
+await mod.setup(ctx)
+await new Promise((resolve) => setTimeout(resolve, 100))
+const effect = (action) => {
+	const event = { effect: "allow", action }
+	evaluate?.(event)
+	return event.effect
+}
+const actions = ["local-tool_run", "docs_example_search", "stream_read", "context7_query", "preset_run", "plugmcp_go", "read"]
+console.log(JSON.stringify({
+	mcp: Object.fromEntries(mcp),
+	effects: Object.fromEntries(actions.map((a) => [a, effect(a)])),
+	skills: Object.fromEntries([...skills].map(([id, s]) => [id, { name: s.name, description: s.description, autoinvoke: s.autoinvoke, content: s.content }])),
+	memory,
+}))
+EOF
+}
+
+config_run() {
+	out=$(node --experimental-strip-types --no-warnings "$BATS_TEST_TMPDIR/config.mjs" \
+		"$REPO_ROOT/.config/opencode/plugins/claude-code.ts" "$project")
+}
+
+@test "Claude Code's MCP servers become OpenCode local and remote servers" {
+	config_fixtures
+	config_run
+	[ "$(field '.mcp["local-tool"].type')" = local ] || fail "stdio server not local: $out"
+	[ "$(field '.mcp["local-tool"].command | join(" ")')" = "npx -y tool" ] || fail "command and args not joined: $out"
+	[ "$(field '.mcp["local-tool"].environment.TOKEN')" = fallback ] || fail "\${VAR:-default} not expanded: $out"
+	[ "$(field '.mcp["local-tool"].environment.USER_HOME')" = "$HOME" ] || fail "\${VAR} not expanded: $out"
+	[ "$(field '.mcp["docs.example"] | [.type, .url, .headers["X-Test"]] | join(" ")')" = "remote https://docs.example.com/mcp 1" ] ||
+		fail "http server not remote: $out"
+	[ "$(field '.mcp.stream.type')" = remote ] || fail "sse server not remote: $out"
+	[ "$(field '.mcp.plugmcp.command[0]')" = "$plugin_dir/bin/server" ] || fail "\${CLAUDE_PLUGIN_ROOT} not expanded: $out"
+	[ "$(field '.mcp | has("broken")')" = false ] || fail "server with no command mirrored: $out"
+}
+
+@test "user and OpenCode MCP config win over plugin and mirrored servers" {
+	config_fixtures
+	config_run
+	[ "$(field '.mcp.shared.command[0]')" = user-shared ] || fail "plugin server overrode ~/.claude.json's: $out"
+	[ "$(field '.mcp.preset.command[0]')" = opencode-own ] || fail "overrode a server opencode.json defines: $out"
+}
+
+@test "mirrored MCP tools ask first, except read-only docs and OpenCode's own servers" {
+	config_fixtures
+	config_run
+	[ "$(field '.effects["local-tool_run"]')" = ask ] || fail "mirrored tool didn't ask: $out"
+	# OpenCode turns "." in a server name into "_" in the action name.
+	[ "$(field '.effects.docs_example_search')" = ask ] || fail "dotted server name didn't ask: $out"
+	[ "$(field '.effects.stream_read')" = ask ] || fail "sse tool didn't ask: $out"
+	[ "$(field '.effects.plugmcp_go')" = ask ] || fail "plugin MCP tool didn't ask: $out"
+	[ "$(field '.effects.context7_query')" = allow ] || fail "read-only docs server asked: $out"
+	[ "$(field '.effects.preset_run')" = allow ] || fail "opencode.json's own server forced to ask: $out"
+	[ "$(field '.effects.read')" = allow ] || fail "built-in tool forced to ask: $out"
+}
+
+@test "only user-scope plugins that enabledPlugins leaves on are loaded" {
+	config_fixtures
+	config_run
+	[ "$(field '.skills | has("other-skill")')" = false ] || fail "settings.local.json's false didn't win: $out"
+	[ "$(field '.skills | has("scoped-skill")')" = false ] || fail "project-scope plugin loaded: $out"
+	[ "$(field '.skills | has("literal")')" = true ] || fail "enabled plugin's skills missing: $out"
+}
+
+@test "plugin skills' frontmatter parses like Claude Code's" {
+	config_fixtures
+	config_run
+	[ "$(field '.skills.quoted.name')" = "Quoted: name" ] || fail "double-quoted value: $out"
+	[ "$(field '.skills.quoted.description')" = "It's quoted" ] || fail "single-quoted value: $out"
+	[ "$(field '.skills.quoted.content')" = "Body" ] || fail "body not split from frontmatter: $out"
+	[ "$(field '.skills.literal.description')" = "$(printf 'Line one\nLine two')" ] || fail "| block: $out"
+	[ "$(field '.skills.folded.description')" = "Folded together" ] || fail "> block: $out"
+	[ "$(field '.skills.wrapped.description')" = "Starts here and keeps going" ] || fail "wrapped value: $out"
+	[ "$(field '.skills.crlf.description')" = "Windows" ] || fail "BOM and CRLF: $out"
+	[ "$(field '.skills.manual.autoinvoke')" = false ] || fail "disable-model-invocation ignored: $out"
+	[ "$(field '.skills.literal.autoinvoke')" = null ] || fail "autoinvoke set without disable-model-invocation: $out"
+	[ "$(field '.skills | has("nofront")')" = false ] || fail "skill with no frontmatter loaded: $out"
+	[ "$(field '.skills.taken.description')" = "OpenCode's own" ] || fail "overwrote a skill OpenCode already has: $out"
+}
+
+@test "new sessions get the project's Claude Code memory, read-only" {
+	config_fixtures
+	config_run
+	[ "$(field '.memory | length')" = 1 ] || fail "expected one memory entry: $out"
+	[ "$(field '.memory[0].key')" = claude-code-memory ] || fail "wrong entry key: $out"
+	field '.memory[0].value' | grep -q 'a remembered fact' || fail "MEMORY.md not attached: $out"
+	field '.memory[0].value' | grep -q "don't edit" || fail "lost the read-only instruction: $out"
+}
+
+@test "an empty MEMORY.md attaches nothing" {
+	config_fixtures
+	: >"$memory/MEMORY.md"
+	config_run
+	[ "$(field '.memory | length')" = 0 ] || fail "attached an empty memory: $out"
+}
+
+@test "unreadable Claude Code config leaves OpenCode working" {
+	# Every file is read at load time; one bad file mustn't take OpenCode down.
+	config_fixtures
+	for file in settings.json settings.local.json plugins/installed_plugins.json .claude.json; do
+		echo '{ not json' >"$CLAUDE_CONFIG_DIR/$file"
+	done
+	config_run
+	[ "$(field '.mcp | keys | join(" ")')" = preset ] || fail "mirrored servers from broken config: $out"
+	[ "$(field '.skills | keys | join(" ")')" = taken ] || fail "loaded skills from broken config: $out"
+}

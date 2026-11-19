@@ -234,3 +234,35 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 		case "$pattern" in *'[['*) fail "POSIX classes don't work in Python: $pattern" ;; esac
 	done < <(yq -r '.macos_security_settings[] | (.expect // .reject)' "$REPO_ROOT/config.yml")
 }
+
+@test "every claude/skills directory is linked by config.yml" {
+	# A skill dir with no link never reaches ~/.claude/skills, and nothing else
+	# notices: Claude Code just doesn't list it. install.sh is checked against
+	# this same list by install.bats.
+	expected=$(cd "$REPO_ROOT" && find claude/skills -mindepth 1 -maxdepth 1 -type d | sort)
+	linked=$(yq -r '.dotfile_links_common[].src | select(test("^claude/skills/"))' "$REPO_ROOT/config.yml" | sort)
+	[ "$expected" = "$linked" ] ||
+		fail "claude/skills dirs and config.yml links differ: $(diff <(echo "$expected") <(echo "$linked"))"
+}
+
+@test "claude/skills SKILL.md files have the frontmatter Claude Code needs" {
+	# Limits from the Agent Skills spec (https://agentskills.io/specification),
+	# which claude.ai uploads and the Skills API validate; Claude Code itself
+	# only truncates long descriptions in its skill listing. The description is
+	# all Claude sees when deciding to load a skill, so an empty or missing one
+	# makes the skill dead weight.
+	for dir in "$REPO_ROOT"/claude/skills/*/; do
+		dir=${dir%/}
+		skill=$(basename "$dir")
+		file="$dir/SKILL.md"
+		[ -f "$file" ] || fail "$skill has no SKILL.md"
+		[ "$(head -n 1 "$file")" = "---" ] || fail "$skill/SKILL.md doesn't open with frontmatter"
+		name=$(yq --front-matter=extract -r '.name // ""' "$file")
+		description=$(yq --front-matter=extract -r '.description // ""' "$file")
+		[ "$name" = "$skill" ] || fail "$skill/SKILL.md name is '$name', not its directory name"
+		{ [ "${#name}" -le 64 ] && printf '%s' "$name" | grep -Eq '^[a-z0-9]+(-[a-z0-9]+)*$'; } ||
+			fail "$skill name must be up to 64 lowercase letters and digits, joined by single hyphens"
+		[ -n "$description" ] || fail "$skill/SKILL.md has no description"
+		[ "${#description}" -le 1024 ] || fail "$skill description is ${#description} characters, over 1024"
+	done
+}
