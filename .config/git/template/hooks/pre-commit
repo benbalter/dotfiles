@@ -6,6 +6,12 @@
 # and `git lfs install` then writes into the shared directory instead, so LFS
 # objects stop being pushed.
 #
+# On a work Mac it also blocks employer details (the work email's domain, git
+# hosts, and other terms from the untracked env file) in any repo that isn't a
+# work repo, using the rules script/git-work-identity writes. Work repos are
+# marked with dotfiles.workRepo by the same remote match that gives them the
+# work email. The commit-msg hook does the same for the message.
+#
 # Skip once with SKIP_GITLEAKS=1, or allow a false positive for good with a
 # `gitleaks:allow` comment on the line or a .gitleaksignore entry.
 
@@ -18,5 +24,15 @@ command -v gitleaks >/dev/null 2>&1 || exit 0
 
 gitleaks git --pre-commit --staged --redact --no-banner --log-level warn --verbose || {
 	echo "gitleaks: possible secret staged (see above). If it's a false positive, add a gitleaks:allow comment, or commit with SKIP_GITLEAKS=1." >&2
+	exit 1
+}
+
+# A second pass rather than one merged config, so a repo's own .gitleaks.toml
+# still applies to the secret scan above.
+rules="$HOME/.config/git/work-leaks.toml"
+[ -r "$rules" ] || exit 0
+[ "$(git config --bool dotfiles.workRepo || true)" != true ] || exit 0
+gitleaks git --pre-commit --staged --config "$rules" --no-banner --log-level warn --verbose || {
+	echo "gitleaks: work detail staged in a repo that isn't a work repo (see above). Rewrite it, add a gitleaks:allow comment, or commit with SKIP_GITLEAKS=1." >&2
 	exit 1
 }

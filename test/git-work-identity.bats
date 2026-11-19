@@ -106,8 +106,59 @@ personal=$(sed -n 's/^[[:space:]]*email = //p' "$BATS_TEST_DIRNAME/../.gitconfig
 	run_script
 	[ "$status" -eq 0 ] || fail "$output"
 	[ "$output" = changed ] || fail "$output"
-	[ ! -e "$HOME/.config/git/work" ] && [ ! -e "$HOME/.config/git/work-identity" ] || fail "files left behind"
+	for f in work work-identity work-leaks.toml; do
+		[ ! -e "$HOME/.config/git/$f" ] || fail "$f left behind"
+	done
 	[ "$(email_for https://github.com/work-org/app.git)" = "$personal" ] || fail "work email still applies"
 	run_script
 	[ -z "$output" ] || fail "expected no output once clean, got: $output"
+}
+
+# user_for <URL>: the username git asks the credential helper for, from a
+# stub helper that records it.
+user_for() {
+	printf '#!/bin/sh\nsed -n "s/^username=//p" >"%s/asked"\n' "$TMP" >"$TMP/helper"
+	chmod +x "$TMP/helper"
+	: >"$TMP/asked"
+	printf 'url=%s\n\n' "$1" |
+		GIT_TERMINAL_PROMPT=0 GIT_ASKPASS=/usr/bin/false git -c credential.helper="$TMP/helper" credential fill >/dev/null 2>&1 || true
+	cat "$TMP/asked"
+}
+
+@test "git-work-identity asks gh for the work account on the org's GitHub remotes" {
+	echo 'DOTFILES_WORK_GH_USER=me-work' >>"$ENV_FILE"
+	run_script
+	[ "$status" -eq 0 ] || fail "$output"
+	[ "$(user_for https://github.com/work-org/app.git)" = me-work ] || fail "work org got '$(user_for https://github.com/work-org/app.git)'"
+	for url in https://github.com/work-org-fork/app.git https://github.com/benbalter/dotfiles.git; do
+		[ -z "$(user_for "$url")" ] || fail "$url got '$(user_for "$url")'"
+	done
+}
+
+@test "git-work-identity leaves the GitHub account alone without DOTFILES_WORK_GH_USER" {
+	run_script
+	! grep -q '^\[credential' "$HOME/.config/git/work" || fail "$(cat "$HOME/.config/git/work")"
+}
+
+@test "git-work-identity marks work repos for the leak-guard hooks" {
+	run_script
+	git -C "$REPO" remote add origin https://gitlab.work.example/team/app.git
+	[ "$(git -C "$REPO" config --bool dotfiles.workRepo)" = true ] || fail "work repo not marked"
+	git -C "$REPO" remote set-url origin https://github.com/benbalter/dotfiles.git
+	[ -z "$(git -C "$REPO" config --bool dotfiles.workRepo)" ] || fail "personal repo marked"
+}
+
+@test "git-work-identity's leak rules catch the email domain, remotes and extra terms" {
+	command -v gitleaks >/dev/null || skip "needs gitleaks"
+	echo 'DOTFILES_WORK_LEAK_TERMS="Acme Widget+Co"' >>"$ENV_FILE"
+	run_script
+	rules="$HOME/.config/git/work-leaks.toml"
+	for text in "mail me@work.example" "see github.com/work-org/app" "an ACME thing" "Widget+Co" "gitlab.work.example"; do
+		echo "$text" | gitleaks stdin -c "$rules" --no-banner --log-level error >/dev/null &&
+			fail "'$text' wasn't caught"
+	done
+	for text in "github.com/benbalter" "workXexample" "WidgetCo"; do
+		echo "$text" | gitleaks stdin -c "$rules" --no-banner --log-level error >/dev/null ||
+			fail "'$text' was caught"
+	done
 }

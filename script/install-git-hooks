@@ -1,11 +1,12 @@
 #!/bin/sh
-# Copy the git template (.config/git/template: the gitleaks pre-commit hook
+# Copy the git template (.config/git/template: the gitleaks pre-commit and
+# commit-msg hooks
 # and info/exclude) into existing repos. init.templateDir only reaches new
 # clones. Not `git init`, which also copies missing template files but
 # re-probes and rewrites core.filemode, undoing a repo that set it to false.
 #
-# Per file: copied where missing; a pre-commit hook that's a stale copy of
-# ours (it runs `gitleaks git --pre-commit`) is refreshed; any other hook
+# Per file: copied where missing; a hook that's a stale copy of ours (it runs
+# `gitleaks git --pre-commit` or `gitleaks stdin`) is refreshed; any other hook
 # (lefthook, pre-commit) is left alone and reported. So is a repo with its own
 # core.hooksPath (husky), where git never looks in .git/hooks.
 # Usage: script/install-git-hooks [repo...]   (default: ~/projects/* and this repo)
@@ -16,7 +17,6 @@ set -eu
 
 DOTFILES_ROOT="${DOTFILES_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
 TEMPLATE="$DOTFILES_ROOT/.config/git/template"
-MARKER="gitleaks git --pre-commit"
 
 [ "$#" -gt 0 ] || set -- "$HOME"/projects/* "$DOTFILES_ROOT"
 
@@ -40,14 +40,15 @@ for repo in "$@"; do
 			installed=$((installed + 1))
 		elif cmp -s "$src" "$dest"; then
 			:
-		elif [ "$rel" = hooks/pre-commit ] && grep -qF "$MARKER" "$dest"; then
+		elif case $rel in hooks/*) true ;; *) false ;; esac &&
+			grep -qE 'gitleaks (git --pre-commit|stdin)' "$dest"; then
 			cp -p "$src" "$dest"
 			echo "  refreshed  $repo: $rel"
 			refreshed=$((refreshed + 1))
-		elif [ "$rel" = hooks/pre-commit ]; then
-			echo "  skipped    $repo: has its own pre-commit hook"
+		elif case $rel in hooks/*) true ;; *) false ;; esac then
+			echo "  skipped    $repo: has its own ${rel#hooks/} hook"
 			foreign=$((foreign + 1))
 		fi
 	done
 done
-echo "$installed files installed, $refreshed hooks refreshed, $foreign repos skipped for their own hooks (gitleaks doesn't run there)."
+echo "$installed files installed, $refreshed hooks refreshed, $foreign skipped for their own hooks or hooksPath (gitleaks doesn't run there)."

@@ -1,22 +1,42 @@
 #!/bin/sh
 # Give a work Mac's work repos the work email, chosen by remote URL, while
-# everything else keeps .gitconfig's personal one. Writes two untracked files
-# that .gitconfig includes: ~/.config/git/work, one
-# includeIf "hasconfig:remote.*.url:…" per pattern, and
-# ~/.config/git/work-identity, the [user] email they point to.
+# everything else keeps .gitconfig's personal one. Writes three untracked
+# files:
+#   ~/.config/git/work             included by .gitconfig: one
+#                                  includeIf "hasconfig:remote.*.url:…" per
+#                                  pattern, plus the work GitHub account for
+#                                  work remotes on github.com
+#   ~/.config/git/work-identity    what those includeIfs point to: the work
+#                                  email, and dotfiles.workRepo = true
+#   ~/.config/git/work-leaks.toml  gitleaks rules for the hooks in
+#                                  .config/git/template, which block employer
+#                                  details in repos that aren't work repos
 #
 # The inputs live in the untracked env file (lib/profile), since the employer
 # isn't named in this public repo:
 #   DOTFILES_WORK_EMAIL=<work-email>
 #   DOTFILES_WORK_GIT_REMOTES="<gitlab-host> github.com/<org>"
-# Each entry is a host, or a host and path prefix.
+#   DOTFILES_WORK_GH_USER=<work-github-login>      (optional)
+#   DOTFILES_WORK_LEAK_TERMS="<employer> <tool>"   (optional)
+# Each remote entry is a host, or a host and path prefix.
+#
+# DOTFILES_WORK_GH_USER sets credential.https://github.com/<org>.username, and
+# gh's credential helper returns the token for the account it's asked for, so
+# pushes to work repos over HTTPS use the work account without a
+# `gh auth switch`. Only github.com entries with an org get it: a bare
+# github.com would send every repo there to the work account. gh's own
+# commands (gh pr create) still use the active account.
+#
+# The leak rules match the email's domain, each remote entry, and
+# DOTFILES_WORK_LEAK_TERMS (the employer's name, internal tool names), which
+# can't be derived from the other two.
 #
 # Matching on the remote replaced an includeIf "gitdir:~/work/" that nothing
 # used, because repos live in ~/projects and ~/github. The default stays
 # personal: a fresh `git init` has no remote at its first commit, and a work
 # default would put the employer into a new public repo.
 #
-# On the personal profile it removes both files, so a Mac switched back with
+# On the personal profile it removes all three files, so a Mac switched back with
 # `script/setup --personal` loses the override. Prints "changed" when it
 # writes or removes anything, for the playbook's changed_when.
 # Usage: script/git-work-identity [--check]
@@ -36,6 +56,7 @@ check=false
 dir="$HOME/.config/git"
 selector="$dir/work"
 identity="$dir/work-identity"
+leaks="$dir/work-leaks.toml"
 
 drift() {
 	echo "git-work-identity: $1" >&2
@@ -43,9 +64,9 @@ drift() {
 }
 
 if [ "$DOTFILES_PROFILE" != work ]; then
-	[ -e "$selector" ] || [ -e "$identity" ] || exit 0
-	$check && drift "$selector or $identity is left over from the work profile (run script/git-work-identity)"
-	rm -f "$selector" "$identity"
+	[ -e "$selector" ] || [ -e "$identity" ] || [ -e "$leaks" ] || exit 0
+	$check && drift "$selector, $identity or $leaks is left over from the work profile (run script/git-work-identity)"
+	rm -f "$selector" "$identity" "$leaks"
 	echo changed
 	exit 0
 fi
@@ -57,11 +78,14 @@ for var in DOTFILES_WORK_EMAIL DOTFILES_WORK_GIT_REMOTES; do
 done
 
 # The path is written with ~ so the file doesn't depend on the account name.
-want_identity=$(printf '[user]\n\temail = %s\n' "$DOTFILES_WORK_EMAIL")
+# dotfiles.workRepo marks work repos for the leak-guard hooks, through the
+# same remote match as the email.
+want_identity=$(printf '[user]\n\temail = %s\n[dotfiles]\n\tworkRepo = true\n' "$DOTFILES_WORK_EMAIL")
+# One entry per line, whether the list is space- or newline-separated.
+entries() { printf '%s\n' "$1" | xargs -n 1; }
 want_selector=$(
 	echo "# Written by script/git-work-identity from $DOTFILES_ENV_FILE; edit that, not this."
-	# One entry per line, whether the list is space- or newline-separated.
-	printf '%s\n' "$DOTFILES_WORK_GIT_REMOTES" | xargs -n 1 | while read -r entry; do
+	entries "$DOTFILES_WORK_GIT_REMOTES" | while read -r entry; do
 		entry=${entry%/}
 		host=${entry%%/*}
 		path=${entry#"$host"}
@@ -77,7 +101,32 @@ want_selector=$(
 			"ssh://git@$host:*/${path:+$path/}**"; do
 			printf '[includeIf "hasconfig:remote.*.url:%s"]\n\tpath = ~/.config/git/work-identity\n' "$pattern"
 		done
+		# git matches credential.<url> by whole path segments, so
+		# github.com/org doesn't also catch github.com/org-fork.
+		if [ -n "${DOTFILES_WORK_GH_USER:-}" ] && [ "$host" = github.com ] && [ -n "$path" ]; then
+			printf '[credential "https://github.com/%s"]\n\tusername = %s\n' "$path" "$DOTFILES_WORK_GH_USER"
+		fi
 	done
+)
+# One case-insensitive alternation of every term, regex-escaped, in a TOML
+# literal string (triple single quotes), so backslashes need no second
+# escaping. Without a rule file the hooks skip the check.
+want_leaks=$(
+	terms=$(
+		{
+			echo "${DOTFILES_WORK_EMAIL#*@}"
+			entries "$DOTFILES_WORK_GIT_REMOTES" | sed 's|/*$||'
+			entries "${DOTFILES_WORK_LEAK_TERMS:-}"
+		} | sed '/^$/d; s/[][\\.*^$+?(){}|]/\\&/g' | sort -u | paste -sd '|' -
+	)
+	q="'''"
+	echo "# Written by script/git-work-identity from $DOTFILES_ENV_FILE; edit that, not this."
+	echo 'title = "work details outside work repos"'
+	echo
+	echo '[[rules]]'
+	echo 'id = "work-detail"'
+	echo 'description = "An employer detail in a repo that is not a work repo"'
+	echo "regex = $q(?i)($terms)$q"
 )
 
 changed=false
@@ -90,4 +139,5 @@ sync() { # <file> <content>
 }
 sync "$selector" "$want_selector"
 sync "$identity" "$want_identity"
+sync "$leaks" "$want_leaks"
 ! $changed || echo changed

@@ -1,0 +1,26 @@
+#!/bin/sh
+# On a work Mac, block employer details (the work email's domain, git hosts,
+# and other terms from the untracked env file) in the commit message of any
+# repo that isn't a work repo. A pushed message can't be quietly fixed, and the
+# pre-commit hook only sees the diff. PR and issue bodies aren't covered: they
+# never pass through git.
+#
+# The rules come from script/git-work-identity, which also marks work repos
+# with dotfiles.workRepo; without the rules (a personal Mac), this does
+# nothing. Copied into repos like the pre-commit hook (see there for why it
+# isn't a global core.hooksPath). Skip once with SKIP_GITLEAKS=1.
+
+set -eu
+
+PATH="$PATH:/opt/homebrew/bin"
+[ -z "${SKIP_GITLEAKS:-}" ] || exit 0
+command -v gitleaks >/dev/null 2>&1 || exit 0
+rules="$HOME/.config/git/work-leaks.toml"
+[ -r "$rules" ] || exit 0
+[ "$(git config --bool dotfiles.workRepo || true)" != true ] || exit 0
+
+# Comment lines are git's own help text (and the diff, with --verbose).
+grep -v '^#' "$1" | gitleaks stdin --config "$rules" --no-banner --log-level warn --verbose || {
+	echo "gitleaks: work detail in the commit message of a repo that isn't a work repo (see above). Rewrite it, or commit with SKIP_GITLEAKS=1." >&2
+	exit 1
+}

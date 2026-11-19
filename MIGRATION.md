@@ -141,7 +141,8 @@ An employer-managed Mac runs the same playbook with `DOTFILES_PROFILE=work` ([`l
 - Installs only the casks opted in with `!cask` lines in [`Brewfile.work-skip`](Brewfile.work-skip) and no Mac App Store apps, and skips the formulae and mise tools it lists (hobby and network-probing tools, Caddy, and file-sync tools like rclone and restic that data-loss prevention watches for). To add an app, add a `!cask` line there. An app already installed by hand needs `brew install --cask --adopt <name>` once, or brew bundle fails on it.
 - Leaves the firewall, FileVault, remote-access and System Settings lockdowns, update policy, the login window and the computer name to the MDM, and `script/doctor` only warns about them. Gatekeeper, TouchID for `sudo`, and turning off automatic login still apply.
 - Keeps the nightly update job (`com.balter.ben.update`) disabled, since an agent that pulls a public repo and upgrades packages unattended looks like persistence to endpoint security. Run `up` by hand. The tmpreaper job, which deletes week-old files from `~/Downloads`, stays off too.
-- Gives repos whose remote is the employer's the work email, through [`script/git-work-identity`](script/git-work-identity), which writes `~/.config/git/work` from the env file. Every other repo keeps the personal email.
+- Gives repos whose remote is the employer's the work email, through [`script/git-work-identity`](script/git-work-identity), which writes `~/.config/git/work` from the env file. Every other repo keeps the personal email. With `DOTFILES_WORK_GH_USER` set, HTTPS pushes to the org's github.com repos also use the work GitHub account.
+- Blocks employer details (the work email's domain, the work git hosts and org, and `DOTFILES_WORK_LEAK_TERMS`) from commits and commit messages in any repo that isn't a work repo, through the gitleaks `pre-commit` and `commit-msg` hooks in [`.config/git/template`](.config/git/template). PR and issue bodies never pass through git, so they aren't covered. Run [`script/install-git-hooks`](script/install-git-hooks) once to add the hooks to repos cloned before setup.
 - Signs commits and tags with a local SSH key instead of 1Password, which a work Mac doesn't install, once `DOTFILES_SSH_SIGNING_KEY` is set (see below), by writing the key to `~/.gitconfig.local`. Until then, signing is off and `script/doctor` warns.
 - Leaves other local accounts alone, because on a work Mac that's usually IT's admin account.
 - Switches back with `script/setup --personal`.
@@ -154,6 +155,12 @@ An employer-managed Mac runs the same playbook with `DOTFILES_PROFILE=work` ([`l
   ```sh
   DOTFILES_WORK_EMAIL=<work-email>
   DOTFILES_WORK_GIT_REMOTES="<gitlab-host> github.com/<org>"
+  # Optional: the work GitHub login, so HTTPS pushes to github.com/<org>
+  # use it without `gh auth switch`
+  DOTFILES_WORK_GH_USER=<work-github-login>
+  # Optional: more words the leak guard blocks outside work repos (the
+  # employer's name, internal tool names), on top of the domain and hosts
+  DOTFILES_WORK_LEAK_TERMS="<employer> <internal-tool>"
   ```
 - [ ] Run setup as `~/.files/script/setup --work` (in section 3), which writes `DOTFILES_PROFILE=work` to `~/.config/dotfiles/env` before anything else runs. Plain `script/setup` would apply the personal profile's security and update settings over the MDM's.
 - [ ] Skip section 2's App Store sign-in, Apple ID and Google Drive steps. Use the managed Apple Account if IT issues one.
@@ -175,7 +182,7 @@ An employer-managed Mac runs the same playbook with `DOTFILES_PROFILE=work` ([`l
   4. Check for commits already made with the wrong email (`git log --format='%h %ae %s' @{u}..` in each repo touched since setup). Amend unpushed ones with `git commit --amend --reset-author`. Decide case by case before rewriting a pushed commit that has the work email in a public repo.
 
   `script/doctor`'s Git identity section warns until this is done.
-- [ ] Add the work GitHub account alongside the personal one: `gh auth login`, then `gh auth switch` between them.
+- [ ] Add the work GitHub account alongside the personal one with `gh auth login`. Git pushes pick the account by remote once `DOTFILES_WORK_GH_USER` is set, but `gh` commands themselves (`gh pr create`) still use the active account, so `gh auth switch` before those.
 - [ ] Check for TLS inspection. If the issuer below is the employer's secure web gateway instead of a public CA, tools that bring their own CA list (Node, Python, Homebrew's curl and git, mise downloads) will fail until they trust its root certificate:
   ```sh
   curl -sv https://github.com -o /dev/null 2>&1 | grep -i issuer
