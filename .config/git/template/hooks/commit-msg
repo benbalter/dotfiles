@@ -19,8 +19,11 @@ rules="$HOME/.config/git/work-leaks.toml"
 [ -r "$rules" ] || exit 0
 [ "$(git config --bool dotfiles.workRepo || true)" != true ] || exit 0
 
-# Comment lines are git's own help text (and the diff, with --verbose).
-grep -v '^#' "$1" | gitleaks stdin --config "$rules" --no-banner --log-level warn --verbose || {
+# The hook sees the message before git cleans it up. Drop everything from the
+# scissors line down (the diff that commit.verbose, set in .gitconfig, adds
+# without # prefixes, so a commit removing a work detail was blocked), then
+# git's # help text.
+sed '/^# -* >8 -*$/,$d' "$1" | grep -v '^#' | gitleaks stdin --config "$rules" --no-banner --log-level warn --verbose || {
 	echo "gitleaks: work detail in the commit message of a repo that isn't a work repo (see above). Rewrite it, or commit with SKIP_GITLEAKS=1." >&2
 	exit 1
 }

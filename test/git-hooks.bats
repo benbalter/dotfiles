@@ -113,6 +113,20 @@ stage_token() {
 	[ "$status" -eq 0 ] || fail "SKIP_GITLEAKS ignored: $output"
 }
 
+@test "commit-msg hook ignores the diff that commit.verbose appends" {
+	command -v gitleaks >/dev/null || skip "needs gitleaks"
+	work_rules
+	cat >msg <<'MSG'
+Remove old notes
+# ------------------------ >8 ------------------------
+# Do not modify or remove the line above.
+--- a/notes.txt
+-clone it from gitlab.work.example
+MSG
+	run "$MSG_HOOK" msg
+	[ "$status" -eq 0 ] || fail "blocked on the verbose diff: $output"
+}
+
 @test "commit-msg hook allows work details in a work repo, and without rules" {
 	command -v gitleaks >/dev/null || skip "needs gitleaks"
 	printf 'Mirror gitlab.work.example\n' >msg
