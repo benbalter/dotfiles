@@ -33,6 +33,10 @@ How I like to work, write, and handle privacy is in [`preferences.md`](https://g
 - When a skill, doc, or what you remember disagrees with the installed package's types or `--help`, the installed version wins.
 - Keep one source of truth. Edit the source, not generated or mirrored copies, and don't restate config or facts in a second file. If a copy is unavoidable, guard it with a test.
 - Run the repo's lint, typecheck, and tests before committing. Lint and format only the files you touched, stage specific paths rather than `git add -A`, and never commit scratch output or generated artifacts.
+- When something's broken, find the root cause before changing code: form a hypothesis, gather evidence (logs, a failing test, a minimal repro), and confirm it before proposing a fix. A fix that makes the symptom go away without an explanation isn't done.
+- Don't call work done, fixed, or passing without evidence: test output, a command's result, or the page actually loading. If you couldn't verify it, say so.
+- Fix type and lint errors rather than silencing them. No casts to `any`, `@ts-ignore`, `eslint-disable`, `# rubocop:disable`, or similar to get past a check, unless the tool is wrong, and then say why in a comment.
+- When adding a dependency, commit the updated lockfile alongside the manifest change.
 - Don't pin GitHub Actions or Docker images to SHAs or digests; use floating version tags. The pin churn is noise I don't want.
 - Before creating, archiving, deleting, or changing the visibility or settings of a repo, or adding or reshaping CI workflows and jobs, load the [`repo-and-ci-setup`](https://github.com/benbalter/dotfiles/blob/main/claude/skills/repo-and-ci-setup/SKILL.md) skill. It covers Renovate, the github-settings repo that owns repo settings, required status checks, and Actions minutes.
 
