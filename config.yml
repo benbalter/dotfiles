@@ -93,6 +93,9 @@ dotfile_links_common:
     dest: .claude/CLAUDE.md
   - src: claude/preferences.md
     dest: .claude/rules/preferences.md
+  # The shorthand as slash commands; claude-code.ts loads them into OpenCode too
+  - src: claude/commands
+    dest: .claude/commands
   # OpenCode reads only AGENTS.md, never CLAUDE.md, for global rules
   - src: claude/CLAUDE.md
     dest: .config/opencode/AGENTS.md

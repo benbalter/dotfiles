@@ -56,6 +56,7 @@ for file in \
 done
 link claude/CLAUDE.md .claude/CLAUDE.md
 link claude/preferences.md .claude/rules/preferences.md
+link claude/commands .claude/commands
 link claude/CLAUDE.md .config/opencode/AGENTS.md
 # OpenCode's plan agent writes to ~/.opencode/plan; share Claude Code's plans
 # folder instead (the playbook does the same on macOS).

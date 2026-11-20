@@ -157,6 +157,17 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 		"$REPO_ROOT/config.yml" >/dev/null || fail "config.yml must link claude/preferences.md to ~/.claude/rules/preferences.md"
 }
 
+@test "the shorthand slash commands are linked for Claude Code and OpenCode" {
+	# claude-code.ts loads ~/.claude/commands into OpenCode, so this one link
+	# gives both agents /cpm, /opr, /mag and /gb.
+	yq -e '.dotfile_links_common[] | select(.src == "claude/commands" and .dest == ".claude/commands")' \
+		"$REPO_ROOT/config.yml" >/dev/null || fail "config.yml must link claude/commands to ~/.claude/commands"
+	grep -q 'link claude/commands .claude/commands' "$REPO_ROOT/install.sh" || fail "install.sh must link claude/commands"
+	for command in cpm opr mag gb; do
+		[ -f "$REPO_ROOT/claude/commands/$command.md" ] || fail "missing claude/commands/$command.md"
+	done
+}
+
 @test "OpenCode loads the same global instructions as Claude Code" {
 	# OpenCode never looks in ~/.claude/rules, so preferences.md needs the
 	# instructions entry. Since 2.3.1 it also falls back to ~/.claude/CLAUDE.md
