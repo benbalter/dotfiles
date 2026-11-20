@@ -168,6 +168,15 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 	done
 }
 
+@test "a work Mac's disabled Claude Code plugins are ones claude/settings.json enables" {
+	# A typo here would leave the real plugin on and the network errors with it.
+	while IFS= read -r plugin; do
+		jq -e --arg p "$plugin" '.enabledPlugins | has($p)' "$REPO_ROOT/claude/settings.json" >/dev/null ||
+			fail "claude_plugins_work_disabled lists '$plugin', which claude/settings.json doesn't enable"
+	done < <(yq -r '.claude_plugins_work_disabled[]' "$REPO_ROOT/config.yml")
+	grep -q 'claude_plugins_work_disabled' "$REPO_ROOT/playbook.yml" || fail "playbook.yml must apply claude_plugins_work_disabled"
+}
+
 @test "OpenCode loads the same global instructions as Claude Code" {
 	# OpenCode never looks in ~/.claude/rules, so preferences.md needs the
 	# instructions entry. Since 2.3.1 it also falls back to ~/.claude/CLAUDE.md

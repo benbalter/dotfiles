@@ -528,6 +528,12 @@ launch_agents_work_disabled:
 defaults_work_skip_domains:
   - com.apple.Safari
 
+# Claude Code plugins a work Mac turns off in ~/.claude/settings.json, which
+# OpenCode's claude-code.ts follows too. Context7's MCP server is blocked by a
+# corporate network filter, so it failed to connect at every session start.
+claude_plugins_work_disabled:
+  - context7@claude-plugins-official
+
 # Launch agents third-party apps install in ~/Library/LaunchAgents to start
 # themselves at login, by label. The playbook unloads and deletes them, and
 # script/doctor warns if one comes back. Camera Hub has no setting for this:

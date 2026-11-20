@@ -537,7 +537,11 @@
       become: false
       vars:
         claude_dir: "{{ ansible_facts['env']['HOME'] }}/.claude"
-        claude_settings_repo: "{{ lookup('ansible.builtin.file', playbook_dir + '/claude/settings.json') | from_json }}"
+        claude_settings_shared: "{{ lookup('ansible.builtin.file', playbook_dir + '/claude/settings.json') | from_json }}"
+        # A work Mac turns config.yml's claude_plugins_work_disabled off, as
+        # false rather than absent so the merge below overrides a local true.
+        claude_settings_work: "{{ {'enabledPlugins': dict(claude_plugins_work_disabled | product([false]))} if is_work else {} }}"
+        claude_settings_repo: "{{ claude_settings_shared | combine(claude_settings_work, recursive=true) }}"
       block:
         - name: Read existing Claude Code settings
           ansible.builtin.slurp:
