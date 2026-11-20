@@ -155,8 +155,6 @@
     },
     "npm run astro:dev": true
   },
-  "gitlens.ai.model": "vscode",
-  "gitlens.ai.vscode.model": "copilot:gpt-4.1",
   "[dockercompose]": {
     "editor.insertSpaces": true,
     "editor.tabSize": 2,
