@@ -8,8 +8,6 @@ brew 'shellcheck'
 brew 'actionlint'
 # Simple, modern, secure file encryption
 brew 'age'
-# Microsoft Azure CLI 2.0
-brew 'azure-cli'
 # Bash Automated Testing System
 brew 'bats-core'
 # Resource monitor. C++ version and continuation of bashtop and bpytop

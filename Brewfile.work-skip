@@ -114,7 +114,6 @@ brew cmake
 brew protobuf
 brew jsonnet
 brew hivemind
-brew azure-cli
 
 # Unused on a work Mac: mas installs App Store apps, all skipped above, and
 # GPG has nothing to sign, since signing uses SSH keys (and is off there).
