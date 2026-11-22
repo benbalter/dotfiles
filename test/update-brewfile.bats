@@ -41,6 +41,13 @@ run_update_brewfile() {
 	grep -qxF "bundle exec rubocop -A Brewfile" "$LOG" || fail "$(cat "$LOG")"
 }
 
+@test "update-brewfile finds lib/profile when run by a relative path" {
+	printf "cask 'kept'\n" >"$FAKE_ROOT/Brewfile"
+	cd "$REPO_ROOT/script"
+	run env DOTFILES_ROOT="$FAKE_ROOT" PATH="$STUB_BIN:$PATH" ./update-brewfile
+	[ "$status" -eq 0 ] || fail "exit $status: $output"
+}
+
 @test "update-brewfile refuses to dump on a work Mac" {
 	printf "cask 'kept'\n" >"$FAKE_ROOT/Brewfile"
 	run env DOTFILES_ROOT="$FAKE_ROOT" DOTFILES_PROFILE=work PATH="$STUB_BIN:$PATH" "$REPO_ROOT/script/update-brewfile"

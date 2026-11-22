@@ -6,12 +6,15 @@ set -eu
 # shellcheck disable=SC3040
 (set -o pipefail) 2>/dev/null && set -o pipefail || true
 
-cd "${DOTFILES_ROOT:-$(dirname "$0")/..}"
+# Resolved before the cd: $0 can be relative (./update-brewfile from script/),
+# and lib/profile was then looked up from the new directory and not found.
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+cd "${DOTFILES_ROOT:-$SCRIPT_DIR/..}"
 
 # A dump only lists what's installed, so on a work Mac it would delete every
 # Brewfile.work-skip entry (and every App Store app) from the shared Brewfile.
 # shellcheck source=lib/profile
-. "$(dirname "$0")/../lib/profile"
+. "$SCRIPT_DIR/../lib/profile"
 if [ "$DOTFILES_PROFILE" = work ]; then
 	echo "update-brewfile: this is a work Mac (DOTFILES_PROFILE=work), which skips" >&2
 	echo "  Brewfile.work-skip's entries, so a dump would delete them. Add new" >&2
