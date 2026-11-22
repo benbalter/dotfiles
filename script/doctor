@@ -168,7 +168,7 @@ echo "==> Last update run"
 # script/update records each run here. The exit code above says only that the
 # last nightly run failed; this says which steps, covers terminal runs and
 # Linux, and its age catches a job that is loaded but no longer running.
-STATUS="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/update-status"
+STATUS="$DOTFILES_STATE_DIR/update-status"
 if [ -f "$STATUS" ]; then
 	started=$(sed -n 's/^started=//p' "$STATUS")
 	if grep -q '^failed=' "$STATUS"; then
@@ -200,7 +200,7 @@ fi
 
 # A hung step (mas waiting on an App Store sign-in, say) holds script/update's
 # lock, and every later run then skips itself without failing.
-LOCK="${XDG_CACHE_HOME:-$HOME/.cache}/dotfiles-update.lock"
+LOCK="$DOTFILES_UPDATE_LOCK"
 if [ -d "$LOCK" ]; then
 	pid=$(cat "$LOCK/pid" 2>/dev/null || true)
 	if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
@@ -267,7 +267,7 @@ fi
 # so a stale one means it's failing (see the update log).
 if [ -n "${DOTFILES_BACKUP_REPOSITORY:-}" ]; then
 	echo "==> Backup"
-	last="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/backup-last"
+	last="$DOTFILES_STATE_DIR/backup-last"
 	if [ "$DOTFILES_PROFILE" = work ]; then
 		bad "backups are set up on a work Mac, which script/backup refuses (remove DOTFILES_BACKUP_REPOSITORY from $DOTFILES_ENV_FILE)"
 	elif [ ! -s "$last" ]; then

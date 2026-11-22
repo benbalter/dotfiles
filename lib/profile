@@ -17,6 +17,13 @@ DOTFILES_ENV_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/env"
 DOTFILES_PROFILE="${DOTFILES_PROFILE:-personal}"
 export DOTFILES_PROFILE
 
+# Where update and backup record their last run, and update's lock. Defined
+# once because doctor reads what they write: with a path spelled out in each
+# script, changing one side would leave doctor reporting "no update has run".
+DOTFILES_STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles"
+DOTFILES_UPDATE_LOCK="${XDG_CACHE_HOME:-$HOME/.cache}/dotfiles-update.lock"
+export DOTFILES_STATE_DIR DOTFILES_UPDATE_LOCK
+
 # Print a Brewfile's entries of one type, one per line: names for brew, cask
 # and tap, and App Store ids (without the _ separators) for mas. The one place
 # that knows how a Brewfile line is written; update and the skip list both

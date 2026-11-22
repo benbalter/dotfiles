@@ -81,7 +81,7 @@ fi
 # atomic. A lock left by a killed run is reclaimed once its PID is gone. Not
 # under $TMPDIR: launchd doesn't set it, so the nightly job and a terminal
 # would each lock a different directory and never see each other.
-LOCK="${XDG_CACHE_HOME:-$HOME/.cache}/dotfiles-update.lock"
+LOCK="$DOTFILES_UPDATE_LOCK"
 mkdir -p "${LOCK%/*}"
 if ! mkdir "$LOCK" 2>/dev/null; then
 	pid=$(cat "$LOCK/pid" 2>/dev/null || true)
@@ -100,7 +100,7 @@ trap 'exit 143' TERM
 
 # What script/doctor reads to report the last run. Not the launchd log: mole
 # and other cleaners sweep ~/Library/Logs, and Linux has no launchd log at all.
-STATUS="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/update-status"
+STATUS="$DOTFILES_STATE_DIR/update-status"
 mkdir -p "${STATUS%/*}"
 echo "started=$(date '+%Y-%m-%d %H:%M')" >"$STATUS"
 

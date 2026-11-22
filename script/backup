@@ -32,7 +32,7 @@ cd "$(dirname "$0")/.."
 KEYCHAIN_SERVICE=dotfiles-backup
 nl='
 '
-STATE="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/backup-last"
+STATE="$DOTFILES_STATE_DIR/backup-last"
 
 die() {
 	echo "backup: $*" >&2
