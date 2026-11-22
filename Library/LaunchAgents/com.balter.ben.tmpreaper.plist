@@ -5,7 +5,7 @@
 		<key>Label</key>
 		<string>com.balter.ben.tmpreaper</string>
 		<!-- Through sh, which expands $HOME: launchd doesn't expand ~ or $HOME,
-		     so these paths named /Users/benbalter and broke under any other
+		     so these paths named one account's home and broke under any other
 		     account name (launchd sets HOME for user agents).
 		     Age by mtime, not tmpreaper's default atime: macOS (Finder,
 		     QuickLook thumbnails) keeps bumping atime on everything in

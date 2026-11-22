@@ -147,7 +147,9 @@ refute_called() {
 	# launchd doesn't expand ~ or $HOME, so a literal /Users/<name> path only
 	# works under that one account name; the agents expand $HOME through sh.
 	for plist in "$REPO_ROOT"/Library/LaunchAgents/*.plist; do
-		! grep -n '<string>[^<]*/Users/' "$plist" || fail "${plist##*/} hardcodes a home directory"
+		# Anywhere in the file, comments included: the repo is public, and a
+		# comment naming the old path still names the account.
+		! grep -n '/Users/' "$plist" || fail "${plist##*/} hardcodes a home directory"
 		if command -v plutil >/dev/null; then
 			plutil -lint -s "$plist" || fail "${plist##*/} is not a valid plist"
 		fi
