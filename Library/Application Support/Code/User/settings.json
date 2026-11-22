@@ -145,14 +145,6 @@
     },
     "git fetch": true,
     "npm run test:jest": true,
-    "/^node /Users/benbalter/projects/benbalter\\.github\\.com/tmp/debug-braces\\.js$/": {
-      "approve": true,
-      "matchCommandLine": true
-    },
-    "/^node tmp/test-mdx\\.mjs 2>&1$/": {
-      "approve": true,
-      "matchCommandLine": true
-    },
     "npm run astro:dev": true
   },
   "[dockercompose]": {
