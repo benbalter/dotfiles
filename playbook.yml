@@ -118,21 +118,41 @@
       loop: "{{ directories_to_create }}"
       tags: [directories]
 
+    # One list of links: the files that sit at the same path in the repo and in
+    # $HOME (dotfiles_files), as src/dest pairs, then the ones whose paths
+    # differ (dotfile_links_common). They used to be two copies of the same
+    # four tasks.
     - name: Setup Dotfiles
       tags: [dotfiles]
+      vars:
+        dotfile_links: >-
+          {{ (dotfiles_files | map('community.general.dict_kv', 'src')
+              | zip(dotfiles_files | map('community.general.dict_kv', 'dest'))
+              | map('combine') | list)
+             + dotfile_links_common }}
       block:
+        # Create each link's parent under user_dir before symlinking. These
+        # parents (e.g. ~/.config/ghostty) are otherwise only made by the
+        # directories_to_create task, which resolves ~ via $HOME, and that can
+        # differ from user_dir (it did in a GitHub Actions container job, back
+        # when the playbook also ran on Linux), so the symlink failed with
+        # ENOENT. user_dir matches the symlink dest below.
         - name: Ensure parent directories of dotfiles exist
           ansible.builtin.file:
-            path: "{{ ansible_facts['user_dir'] }}/{{ item | dirname }}"
+            path: "{{ ansible_facts['user_dir'] }}/{{ item.dest | dirname }}"
             state: directory
-            mode: "{{ '0700' if (item | dirname) in private_directories else '0755' }}"
-          loop: "{{ dotfiles_files }}"
-          when: item | dirname not in dotfile_root_dirs
+            mode: "{{ '0700' if (item.dest | dirname) in private_directories else '0755' }}"
+          loop: "{{ dotfile_links }}"
+          loop_control:
+            label: "{{ item.dest | dirname }}"
+          when: item.dest | dirname not in dotfile_root_dirs
 
         - name: Stat existing dotfile targets
           ansible.builtin.stat:
-            path: "{{ ansible_facts['user_dir'] }}/{{ item }}"
-          loop: "{{ dotfiles_files }}"
+            path: "{{ ansible_facts['user_dir'] }}/{{ item.dest }}"
+          loop: "{{ dotfile_links }}"
+          loop_control:
+            label: "{{ item.dest }}"
           register: dotfile_targets
 
         # Never skip the move when a .bak already exists (the old `creates:`
@@ -141,72 +161,24 @@
         - name: Back up existing non-symlink dotfile targets
           ansible.builtin.shell:
             cmd: >-
-              f="{{ ansible_facts['user_dir'] }}/{{ item.item }}";
-              bak="$f.bak"; [ ! -e "$bak" ] || bak="$bak.$(date +%s)";
-              mv "$f" "$bak"
-          changed_when: true
-          loop: "{{ dotfile_targets.results }}"
-          loop_control:
-            label: "{{ item.item }}"
-          when:
-            - item.stat.exists
-            - not item.stat.islnk
-
-        - name: Symlink dotfiles into HOME
-          ansible.builtin.file:
-            src: "{{ playbook_dir }}/{{ item }}"
-            dest: "{{ ansible_facts['user_dir'] }}/{{ item }}"
-            state: link
-            force: true
-          loop: "{{ dotfiles_files }}"
-
-    - name: Setup dotfile links (destination differs from repo path)
-      tags: [dotfiles]
-      block:
-        # Create each link's parent under user_dir before symlinking. These
-        # parents (e.g. ~/.config/ghostty) are otherwise only made by the
-        # directories_to_create task, which resolves ~ via $HOME, and that can
-        # differ from user_dir (it did in a GitHub Actions container job, back
-        # when the playbook also ran on Linux), so the symlink failed with
-        # ENOENT. user_dir matches the symlink dest below.
-        - name: Ensure parent directories of dotfile links exist
-          ansible.builtin.file:
-            path: "{{ ansible_facts['user_dir'] }}/{{ item.dest | dirname }}"
-            state: directory
-            mode: "{{ '0700' if (item.dest | dirname) in private_directories else '0755' }}"
-          loop: "{{ dotfile_links_common }}"
-          loop_control:
-            label: "{{ item.dest | dirname }}"
-
-        - name: Stat existing dotfile link targets
-          ansible.builtin.stat:
-            path: "{{ ansible_facts['user_dir'] }}/{{ item.dest }}"
-          loop: "{{ dotfile_links_common }}"
-          loop_control:
-            label: "{{ item.dest }}"
-          register: dotfile_link_targets
-
-        - name: Back up existing non-symlink dotfile link targets
-          ansible.builtin.shell:
-            cmd: >-
               f="{{ ansible_facts['user_dir'] }}/{{ item.item.dest }}";
               bak="$f.bak"; [ ! -e "$bak" ] || bak="$bak.$(date +%s)";
               mv "$f" "$bak"
           changed_when: true
-          loop: "{{ dotfile_link_targets.results }}"
+          loop: "{{ dotfile_targets.results }}"
           loop_control:
             label: "{{ item.item.dest }}"
           when:
             - item.stat.exists
             - not item.stat.islnk
 
-        - name: Symlink dotfile links into HOME
+        - name: Symlink dotfiles into HOME
           ansible.builtin.file:
             src: "{{ playbook_dir }}/{{ item.src }}"
             dest: "{{ ansible_facts['user_dir'] }}/{{ item.dest }}"
             state: link
             force: true
-          loop: "{{ dotfile_links_common }}"
+          loop: "{{ dotfile_links }}"
           loop_control:
             label: "{{ item.dest }}"
 
