@@ -26,7 +26,7 @@ teardown() {
 	[ "$status" -eq 0 ]
 
 	# Verify key dotfile symlinks exist
-	for file in .digrc .gemrc .gitconfig .gitignore .hushlogin \
+	for file in .digrc .gemrc .gitconfig .config/git/ignore .hushlogin \
 		.irbrc .pryrc .remarkrc .yamllint .zprofile .zshrc; do
 		[ -L "$TEST_HOME/$file" ] || fail "$file was not symlinked"
 	done

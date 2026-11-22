@@ -286,3 +286,23 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 		[ "${#description}" -le 1024 ] || fail "$skill description is ${#description} characters, over 1024"
 	done
 }
+
+@test "the global gitignore is its own file, not the repo's .gitignore" {
+	# ~/.gitignore used to link to this repo's .gitignore, so Gemfile.lock and
+	# .vscode/* were ignored in every repo on the Mac.
+	! grep -q 'excludesfile' "$REPO_ROOT/.gitconfig" ||
+		fail ".gitconfig sets excludesfile; git already reads ~/.config/git/ignore"
+	yq -r '.dotfiles_files_common[]' "$REPO_ROOT/config.yml" | grep -qx '.config/git/ignore' ||
+		fail ".config/git/ignore isn't linked"
+	# Anchored patterns and lockfiles only make sense for one repo.
+	! grep -nE '^/|\.lock$' "$REPO_ROOT/.config/git/ignore" ||
+		fail ".config/git/ignore has a repo-specific pattern"
+}
+
+@test "no retired dotfile is still linked" {
+	# The playbook would link it, then remove the link, on every run.
+	while IFS= read -r file; do
+		! { yq -r '.dotfiles_files_common[], .dotfiles_files_macos[], .dotfile_links_common[].dest' "$REPO_ROOT/config.yml" |
+			sed 's|^~/||' | grep -qxF "$file"; } || fail "dotfiles_retired entry '$file' is still in an active list"
+	done < <(yq -r '.dotfiles_retired[]' "$REPO_ROOT/config.yml")
+}

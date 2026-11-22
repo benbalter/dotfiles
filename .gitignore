@@ -1,7 +1,6 @@
 .DS_Store
 ._*
 node_modules
-Gemfile.lock
 # Only the tracked workspace settings (test/comic-sans.bats reads them).
 .vscode/*
 !.vscode/settings.json

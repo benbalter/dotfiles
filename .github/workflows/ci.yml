@@ -75,7 +75,7 @@ jobs:
 
       - name: Verify dotfile symlinks
         run: |
-          for file in .zshrc .zprofile .gitconfig .gitignore .yamllint .Brewfile \
+          for file in .zshrc .zprofile .gitconfig .config/git/ignore .yamllint .Brewfile \
             .config/mise/config.toml .config/starship.toml; do
             test -L "$HOME/$file" || { echo "FAIL: $file not symlinked"; exit 1; }
             target=$(readlink "$HOME/$file")

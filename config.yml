@@ -39,7 +39,6 @@ dotfiles_files_common:
   - .digrc
   - .gemrc
   - .gitconfig
-  - .gitignore
   - .gnupg/gpg.conf
   - .hushlogin
   - .irbrc
@@ -54,6 +53,7 @@ dotfiles_files_common:
   - .config/bat/config
   - .config/git/allowed_signers
   - .config/git/attributes
+  - .config/git/ignore
   - .config/mise/config.toml
   # OpenCode doesn't read ~/.claude/rules; this loads preferences.md
   - .config/opencode/opencode.json
@@ -126,6 +126,9 @@ dotfiles_retired:
   # atuin was dropped for fzf's Ctrl-R; its history database in
   # ~/.local/share/atuin is left in place.
   - .config/atuin/config.toml
+  # The repo's own .gitignore was also the global excludes file; the global
+  # patterns now live in .config/git/ignore.
+  - .gitignore
 
 dotfile_root_dirs:
   - ""

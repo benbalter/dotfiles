@@ -1,0 +1,12 @@
+# Global gitignore: git reads ~/.config/git/ignore by default, so nothing
+# points here. Only patterns that are noise in every repo belong in this file.
+# The repo's own .gitignore used to be the global one too, which ignored
+# Gemfile.lock and .vscode/* everywhere, so new repos silently never committed
+# a lockfile.
+.DS_Store
+._*
+node_modules
+
+# Per-machine Claude Code settings and its write journal
+**/.claude/settings.local.json
+**/.claude/.cc-writes/

@@ -36,7 +36,7 @@ link() {
 
 # Symlink dotfiles
 for file in \
-	.default-gems .digrc .gemrc .gitconfig .gitignore .hushlogin \
+	.default-gems .digrc .gemrc .gitconfig .hushlogin \
 	.irbrc .npmrc .pryrc .remarkrc .ripgreprc .yamllint .zprofile .zshenv .zshrc; do
 	link "$file"
 done
@@ -49,7 +49,8 @@ mkdir -p "$HOME/.gnupg"
 chmod 700 "$HOME/.gnupg"
 for file in \
 	.bundle/config .gnupg/gpg.conf .config/mise/config.toml .config/starship.toml \
-	.config/git/attributes .config/git/allowed_signers .config/bat/config \
+	.config/git/attributes .config/git/ignore .config/git/allowed_signers \
+	.config/bat/config \
 	.config/zed/settings.json .config/opencode/opencode.json \
 	.config/opencode/plugins/claude-code.ts; do
 	link "$file"
