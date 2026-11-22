@@ -74,6 +74,13 @@ audit() {
 	[ "$(stat -c %a "$TMP/marker" 2>/dev/null || stat -f %Lp "$TMP/marker")" = 644 ] || fail "a refused check ran"
 }
 
+@test "audit-baseline fails rather than passing when it reads no rules" {
+	: >"$MSCP/baselines/test.yaml"
+	audit
+	[ "$status" -ne 0 ] || fail "an unreadable baseline passed: $output"
+	echo "$output" | grep -q "no rules read" || fail "$output"
+}
+
 @test "audit-baseline exits 0 when nothing fails" {
 	printf 'id: bad_rule\ncheck: |\n  echo pass\nresult:\n  string: pass\n' >"$MSCP/rules/os/bad_rule.yaml"
 	audit

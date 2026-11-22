@@ -118,7 +118,13 @@ run_check() {
 	fi
 }
 
-for rule in $(yq -r '.profile[].rules[]' "$MSCP/baselines/$baseline.yaml"); do
+# Captured first: a command substitution in a `for` list hides its exit
+# status, so a baseline yq couldn't read audited no rules and passed.
+rules=$(yq -r '.profile[].rules[]' "$MSCP/baselines/$baseline.yaml") && [ -n "$rules" ] || {
+	echo "audit-baseline: no rules read from $MSCP/baselines/$baseline.yaml" >&2
+	exit 1
+}
+for rule in $rules; do
 	reason=$(exception "$rule")
 	if [ -n "$reason" ]; then
 		report EXCEPTED "$rule" "$reason"

@@ -217,7 +217,12 @@ fi
 if command -v claude >/dev/null && command -v jq >/dev/null; then
 	echo "==> Updating Claude Code plugins..."
 	step claude plugin marketplace update
-	for plugin in $(claude plugin list --json | jq -r '.[] | select(.enabled) | .id'); do
+	# Captured first: a command substitution in a `for` list hides its exit
+	# status, so a failing `claude plugin list` updated nothing and the run
+	# still reported success. Whatever it did print is still updated.
+	plugins=$(claude plugin list --json | jq -r '.[] | select(.enabled) | .id') || failed="$failed
+    claude plugin list --json"
+	for plugin in $plugins; do
 		step claude plugin update "$plugin"
 	done
 fi

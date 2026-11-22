@@ -98,6 +98,8 @@ refute_called() {
 	assert_called "mise upgrade"
 	assert_called "claude plugin marketplace update"
 	assert_called "claude plugin update on@market"
+	# Listing the plugins failed too, and is reported like any other step.
+	echo "$output" | grep -q 'claude plugin list --json' || fail "plugin list failure not reported: $output"
 	assert_called "npm ci"
 	assert_called "bundle update"
 	assert_called "uv pip install --upgrade -r requirements.txt"
