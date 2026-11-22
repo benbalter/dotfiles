@@ -299,6 +299,13 @@ write_status() {
 	done
 }
 
+@test "doctor fails a work Mac's Touch ID for sudo, which the playbook applies there too" {
+	echo "auth       sufficient     pam_smartcard.so" >"$STUB_BIN/pam_sudo"
+	UNAME=Darwin DOTFILES_PROFILE=work run_doctor
+	echo "$security_output" | grep -q "FAIL  sudo reads sudo_local is off (re-run" || fail "$security_output"
+	! echo "$security_output" | grep -q "sudo_local is off (a work Mac" || fail "$security_output"
+}
+
 @test "doctor flags sudo no longer including sudo_local" {
 	# An OS update replaces /etc/pam.d/sudo, which would leave Touch ID for
 	# sudo configured in sudo_local but never read.

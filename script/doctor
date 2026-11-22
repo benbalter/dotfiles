@@ -292,13 +292,21 @@ if [ "$(uname)" = "Darwin" ]; then
 		shift 2
 		if "$@" 2>/dev/null | grep -q "$want"; then
 			ok "$desc"
-		elif [ "$DOTFILES_PROFILE" = work ]; then
+		elif [ "$DOTFILES_PROFILE" = work ] && [ "${applied_on_work:-false}" != true ]; then
 			# The playbook leaves a work Mac's security policy to its MDM, so
 			# re-running it won't help, and IT may have a reason.
 			warn "$desc is off (a work Mac: IT's MDM manages this)"
 		else
 			bad "$desc is off (re-run: script/ansible --tags security)"
 		fi
+	}
+	# For the settings the playbook applies on a work Mac too (Touch ID for
+	# sudo), like `work: true` in macos_security_settings: there a failure is
+	# the playbook's to fix, and blaming the MDM hid the fix.
+	check_security_everywhere() {
+		applied_on_work=true
+		check_security "$@"
+		applied_on_work=false
 	}
 	# Employer Macs enroll in MDM through Automated Device Enrollment (DEP)
 	# at first boot; a personal Mac's MDM (an anti-theft service's, once) is
@@ -351,10 +359,10 @@ SETTINGS
 			fi
 			;;
 	esac
-	check_security "TouchID for sudo" "pam_tid.so" cat "$sudo_local"
+	check_security_everywhere "TouchID for sudo" "pam_tid.so" cat "$sudo_local"
 	# sudo_local survives OS updates, but only takes effect while
 	# /etc/pam.d/sudo, which updates replace, still includes it.
-	check_security "sudo reads sudo_local" "^auth[[:space:]]*include[[:space:]]*sudo_local" \
+	check_security_everywhere "sudo reads sudo_local" "^auth[[:space:]]*include[[:space:]]*sudo_local" \
 		cat "${PAM_SUDO:-/etc/pam.d/sudo}"
 	# Firewall prompts' "Allow" clicks pile up entries; see script/firewall-extras.
 	# A work Mac's firewall belongs to IT, and the playbook leaves it alone.
