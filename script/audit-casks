@@ -33,8 +33,8 @@ KEEP="${AUDIT_KEEP:-steam}"
 
 MODE=report
 case "${1:-}" in
-	--comment | --propose) MODE=comment ;;
-	--report | "") MODE=report ;;
+	--comment) MODE=comment ;;
+	"") MODE=report ;;
 	*)
 		echo "usage: audit-casks [--comment]" >&2
 		exit 2
