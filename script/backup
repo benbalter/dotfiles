@@ -110,7 +110,12 @@ paths() (
 '
 	for pattern in $patterns; do
 		for path in $pattern; do
-			[ -e "$path" ] && printf '%s\n' "$path"
+			# An if, not `[ -e ] && printf`: as the function's last command,
+			# a false test made a missing final path the exit status, and
+			# set -e stopped the backup before it could say anything.
+			if [ -e "$path" ]; then
+				printf '%s\n' "$path"
+			fi
 		done
 	done
 )

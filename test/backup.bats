@@ -67,6 +67,16 @@ backup() {
 		"$TMP/out/Library/Application Support/com.elgato.StreamDeck/ProfilesV3/manifest.json" || fail "deck differs"
 }
 
+@test "backup carries on when the last configured path doesn't exist" {
+	command -v restic >/dev/null || skip "restic not installed"
+	restic init --quiet
+	# A Mac without Stream Deck: the last backup_paths entry is missing.
+	rm -rf "$HOME_DIR/Library/Application Support/com.elgato.StreamDeck"
+	backup
+	[ "$status" -eq 0 ] || fail "exit $status: $output"
+	restic ls latest | grep -q '/.claude/plans/plan.md$' || fail "plans weren't backed up"
+}
+
 @test "an unchanged backup adds no snapshot" {
 	command -v restic >/dev/null || skip "restic not installed"
 	restic init --quiet
