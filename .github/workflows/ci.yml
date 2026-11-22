@@ -38,13 +38,16 @@ jobs:
           path: ~/.ansible
           key: ${{ runner.os }}-ansible-${{ hashFiles('requirements.yml') }}
 
-      # Cache pip's wheels, not the venv: a cached venv points at the runner
-      # image's Python, and breaks once the image moves to a new one.
-      - name: Pip cache
-        uses: actions/cache@v6
+      # script/bootstrap installs with uv, which never touches pip's cache, so
+      # the pip cache that was here restored and saved nothing. This caches
+      # uv's downloads (not the venv: a cached venv points at the runner
+      # image's Python, and breaks once the image moves to a new one), and
+      # puts uv on PATH so bootstrap doesn't fetch its installer on every run.
+      - name: uv
+        uses: astral-sh/setup-uv@v10
         with:
-          path: ~/Library/Caches/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          enable-cache: true
+          cache-dependency-glob: requirements.txt
 
       # The runner's python3 moved to 3.15, which ansible-core 2.21 can't
       # import under (dataclasses._is_type is gone), so Bootstrap failed.
@@ -124,8 +127,8 @@ jobs:
           cd "$HOME"
           mise install
           export PATH="$HOME/.local/share/mise/shims:$PATH"
-          for cmd in node tsx wrangler ncu serve claude copilot zx ni degit taze \
-            tsc typescript-language-server chrome-devtools-mcp skills gam; do
+          for cmd in node ruby go tsx wrangler ncu serve claude copilot zx ni degit taze \
+            tsc typescript-language-server chrome-devtools-mcp skills gam tflint rclone pat; do
             command -v "$cmd" >/dev/null || { echo "FAIL: $cmd not on PATH"; exit 1; }
           done
           echo "All mise-managed CLIs verified"
@@ -182,8 +185,13 @@ jobs:
         uses: actions/setup-python@v7
         with:
           python-version-file: .python-version
-          cache: pip
-          cache-dependency-path: requirements.txt
+
+      # uv's download cache; see the test job.
+      - name: uv
+        uses: astral-sh/setup-uv@v10
+        with:
+          enable-cache: true
+          cache-dependency-glob: requirements.txt
 
       - name: Set up Node
         uses: actions/setup-node@v7
@@ -191,12 +199,22 @@ jobs:
           node-version: 26
           cache: npm
 
+      # The Ruby mise installs on the Mac, read from its config so the two
+      # can't drift: a pin here had moved to 4.0 while mise and .rubocop.yml's
+      # TargetRubyVersion stayed on 3.4.
+      - name: Read mise's Ruby version
+        id: ruby
+        run: |
+          version=$(sed -n 's/^ruby = "\(.*\)"$/\1/p' .config/mise/config.toml)
+          [ -n "$version" ] || { echo "FAIL: no ruby pin in .config/mise/config.toml"; exit 1; }
+          echo "version=$version" >>"$GITHUB_OUTPUT"
+
       # bundler-cache runs `bundle install`, so script/lint's `bundle exec
-      # rubocop` gets the Gemfile's pinned version.
+      # rubocop` gets Gemfile.lock's version.
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: "4.0"
+          ruby-version: ${{ steps.ruby.outputs.version }}
           bundler-cache: true
 
       - name: Ansible cache
