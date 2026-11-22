@@ -65,6 +65,16 @@ script/setup          # personal Mac
 script/setup --work   # employer-managed Mac: do the Work Mac "Before setup" steps first
 ```
 
+To have setup name the Mac, put the names in the untracked env file first (they stay out of this public repo; skip this and the names are left as they are):
+
+```sh
+mkdir -p ~/.config/dotfiles
+cat >> ~/.config/dotfiles/env <<'EOF'
+DOTFILES_COMPUTER_NAME="<name shown in Finder and AirDrop>"
+DOTFILES_LOCAL_HOSTNAME="<Bonjour-name-without-spaces>"
+EOF
+```
+
 What to expect:
 
 - Bootstrap creates a Python venv and installs Ansible.

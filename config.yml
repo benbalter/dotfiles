@@ -481,14 +481,14 @@ macos_defaults:
 # with PlistBuddy instead of through macos_defaults.
 macos_desktop_arrange_by: name
 
-# This Mac's names, set with scutil. ComputerName is the one shown in
-# Finder, AirDrop and Find My; LocalHostName is the Bonjour name (.local).
-# macOS appends -2 to LocalHostName when it sees another Mac using the name,
-# which had stuck after a migration. HostName stays unset, so macOS keeps
+# This Mac's names are set with scutil from DOTFILES_COMPUTER_NAME (shown in
+# Finder, AirDrop and Find My) and DOTFILES_LOCAL_HOSTNAME (the Bonjour name,
+# .local) in the untracked ~/.config/dotfiles/env, not from here: a name says
+# whose Mac it is and which model, and this repo is public. The playbook leaves
+# a name alone when its variable is unset. macOS appends -2 to LocalHostName
+# when it sees another Mac using the name, which had stuck after a migration,
+# so setting it is still worth doing. HostName stays unset, so macOS keeps
 # deriving it from the network.
-computer_names:
-  ComputerName: "Ben’s MacBook Pro"
-  LocalHostName: Bens-MacBook-Pro
 
 # Apps that open at login, by path. The playbook adds any that are missing
 # and never removes one, so an item added by hand survives until it's

@@ -956,6 +956,23 @@
       when: not is_ci and not ansible_check_mode
       tags: [macos, defaults]
 
+    # From the untracked env file, so the names stay out of this public repo.
+    - name: Read this Mac's names from the env file
+      ansible.builtin.command:
+        argv:
+          - sh
+          - -c
+          - '. "$1/lib/profile" && printf "%s\n%s\n" "${DOTFILES_COMPUTER_NAME:-}" "${DOTFILES_LOCAL_HOSTNAME:-}"'
+          - sh
+          - "{{ playbook_dir }}"
+      register: computer_names_read
+      check_mode: false
+      changed_when: false
+      # A runner's name isn't ours to change, and a work Mac follows IT's
+      # naming (sharing the personal Mac's Bonjour name would also collide).
+      when: not is_ci and not is_work
+      tags: [macos, defaults]
+
     - name: Set computer names
       ansible.builtin.shell:
         cmd: |
@@ -965,17 +982,17 @@
           [ "$(scutil --get "$KEY")" = "$WANT" ] || { echo "$KEY did not stick" >&2; exit 1; }
           echo changed
       environment:
-        KEY: "{{ item.key }}"
-        WANT: "{{ item.value }}"
-      loop: "{{ computer_names | dict2items }}"
+        KEY: "{{ item.0 }}"
+        WANT: "{{ item.1 }}"
+      # Skipped above (CI, a work Mac) leaves nothing to loop over.
+      loop: "{{ ['ComputerName', 'LocalHostName'] | zip(computer_names_read.stdout_lines | default([])) | list }}"
       loop_control:
-        label: "{{ item.key }}"
+        label: "{{ item.0 }}"
       become: true
       register: computer_names_set
       changed_when: "'changed' in computer_names_set.stdout"
-      # A runner's name isn't ours to change, and a work Mac follows IT's
-      # naming (sharing the personal Mac's Bonjour name would also collide).
-      when: not is_ci and not is_work and not ansible_check_mode
+      # An unset variable leaves that name as it is.
+      when: not ansible_check_mode and item.1 | length > 0
       tags: [macos, defaults]
 
     # Login items were only ever added through each app's own prompt. The

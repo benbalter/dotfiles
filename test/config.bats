@@ -299,6 +299,13 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 		fail ".config/git/ignore has a repo-specific pattern"
 }
 
+@test "config.yml doesn't name this Mac" {
+	# The computer name says whose Mac it is and which model; it comes from the
+	# untracked env file (DOTFILES_COMPUTER_NAME, DOTFILES_LOCAL_HOSTNAME).
+	! grep -nE '^computer_names:|ComputerName:|LocalHostName:' "$REPO_ROOT/config.yml" ||
+		fail "config.yml sets a computer name; put it in ~/.config/dotfiles/env"
+}
+
 @test "no retired dotfile is still linked" {
 	# The playbook would link it, then remove the link, on every run.
 	while IFS= read -r file; do
