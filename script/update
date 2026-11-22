@@ -151,22 +151,17 @@ if [ "$(uname)" = "Darwin" ] && command -v brew >/dev/null; then
 	# Store sign-in while holding the update lock. The next `up` from a
 	# terminal installs them.
 	echo "==> Installing any new Brewfile entries..."
-	if [ -t 1 ]; then
-		dotfiles_bundle_skip "$PWD"
-		dotfiles_vscode_extensions "$PWD"
-		step brew bundle install --no-upgrade
-		unset HOMEBREW_BUNDLE_BREW_SKIP HOMEBREW_BUNDLE_CASK_SKIP HOMEBREW_BUNDLE_MAS_SKIP HOMEBREW_BUNDLE_TAP_SKIP
-	else
+	if ! [ -t 1 ]; then
 		# Exported, not prefixed: an assignment before a function call (step)
 		# isn't reliably passed on in POSIX sh.
-		HOMEBREW_BUNDLE_CASK_SKIP=$(sed -n "s/^cask '\([^']*\)'.*/\1/p" Brewfile 2>/dev/null | tr '\n' ' ' || true)
-		HOMEBREW_BUNDLE_MAS_SKIP=$(sed -n 's/^mas .*id: *\([0-9_]*\).*/\1/p' Brewfile 2>/dev/null | tr -d _ | tr '\n' ' ' || true)
+		HOMEBREW_BUNDLE_CASK_SKIP=$(dotfiles_brewfile_entries cask Brewfile | tr '\n' ' ')
+		HOMEBREW_BUNDLE_MAS_SKIP=$(dotfiles_brewfile_entries mas Brewfile | tr '\n' ' ')
 		export HOMEBREW_BUNDLE_CASK_SKIP HOMEBREW_BUNDLE_MAS_SKIP
-		dotfiles_bundle_skip "$PWD"
-		dotfiles_vscode_extensions "$PWD"
-		step brew bundle install --no-upgrade
-		unset HOMEBREW_BUNDLE_BREW_SKIP HOMEBREW_BUNDLE_CASK_SKIP HOMEBREW_BUNDLE_MAS_SKIP HOMEBREW_BUNDLE_TAP_SKIP
 	fi
+	dotfiles_bundle_skip "$PWD"
+	dotfiles_vscode_extensions "$PWD"
+	step brew bundle install --no-upgrade
+	unset HOMEBREW_BUNDLE_BREW_SKIP HOMEBREW_BUNDLE_CASK_SKIP HOMEBREW_BUNDLE_MAS_SKIP HOMEBREW_BUNDLE_TAP_SKIP
 
 	# Prune orphaned dependencies and clear stale downloads/old versions. Both
 	# are non-interactive and safe headless, so they run every invocation
@@ -192,10 +187,9 @@ if [ "$(uname)" = "Darwin" ] && command -v brew >/dev/null; then
 	# never run unattended in the nightly launchd job. It only ever comments
 	# (never uninstalls) — review the diff and run `clean` to act on it. Tune
 	# the window with AUDIT_STALE_DAYS (default 14).
-	AUDIT="${DOTFILES_ROOT:-$HOME/.files}/script/audit-casks"
-	if [ -t 1 ] && [ -x "$AUDIT" ]; then
+	if [ -t 1 ] && [ -x script/audit-casks ]; then
 		echo "==> Auditing casks for disuse..."
-		step "$AUDIT" --comment
+		step script/audit-casks --comment
 	fi
 fi
 
