@@ -42,7 +42,11 @@ label() {
 
 GAMCFGDIR=$(mktemp -d)
 export GAMCFGDIR
-trap 'rm -rf "$GAMCFGDIR"' EXIT INT TERM
+# Exit from the signal traps: a handler that only removes the directory lets
+# the script carry on, running gam without the credentials it just deleted.
+trap 'rm -rf "$GAMCFGDIR"' EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 if [ "${1:-}" = --setup ]; then
 	# GAM prompts along the way; without a terminal (e.g. Claude Code's `!`)
