@@ -31,7 +31,7 @@ script/install-git-hooks # copy the gitleaks pre-commit hook (.config/git/templa
 
 **`config.yml` drives the playbook.** It holds the dotfile lists, macOS defaults and directories. Lists are split `*_common` (linked everywhere, including by `install.sh`) and `*_macos` (playbook only). Tasks that shouldn't run in CI (anything that changes the runner's system or security settings) are guarded with `when: not is_ci`.
 
-**Adding a dotfile** touches several places, and `test/config.bats` fails if they drift apart:
+**Adding a dotfile** touches several places, and `test/config.bats` (lists against the repo) and `test/install.bats` (`install.sh` against the lists) fail if they drift apart:
 
 - If it sits at the same path in the repo and in `$HOME`, add it to `dotfiles_files_common` or `dotfiles_files_macos`.
 - If the paths differ, add a `src`/`dest` pair to `dotfile_links_common`.
@@ -70,7 +70,7 @@ script/install-git-hooks # copy the gitleaks pre-commit hook (.config/git/templa
 - The folder is `claude/`, not `.claude/`, so it isn't also loaded as this repo's project config.
 - `claude/hooks/guard-bash` is a global PreToolUse hook, wired up in `claude/settings.json` by its `~/.files` path. It denies the Bash commands the global CLAUDE.md forbids (`sudo brew`, chowning `/opt/homebrew`, `npm install -g`, disabling signing, `git add -A`). `claude/hooks/require-prior-art` is a second global PreToolUse hook, on `ExitPlanMode`: it rejects a plan with no "Prior art" heading, because the global CLAUDE.md's prior-art rule alone was skipped. The playbook's merge replaces lists, so a hook event array here overwrites any local-only hooks for that event.
 
-**`.claude/`** is this repo's own project config, and its hooks fire only when working in this repo (in OpenCode too, through `claude-code.ts`). `.claude/hooks/lint-file` (PostToolUse) runs `script/lint`'s per-file checks on each edited file, and fixes shfmt formatting in place. `.claude/hooks/check-drift` (Stop) runs `test/config.bats` when `config.yml`, `install.sh`, `.config/mise/config.toml`, `claude/` or `.claude/` changed. `test/hooks.bats` covers all three hooks.
+**`.claude/`** is this repo's own project config, and its hooks fire only when working in this repo (in OpenCode too, through `claude-code.ts`). `.claude/hooks/lint-file` (PostToolUse) runs `script/lint`'s per-file checks on each edited file, and fixes shfmt formatting in place. `.claude/hooks/check-drift` (Stop) runs `test/config.bats`, `test/install.bats` and the `Brewfile.work-skip` check when `config.yml`, `install.sh`, `.config/mise/config.toml`, the `Brewfile`, `Brewfile.work-skip`, `claude/` or `.claude/` changed.bats` when `config.yml`, `install.sh`, `.config/mise/config.toml`, `claude/` or `.claude/` changed. `test/hooks.bats` covers all three hooks.
 
 ## Conventions
 

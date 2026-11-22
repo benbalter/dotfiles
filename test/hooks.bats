@@ -90,6 +90,31 @@ bash_decision() {
 	[[ "$output" == *drifted* ]] || fail "bats output missing: $output"
 }
 
+@test "check-drift runs the test that compares install.sh with config.yml" {
+	git -C "$PROJECT" init -q
+	touch "$PROJECT/install.sh"
+	mkdir "$PROJECT/bin"
+	printf '#!/bin/sh\necho "$*" >>"%s/bats-args"\n' "$PROJECT" >"$PROJECT/bin/bats"
+	chmod +x "$PROJECT/bin/bats"
+	command -v yq >/dev/null || ln -s /usr/bin/true "$PROJECT/bin/yq"
+	run sh -c "echo '{\"stop_hook_active\": false}' |
+		PATH='$PROJECT/bin:$PATH' CLAUDE_PROJECT_DIR='$PROJECT' '$CHECK_DRIFT'"
+	[ "$status" -eq 0 ] || fail "expected exit 0, got $status: $output"
+	grep -q 'test/install.bats' "$PROJECT/bats-args" || fail "install.bats not run: $(cat "$PROJECT/bats-args")"
+}
+
+@test "check-drift runs when only the Brewfile's work-skip list changed" {
+	git -C "$PROJECT" init -q
+	touch "$PROJECT/Brewfile.work-skip"
+	mkdir "$PROJECT/bin"
+	printf '#!/bin/sh\necho drifted\nexit 1\n' >"$PROJECT/bin/bats"
+	chmod +x "$PROJECT/bin/bats"
+	command -v yq >/dev/null || ln -s /usr/bin/true "$PROJECT/bin/yq"
+	run sh -c "echo '{\"stop_hook_active\": false}' |
+		PATH='$PROJECT/bin:$PATH' CLAUDE_PROJECT_DIR='$PROJECT' '$CHECK_DRIFT'"
+	[ "$status" -eq 2 ] || fail "expected exit 2, got $status: $output"
+}
+
 @test "check-drift skips the tests when nothing it checks changed" {
 	git -C "$PROJECT" init -q
 	touch "$PROJECT/README.md"

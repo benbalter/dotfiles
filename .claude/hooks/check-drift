@@ -1,8 +1,8 @@
 #!/bin/sh
-# Claude Code Stop hook: when the dotfile inventories changed, run
-# test/config.bats before Claude calls the work done. Adding a dotfile touches
-# config.yml, install.sh and sometimes claude/, and the test catches them
-# drifting apart; without this that only surfaced in CI. Exit 2 sends the
+# Claude Code Stop hook: when the dotfile inventories changed, run the tests
+# that cross-check them before Claude calls the work done. Adding a dotfile
+# touches config.yml, install.sh and sometimes claude/, and the tests catch
+# them drifting apart; without this that only surfaced in CI. Exit 2 sends the
 # failure back to Claude to fix.
 # Usage: (Claude Code passes the hook's JSON on stdin)
 
@@ -23,12 +23,18 @@ fi
 
 cd "${CLAUDE_PROJECT_DIR:-$(dirname "$0")/../..}"
 
-# Only the files config.bats cross-checks; the full suite is too slow to run
-# on every stop.
-git status --porcelain -- config.yml install.sh claude .claude .config/mise/config.toml |
+# Only the files these tests cross-check; the full suite is too slow to run on
+# every stop.
+git status --porcelain -- config.yml install.sh claude .claude .config/mise/config.toml \
+	Brewfile Brewfile.work-skip |
 	grep -q . || exit 0
 
-if ! out=$(bats test/config.bats 2>&1); then
-	printf 'check-drift: test/config.bats failed after these changes:\n%s\n' "$out" >&2
+# config.bats checks config.yml against the repo; install.bats is the one that
+# compares install.sh's links with config.yml (this hook ran only config.bats
+# for a while, so that drift got past it); shell-libs.bats checks
+# Brewfile.work-skip against the Brewfile.
+if ! out=$(bats test/config.bats test/install.bats 2>&1) ||
+	! out=$(bats test/shell-libs.bats -f 'Brewfile.work-skip' 2>&1); then
+	printf 'check-drift: the drift tests failed after these changes:\n%s\n' "$out" >&2
 	exit 2
 fi
