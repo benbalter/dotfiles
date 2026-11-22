@@ -10,7 +10,7 @@
   "containerEnv": {
     "DOTFILES_ROOT": "${containerWorkspaceFolder}"
   },
-  "updateContentCommand": "npm install && bundle install && script/bootstrap",
+  "updateContentCommand": "npm ci && bundle install && script/bootstrap",
   "postCreateCommand": "sh .devcontainer/post-create.sh",
   "customizations": {
     "vscode": {

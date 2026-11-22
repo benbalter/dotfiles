@@ -1,6 +1,9 @@
 extends: default
 
 rules:
+  # GitHub Actions' `on:` key reads as a YAML 1.1 boolean; only values matter.
+  truthy:
+    check-keys: false
   line-length: disable
   document-start: disable
   comments:
