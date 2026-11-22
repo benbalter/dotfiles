@@ -87,6 +87,21 @@ audit() {
 	[ "$status" -eq 0 ] || fail "$output"
 }
 
+@test "the repo pins mSCP to a full commit that Renovate can move" {
+	commit=$(yq -r '.audit_baseline.commit' "$REPO_ROOT/config.yml")
+	[[ "$commit" =~ ^[0-9a-f]{40}$ ]] || fail "audit_baseline.commit isn't a full hash: $commit"
+	grep -q "branch=$(yq -r '.audit_baseline.branch' "$REPO_ROOT/config.yml")\$" <(grep 'renovate: datasource=git-refs' "$REPO_ROOT/config.yml") ||
+		fail "the Renovate comment's branch doesn't match audit_baseline.branch"
+	jq -e . "$REPO_ROOT/renovate.json" >/dev/null || fail "renovate.json isn't valid JSON"
+}
+
+@test "audit-baseline refuses a pin that isn't a full commit hash" {
+	sed -i.bak 's/^  branch: test$/  branch: test\n  commit: main/' "$TMP/config.yml"
+	run env XDG_CACHE_HOME="$TMP/cache" AUDIT_BASELINE_CONFIG="$TMP/config.yml" "$REPO_ROOT/script/audit-baseline"
+	[ "$status" -ne 0 ] || fail "ran with a floating ref: $output"
+	echo "$output" | grep -q "full 40-character commit hash" || fail "$output"
+}
+
 @test "the repo's audit overrides name real settings and every exception has a reason" {
 	config="$REPO_ROOT/config.yml"
 	for name in $(yq -r '.audit_baseline.overrides[] | select(.setting) | .setting | @base64' "$config"); do

@@ -619,6 +619,11 @@ audit_baseline:
   # version; the script warns when this Mac is newer.
   branch: tahoe
   macos: 26
+  # The commit of that branch whose checks run. Pinned because they're shell
+  # this repo doesn't write and may run as root; Renovate proposes each new
+  # commit (see renovate.json), and it isn't merged automatically.
+  # renovate: datasource=git-refs depName=https://github.com/usnistgov/macos_security branch=tahoe
+  commit: cf656e844a4091868b2eeb8e6405f8f83952d08f
   baseline: cis_lvl1
   overrides:
     os_gatekeeper_enable: {setting: Gatekeeper}

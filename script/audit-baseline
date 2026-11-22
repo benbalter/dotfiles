@@ -12,10 +12,16 @@
 # overrides for profile-based ones and skipping its exceptions, so what's left
 # is a real finding.
 #
-# The rules come from a floating mSCP branch, so their checks are code this
-# repo doesn't review: each runs under `zsh -f` in an empty temporary folder,
-# and any check that would write (defaults write, launchctl load, rm, ...) is
-# refused. Checks that use sudo report "needs root" unless this runs as root.
+# The rules' checks are shell this repo doesn't write, and they run as root
+# when this does, so the checkout is pinned to config.yml's audit_baseline
+# commit: what runs is what was there when the pin was last moved, not whatever
+# the branch holds today. Renovate proposes each new commit, and the diff of
+# mSCP's rules/ between the two is what to read before merging. Each check runs
+# under `zsh -f` in an empty temporary folder, and one that plainly writes
+# (defaults write, launchctl load, rm, ...) is refused. That refusal catches an
+# honest rule's mistake; it is a short pattern list, not a sandbox, and the pin
+# is what limits what runs. Checks that use sudo report "needs root" unless
+# this runs as root.
 #
 # Usage: script/audit-baseline [--offline] [--verbose]
 #   --offline  use the cached mSCP checkout without fetching
@@ -46,14 +52,25 @@ conf() { yq -r ".audit_baseline.$1" "$CONFIG"; }
 branch=$(conf branch)
 baseline=$(conf baseline)
 
-if [ "$offline" = false ]; then
-	if [ -d "$MSCP/.git" ]; then
-		git -C "$MSCP" fetch --quiet --depth 1 origin "$branch"
-		git -C "$MSCP" reset --quiet --hard FETCH_HEAD
-	else
-		mkdir -p "${MSCP%/*}"
-		git clone --quiet --depth 1 --branch "$branch" https://github.com/usnistgov/macos_security "$MSCP"
+commit=$(conf commit)
+
+# Fetch the pinned commit by its hash unless the checkout is already on it.
+if [ "$offline" = false ] && [ "$(git -C "$MSCP" rev-parse HEAD 2>/dev/null || true)" != "$commit" ]; then
+	case "$commit" in
+		*[!0-9a-f]* | "") commit_ok=false ;;
+		*) [ "${#commit}" -eq 40 ] && commit_ok=true || commit_ok=false ;;
+	esac
+	[ "$commit_ok" = true ] || {
+		echo "audit-baseline: audit_baseline.commit in $CONFIG must be a full 40-character commit hash" >&2
+		exit 1
+	}
+	if [ ! -d "$MSCP/.git" ]; then
+		mkdir -p "$MSCP"
+		git -C "$MSCP" init --quiet
+		git -C "$MSCP" remote add origin https://github.com/usnistgov/macos_security
 	fi
+	git -C "$MSCP" fetch --quiet --depth 1 origin "$commit"
+	git -C "$MSCP" reset --quiet --hard FETCH_HEAD
 fi
 [ -f "$MSCP/baselines/$baseline.yaml" ] || {
 	echo "no mSCP checkout with baselines/$baseline.yaml at $MSCP (run without --offline)" >&2

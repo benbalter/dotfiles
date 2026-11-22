@@ -6,6 +6,16 @@
   "customManagers": [
     {
       "customType": "regex",
+      "description": "The mSCP commit script/audit-baseline runs checks from",
+      "managerFilePatterns": [
+        "/^config\\.yml$/"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>git-refs) depName=(?<depName>\\S+) branch=(?<currentValue>\\S+)\\n\\s+commit: (?<currentDigest>[a-f0-9]{40})"
+      ]
+    },
+    {
+      "customType": "regex",
       "description": "Lint tool pins in script/install-lint-tools (its checksums need a manual update)",
       "managerFilePatterns": [
         "/^script/install-lint-tools$/"
