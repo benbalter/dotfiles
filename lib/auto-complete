@@ -1,7 +1,11 @@
 #!/bin/bash
 # Shell completions not covered by oh-my-zsh plugins. Sourced by .zshrc.
 
-if command -v gh >/dev/null; then
+# Only where compinit found no _gh already: Homebrew's gh ships one in
+# site-functions, so on the Mac this generated a second copy, and regenerated
+# it only when gh's binary was newer than the cache, which a bottle's build
+# date often isn't after an upgrade.
+if command -v gh >/dev/null && [[ -z "${_comps[gh]:-}" ]]; then
 	gh_comp="${ZSH_CACHE_DIR:-$HOME/.cache}/gh-completion.zsh"
 	if [[ ! -s "$gh_comp" || "$(command -v gh)" -nt "$gh_comp" ]]; then
 		mkdir -p "$(dirname "$gh_comp")"

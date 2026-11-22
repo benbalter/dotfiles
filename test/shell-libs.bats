@@ -61,6 +61,18 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 	[ -z "$cache" ] || fail "wrote $cache without gh"
 }
 
+@test "lib/auto-complete leaves gh alone when a completion is already registered" {
+	home=$(mktemp -d)
+	mkdir -p "$home/bin"
+	printf '#!/bin/sh\necho "#compdef gh"\n' >"$home/bin/gh"
+	chmod +x "$home/bin/gh"
+	run env HOME="$home" ZSH_CACHE_DIR="$home/cache" PATH="$home/bin:$PATH" \
+		bash -c "_comps[gh]=_gh; . '$REPO_ROOT/lib/auto-complete'"
+	[ "$status" -eq 0 ] || fail "$output"
+	[ ! -e "$home/cache/gh-completion.zsh" ] || fail "generated a second completion"
+	rm -rf "$home"
+}
+
 @test "lib/auto-complete caches gh's completion under ZSH_CACHE_DIR" {
 	bin=$(mktemp -d) home=$(mktemp -d)
 	printf '#!/bin/sh\necho "# gh completion"\n' >"$bin/gh"
