@@ -129,6 +129,8 @@ dotfiles_retired:
   # The repo's own .gitignore was also the global excludes file; the global
   # patterns now live in .config/git/ignore.
   - .gitignore
+  # Renamed to claude-code.ts, which left this link dangling.
+  - .config/opencode/plugins/guard-bash.ts
 
 dotfile_root_dirs:
   - ""
