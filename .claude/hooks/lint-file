@@ -36,7 +36,8 @@ $result"
 # deterministic, so there's nothing for Claude to decide.
 case "$rel" in
 	script/* | install.sh | lib/* | test/*.bats | test/test_helper.bash | \
-		.devcontainer/post-create.sh | .claude/hooks/* | claude/hooks/*)
+		.devcontainer/post-create.sh | .claude/hooks/* | claude/hooks/* | \
+		.config/git/template/hooks/*)
 		check shfmt -w -i 0 -ci "$rel"
 		# -x: script/lint passes every file at once, so a sourced lib/profile
 		# is part of its input; checked alone, it's SC1091 on every edit.

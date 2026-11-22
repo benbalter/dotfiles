@@ -8,7 +8,9 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 @test "scripts are executable" {
 	# Hooks too: Claude Code runs them by path, and a missing exec bit makes
 	# every hook call error out.
-	for script in "$REPO_ROOT"/script/* "$REPO_ROOT"/.claude/hooks/* "$REPO_ROOT"/claude/hooks/*; do
+	# Git hooks as well: git skips a hook it can't execute, without a word.
+	for script in "$REPO_ROOT"/script/* "$REPO_ROOT"/.claude/hooks/* "$REPO_ROOT"/claude/hooks/* \
+		"$REPO_ROOT"/.config/git/template/hooks/*; do
 		[ -x "$script" ] || fail "$(basename "$script") is not executable"
 	done
 }

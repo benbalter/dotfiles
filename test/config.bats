@@ -306,6 +306,15 @@ REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 		fail "config.yml sets a computer name; put it in ~/.config/dotfiles/env"
 }
 
+@test "a work Mac's disabled launch agents are ones this repo ships" {
+	# launchctl disable accepts any label, so a typo would leave the nightly
+	# update running on a work Mac without an error.
+	while IFS= read -r label; do
+		yq -r '.dotfiles_files_macos[]' "$REPO_ROOT/config.yml" | grep -qx "Library/LaunchAgents/$label.plist" ||
+			fail "launch_agents_work_disabled entry '$label' has no plist in dotfiles_files_macos"
+	done < <(yq -r '.launch_agents_work_disabled[]' "$REPO_ROOT/config.yml")
+}
+
 @test "no retired dotfile is still linked" {
 	# The playbook would link it, then remove the link, on every run.
 	while IFS= read -r file; do
