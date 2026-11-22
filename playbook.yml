@@ -762,7 +762,9 @@
       # On a work Mac the other logins are usually IT's admin account, which
       # isn't this playbook's to change.
       when: not is_ci and not is_work
-      tags: [macos, defaults]
+      # directories too: the home-folder task below loops over this list, and
+      # under --tags directories alone it looped over nothing and passed.
+      tags: [macos, defaults, directories]
 
     # Same reason as this account's home: macOS creates each home 0750 with
     # group staff, which every local account is in.
@@ -891,7 +893,14 @@
       register: host_defaults_check
       check_mode: false
       changed_when: false
-      failed_when: host_defaults_check.rc != 0
+      # The value, not just that the key exists: `defaults read` prints
+      # booleans as 1/0, as in the system defaults check.
+      failed_when: >-
+        host_defaults_check.rc != 0 or
+        (host_defaults_check.stdout | trim | lower) not in
+        (['true', '1'] if item.value in [true, 1]
+         else ['false', '0'] if item.value in [false, 0]
+         else [item.value | string | lower])
       when: not ansible_check_mode
       tags: [macos, defaults]
 
