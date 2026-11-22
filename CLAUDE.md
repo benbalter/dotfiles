@@ -10,7 +10,7 @@ Personal dotfiles (public repo `benbalter/dotfiles`, checked out at `~/.files`) 
 script/bootstrap   # create the Python venv (env/) and install Ansible collections
 script/setup       # bootstrap + run the full playbook (prompts for sudo); --work (or --personal) records the Mac's profile first
 script/update      # update everything; aliased to `up`, also runs nightly headless
-script/lint        # ansible-lint, yamllint, shellcheck, shfmt, actionlint, rubocop, remark
+script/lint        # ansible-lint, yamllint, shellcheck, shfmt, actionlint, rubocop, remark, plus TOML, zsh, git config and Brewfile syntax checks
 script/test        # the whole BATS suite (bats test/)
 script/doctor      # read-only health check: symlinks, .bak files, brew wrapper, launch agents, last update, packages, security, defaults
 script/audit-defaults   # flag config.yml Apple defaults keys that no system binary contains (likely dead)
@@ -27,7 +27,7 @@ script/install-git-hooks # copy the gitleaks pre-commit hook (.config/git/templa
 
 ## Architecture
 
-**Entry points.** `install.sh` is the Codespaces entry point. On macOS it just `exec`s `script/setup`, which runs `playbook.yml`. On Linux it runs its own symlink-only path (common dotfiles, oh-my-zsh, and `script/install-tools` for delta/zoxide/fzf via mise). That makes `install.sh` a second, hand-maintained copy of the dotfile list. The playbook is macOS-only and fails fast elsewhere.
+**Entry points.** `install.sh` is the Codespaces entry point. On macOS it just `exec`s `script/setup`, which runs `playbook.yml`. On Linux it runs its own symlink-only path (common dotfiles, oh-my-zsh, and `script/install-tools` for delta/zoxide/fzf/yq via mise). That makes `install.sh` a second, hand-maintained copy of the dotfile list. The playbook is macOS-only and fails fast elsewhere.
 
 **`config.yml` drives the playbook.** It holds the dotfile lists, macOS defaults and directories. Lists are split `*_common` (linked everywhere, including by `install.sh`) and `*_macos` (playbook only). Tasks that shouldn't run in CI (anything that changes the runner's system or security settings) are guarded with `when: not is_ci`.
 

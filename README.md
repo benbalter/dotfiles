@@ -17,9 +17,14 @@
 - `script/bench-shell` — Time zsh's startup and per-command lag with [zsh-bench](https://github.com/romkatv/zsh-bench) and flag anything past its noticeable thresholds
 - `script/install-git-hooks` — Copy the gitleaks pre-commit hook into existing repos (`~/projects/*` by default); new clones get it through `init.templateDir`. Leaves other tools' hooks alone
 - `script/audit-casks` — Report casks whose apps haven't been opened lately; `--comment` proposes removals in the `Brewfile`
+- `script/audit-baseline` — Read-only audit against [NIST mSCP](https://github.com/usnistgov/macos_security)'s CIS Level 1 rules, with `config.yml`'s overrides and exceptions; `--verbose` lists every rule, `--offline` skips the fetch
+- `script/backup` — Encrypted off-site backup of `config.yml`'s `backup_paths` with [restic](https://restic.net), run nightly by `script/update`; `--setup` copies its credentials from 1Password to the Keychain, `--snapshots` lists snapshots, `--restore <dir>` restores the latest
+- `script/claude-ai-prefs` — Copy `claude/preferences.md` for pasting into claude.ai; `--check` says whether the pasted copy is stale
+- `script/spotlight-exclusions` — Show whether Spotlight skips `config.yml`'s `spotlight_exclusions`; `--apply` writes them (needs sudo), `--indexed` lists what's still indexed
+- `script/git-work-identity` — On a work Mac, give work repos the work email and write the leak-guard rules; `--check` reports without writing
 - `script/update-brewfile` — Sync the `Brewfile` with what's installed (personal Mac only: on a work Mac the dump would drop every skipped entry)
 - `script/clean` — Uninstall everything not in the `Brewfile` (`brew bundle cleanup --force`; destructive); aliased to `clean`
-- `script/install-tools` — Install delta, zoxide and fzf on Linux without Homebrew (Codespaces, devcontainer)
+- `script/install-tools` — Install delta, zoxide, fzf and yq on Linux without Homebrew (Codespaces, devcontainer)
 - `script/app-preferences` — Merge the settings in `app-preferences/<domain>.plist` into each app's defaults (CleanShot X, Thaw, Safari, keyboard shortcuts), and `app-preferences/json/<path>` into JSON settings files under `$HOME` (Docker Desktop); `--check` shows drift. The playbook's `defaults` tag runs it
 - `script/lint` — Run all linters (see [Linting](#linting))
 - `script/test` — Run the BATS test suite
@@ -57,7 +62,7 @@ The same repo sets up two kinds of Mac. Each machine's profile lives in the untr
 | Security and update policy | Set and verified by the playbook | Firewall, FileVault, remote access, System Settings lockdown and update policy left to IT's MDM (`script/doctor` only warns); Gatekeeper, TouchID for `sudo` and no auto-login still applied |
 | Login window, computer name | Login window from `config.yml`; names from the untracked env file | Left to IT |
 | Nightly `script/update`, `~/Downloads` cleanup | Run from launch agents | Disabled; run `up` by hand |
-| Commit and tag signing | Through 1Password | Off for now (in `~/.gitconfig.local`) |
+| Commit and tag signing | Through 1Password | With a local SSH key when the env file sets `DOTFILES_SSH_SIGNING_KEY`, otherwise off (both in `~/.gitconfig.local`) |
 | Other local accounts | Get the security baseline | Left alone (usually IT's admin account) |
 | `script/update-brewfile` | Runs | Refuses, so a dump can't delete the skipped entries |
 
@@ -102,7 +107,7 @@ ansible-playbook playbook.yml --tags dotfiles --ask-become-pass
 
 ## GitHub Codespaces
 
-These dotfiles are automatically applied to new Codespaces when configured in your [GitHub settings](https://github.com/settings/codespaces). The `install.sh` script symlinks dotfiles, installs essential CLI tools (`delta`, `zoxide`, `fzf`) with mise, sets up oh-my-zsh, and sets zsh as the default shell. macOS-specific configuration (SSH, GPG agent, Homebrew, commit signing through 1Password, etc.) is skipped, so Codespaces' own commit signing and credentials apply. The same path works in any Linux container; it's the only Linux target.
+These dotfiles are automatically applied to new Codespaces when configured in your [GitHub settings](https://github.com/settings/codespaces). The `install.sh` script symlinks dotfiles, installs essential CLI tools (`delta`, `zoxide`, `fzf`, `yq`) with mise, sets up oh-my-zsh, and sets zsh as the default shell. macOS-specific configuration (SSH, GPG agent, Homebrew, commit signing through 1Password, etc.) is skipped, so Codespaces' own commit signing and credentials apply. The same path works in any Linux container; it's the only Linux target.
 
 ## Development
 
@@ -128,7 +133,7 @@ Tests cover config file validation, script syntax, permissions and strict-mode h
 script/lint
 ```
 
-Needs `script/bootstrap` (ansible-lint and yamllint run from the venv), `npm ci` (remark), and `bundle install` (rubocop). Runs all seven linters, even after one fails, then lists the ones that failed:
+Needs `script/bootstrap` (ansible-lint and yamllint run from the venv), `npm ci` (remark), and `bundle install` (rubocop). Runs every check, even after one fails, then lists the ones that failed:
 
 | Linter       | What it checks           |
 | ------------ | ------------------------ |
@@ -139,6 +144,8 @@ Needs `script/bootstrap` (ansible-lint and yamllint run from the venv), `npm ci`
 | actionlint   | GitHub Actions workflows |
 | rubocop      | Ruby files               |
 | remark       | Markdown files           |
+
+It also syntax-checks the TOML files, the zsh files (`zsh -n`), `.gitconfig` and `.gitconfig.macos`, and the `Brewfile` (`ruby -c`).
 
 ### CI
 
