@@ -229,7 +229,7 @@ cask 'docker-desktop'
 # Control your Elgato key lights
 cask 'elgato-control-center'
 # Assign keys, and then decorate and label them
-# cask 'elgato-stream-deck' # PROPOSED REMOVAL: last opened 15 days ago
+cask 'elgato-stream-deck'
 # Web browser
 # cask 'firefox' # PROPOSED REMOVAL: last opened 54 days ago
 cask 'font-hack-nerd-font'
@@ -252,7 +252,7 @@ cask 'harper-desktop'
 # Reverse engineering tool that lets you disassemble, decompile and debug your app
 cask 'hopper-disassembler'
 # Keyboard customiser
-# cask 'karabiner-elements' # PROPOSED REMOVAL: last opened 15 days ago
+cask 'karabiner-elements'
 # Preview and audit Kindle eBooks
 cask 'kindle-previewer'
 # Tool to show what is persistently installed on the computer

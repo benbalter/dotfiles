@@ -24,7 +24,7 @@ setup() {
 		  {"token": "zz-never", "artifacts": [{"app": ["Zz Never.app"]}]},
 		  {"token": "zz-missing", "artifacts": [{"app": ["Zz Missing.app"]}]},
 		  {"token": "zz-font", "artifacts": [{"font": ["Zz.ttf"]}]},
-		  {"token": "zz-pkg", "artifacts": [{"pkg": ["Zz.pkg"]}, {"uninstall": [{"delete": ["/Applications/zz pkg.app", "/Library/Zz"]}]}]},
+		  {"token": "zz-pkg", "artifacts": [{"pkg": ["Zz.pkg"]}, {"uninstall": [{"delete": ["/Applications/zz pkg.app", "/Library/Zz", "/Library/Zz/Support"]}]}]},
 		  {"token": "zz-named", "name": ["Zz Named"], "artifacts": [{"pkg": ["Zz.pkg"]}]},
 		  {"token": "zz-hyphen", "name": ["Zz Hyphen Elements"], "artifacts": [{"pkg": ["Zz.pkg"]}]},
 		  {"token": "zz-unguessable", "name": ["Zz Driver"], "artifacts": [{"pkg": ["Zz.pkg"]}]}
@@ -176,6 +176,28 @@ run_audit() {
 	[ "$status" -eq 0 ] || fail "exited $status: $output"
 	grep -q "^# cask 'zz-stale' # PROPOSED REMOVAL" "$TEST_HOME/dotfiles/Brewfile" ||
 		fail "unrelated process kept zz-stale: $(cat "$TEST_HOME/dotfiles/Brewfile")"
+}
+
+@test "audit-casks counts a background service outside the app bundle as in use" {
+	# Karabiner-Elements runs from /Library/Application Support/org.pqrs, a
+	# path its uninstall stanza deletes, and never from /Applications.
+	echo "/Library/Zz/Support/bin/zzd" >"$TEST_HOME/running"
+	run_audit --comment
+	[ "$status" -eq 0 ] || fail "$output"
+	grep -q "^cask 'zz-pkg'" "$TEST_HOME/dotfiles/Brewfile" ||
+		fail "cask with a running service proposed: $(cat "$TEST_HOME/dotfiles/Brewfile")"
+	# Unrelated casks are still judged by their own last-opened date.
+	grep -q "^# cask 'zz-stale'" "$TEST_HOME/dotfiles/Brewfile" || fail "zz-stale not proposed"
+}
+
+@test "audit-casks ignores a supporting path too broad to mean anything" {
+	# /Library/Zz is two levels deep: matching it would be like matching
+	# /Library/Preferences.
+	echo "/Library/Zz/zzd" >"$TEST_HOME/running"
+	run_audit --comment
+	[ "$status" -eq 0 ] || fail "$output"
+	grep -q "^# cask 'zz-pkg'" "$TEST_HOME/dotfiles/Brewfile" ||
+		fail "zz-pkg not proposed: $(cat "$TEST_HOME/dotfiles/Brewfile")"
 }
 
 @test "audit-casks report labels running and kept casks" {

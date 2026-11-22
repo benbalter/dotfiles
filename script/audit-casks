@@ -77,7 +77,8 @@ list_casks() { sed -n "s/^cask '\\([^']*\\)'.*/\\1/p" "$BREWFILE"; }
 # shellcheck disable=SC2046 # deliberate word-splitting; cask tokens are bare
 set -- $(list_casks)
 if [ "$#" -gt 0 ]; then
-	APPMAP=$(brew info --cask --json=v2 "$@" 2>/dev/null |
+	CASKJSON=$(brew info --cask --json=v2 "$@" 2>/dev/null || true)
+	APPMAP=$(printf '%s\n' "$CASKJSON" |
 		jq -r '.casks[] | [
 			.token,
 			( first(.artifacts[]? | select(.app != null) | .app[0])
@@ -88,8 +89,21 @@ if [ "$#" -gt 0 ]; then
 			  // "" ),
 			(.name[0] // "")
 		] | @tsv' 2>/dev/null || true)
+	# Everything else the cask's uninstall stanza deletes, as "token<TAB>path"
+	# rows. Karabiner-Elements runs from /Library/Application Support/org.pqrs,
+	# never from its /Applications bundle, so it read as 41 days idle while
+	# remapping keys all day; a process running from one of these paths counts
+	# as in use too. Only absolute paths at least three levels deep, so a broad
+	# entry like /Library/Foo can't match unrelated processes by accident.
+	SUPPORTMAP=$(printf '%s\n' "$CASKJSON" |
+		jq -r '.casks[] | .token as $t
+			| .artifacts[]? | (.uninstall? // [])[]? | (.delete? // empty)
+			| if type == "array" then .[] else . end
+			| select(type == "string" and test("^/[^/]+/[^/]+/[^/]"))
+			| [$t, .] | @tsv' 2>/dev/null || true)
 else
 	APPMAP=""
+	SUPPORTMAP=""
 fi
 
 app_for() { printf '%s\n' "$APPMAP" | awk -F '\t' -v t="$1" '$1 == t { print $2; exit }'; }
@@ -104,6 +118,13 @@ find_app() {
 		}
 	done
 	return 1
+}
+
+# running_from <path>: does any process execute from inside it? Anchored at
+# the start, so ~/Applications/Foo.app/… doesn't count as /Applications/Foo.app
+# in use. The trailing slash keeps "Foo Pro.app" out.
+running_from() {
+	printf '%s\n' "$RUNNING" | awk -v p="$1/" 'index($0, p) == 1 { found = 1 } END { exit !found }'
 }
 
 # Echo "<days> <label>". days is the first token; -1 means unmeasurable
@@ -137,12 +158,22 @@ cask_probe() {
 		return
 	fi
 
-	# Anchored at the start, so ~/Applications/Foo.app/… doesn't count as
-	# /Applications/Foo.app in use. The trailing slash keeps "Foo Pro.app" out.
-	if printf '%s\n' "$RUNNING" | awk -v p="$path/" 'index($0, p) == 1 { found = 1 } END { exit !found }'; then
+	if running_from "$path"; then
 		printf '%d %s\n' 0 "running now"
 		return
 	fi
+
+	# Or from one of the cask's supporting paths (see SUPPORTMAP).
+	supports=$(printf '%s\n' "$SUPPORTMAP" | awk -F '\t' -v t="$cask" '$1 == t { print $2 }')
+	while IFS= read -r support; do
+		[ -n "$support" ] || continue
+		if running_from "$support"; then
+			printf '%d %s\n' 0 "running now (background service)"
+			return
+		fi
+	done <<-EOF
+		$supports
+	EOF
 
 	raw=$(mdls -name kMDItemLastUsedDate -raw "$path" 2>/dev/null || true)
 	if [ -z "$raw" ] || [ "$raw" = "(null)" ]; then
