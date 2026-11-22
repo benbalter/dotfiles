@@ -298,7 +298,8 @@ refute_called() {
 	assert_called "mas upgrade"
 	assert_called "mole clean"
 	# Re-applies defaults and security settings, but not app preferences.
-	# Through script/ansible, whose longer sudo timeout covers the Touch ID dialog.
+	# Through script/ansible, which asks for the sudo password only when
+	# there's a terminal to ask in.
 	assert_called "script/ansible --tags defaults,security --skip-tags app-preferences"
 	refute_called '^ansible-playbook'
 }

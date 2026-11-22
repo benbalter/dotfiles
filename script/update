@@ -282,8 +282,8 @@ if [ -d env ]; then
 	# be a privilege-escalation path. Headless, script/doctor still reports
 	# drift. app-preferences is skipped: it would revert app tweaks made in the
 	# UI before they could be copied into app-preferences/.
-	# Through script/ansible, not ansible-playbook: it gives sudo a minute for
-	# the Touch ID dialog, and a direct call timed out after 10 seconds.
+	# Through script/ansible, not ansible-playbook: it asks for the sudo
+	# password only when there's a terminal to ask in.
 	if [ -t 1 ] && [ "$(uname)" = "Darwin" ] && [ -x script/ansible ]; then
 		echo "==> Re-applying macOS defaults and security settings (sudo)..."
 		step script/ansible --tags defaults,security --skip-tags app-preferences

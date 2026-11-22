@@ -6,6 +6,13 @@
   # 70s per gathering on a CI macOS runner, and the homebrew role's
   # `setup: filter: pkg_mgr` gathered everything a second time.
   gather_subset: [min]
+  vars:
+    # How long the local connection waits for sudo to accept the password
+    # before failing with "Timed out waiting for become success". It's this
+    # variable, not ANSIBLE_TIMEOUT (which only the ssh connection reads), and
+    # the default 10 seconds was too short for a sudo whose directory lookup
+    # stalled for about 14.
+    ansible_local_become_success_timeout: 60
   module_defaults:
     ansible.builtin.setup:
       gather_subset: [min]
