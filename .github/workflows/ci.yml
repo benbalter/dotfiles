@@ -128,7 +128,7 @@ jobs:
           mise install
           export PATH="$HOME/.local/share/mise/shims:$PATH"
           for cmd in node ruby go tsx wrangler ncu serve claude copilot zx ni degit taze \
-            tsc typescript-language-server chrome-devtools-mcp skills gam tflint rclone pat; do
+            tsc typescript-language-server chrome-devtools-mcp skills prettier gam tflint rclone pat; do
             command -v "$cmd" >/dev/null || { echo "FAIL: $cmd not on PATH"; exit 1; }
           done
           echo "All mise-managed CLIs verified"

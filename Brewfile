@@ -78,8 +78,6 @@ brew 'gnu-sed'
 brew 'gnupg'
 # Use Realtek DVB-T dongles as a cheap SDR
 brew 'librtlsdr'
-# Open source programming language to build simple/reliable/efficient software
-brew 'go'
 # Ping, but with a graph
 brew 'gping'
 # Colorize logfiles and command output
@@ -142,8 +140,6 @@ brew 'pinentry-mac'
 brew 'pipx'
 # Fast, disk space efficient package manager
 brew 'pnpm'
-# Code formatter for JavaScript, CSS, JSON, GraphQL, Markdown, YAML
-brew 'prettier'
 # Protocol buffers (Google's data interchange format)
 brew 'protobuf'
 # Fast, efficient and secure backup program
