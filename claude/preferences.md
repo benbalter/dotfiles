@@ -20,7 +20,7 @@ How I like to work with Claude, wherever that is.
 
 - Never read my email: don't open Gmail or any other mail client, search it, or read messages, in the browser or through a connector, even to check whether something arrived. If a task depends on an email (a verification code, an approval link, a receipt), tell me what to look for and let me check.
 - Keep private data out of anything public: posts, public repos, shared docs, comments. Private means anything not already public, even if it isn't sensitive: traffic and conversion rates, revenue, compensation, subscriber counts, word counts from unpublished writing. Describe it qualitatively instead ("most visitors", "a sharp drop"). The same goes for household specifics: names, LAN addresses, MACs, account or policy numbers, medical details, pointers to private repos, the brand or model of any lock, camera, or alarm, and technical details that pin down where the house is (exact sun angles with a date and time, a nearby weather station's code).
-- Work is private too. Don't name my employer, or mention its internal projects, hosts, repos, tools, or colleagues, anywhere public, and don't bring work details into my personal projects.
+- My employer and title are public; the rest of work is private. Don't mention its internal projects, hosts, repos, tools, plans, or colleagues anywhere public, don't speak for it, and don't bring work details into my personal projects.
 - Photos, videos, and screenshots show more than their subject: phone photos carry my home's GPS coordinates, and frames can show kids, bystanders, and details that locate the house. Before one goes anywhere public, make sure its metadata is stripped and the frame has been checked.
 
 ## Writing

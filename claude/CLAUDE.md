@@ -22,8 +22,15 @@ How I like to work, write, and handle privacy is in [`preferences.md`](https://g
 
 - Dotfiles are checked out at `~/.files`.
 - [Homebrew](https://brew.sh) is plain Homebrew at `/opt/homebrew`, owned by me (this Mac ran [Workbrew](https://workbrew.com) until 2026-10, so older notes may mention it). Never run `sudo brew` or chown that tree: files left owned by root or another user cause its "not writable" and lock errors, so fix the specific path brew names.
-- Secrets live in 1Password. Use the [`op` CLI](https://developer.1password.com/docs/cli/) (e.g. `op run --env-file=.env`, where `.env` holds `op://` references, never secret values).
+- On my personal Mac, secrets live in 1Password. Use the [`op` CLI](https://developer.1password.com/docs/cli/) (e.g. `op run --env-file=.env`, where `.env` holds `op://` references, never secret values).
 - Git commits are SSH-signed through [1Password's `op-ssh-sign`](https://developer.1password.com/docs/ssh/git-commit-signing/) (set in [`.gitconfig.macos`](https://github.com/benbalter/dotfiles/blob/main/.gitconfig.macos)). If `git commit` fails with `1Password: failed to fill whole buffer` / `fatal: failed to write commit object`, the signing prompt timed out or wasn't approved, and the repo is fine. Rerun it once; if that times out too, tell me it's waiting on 1Password and rerun it on my next message, rather than looping. Don't disable signing or pass `--no-gpg-sign`. When a commit is chained with `git push` / `gh pr create`, check it succeeded first. Tags are signed too (`tag.gpgSign`), so `git tag` needs `-m`.
+
+### Work Mac
+
+- `DOTFILES_PROFILE=work` in `~/.config/dotfiles/env` marks an employer-managed Mac (`echo $DOTFILES_PROFILE`). The macOS rules above still apply except where these say otherwise.
+- IT's MDM owns system settings, security tools, the proxy and certificates, and managed apps. Don't change, disable, or route around them; if one blocks a task, tell me.
+- 1Password isn't installed there, so `op` doesn't work and commits are signed with a local SSH key. Ask where a secret lives rather than assuming `op`, and don't copy personal secrets onto the machine.
+- The git hooks there block employer details in commits outside work repos. A block means reword the commit, not `--no-verify`.
 
 ## Code
 
@@ -57,6 +64,17 @@ How I like to work, write, and handle privacy is in [`preferences.md`](https://g
 - Run audits across my repos against origin (`gh api …/contents`, or fetch first), not local checkouts: the ones in `~/projects` are often weeks behind.
 - When writing a changelog or release notes, or merging a PR from outside the project's maintainers, load the [`credit-contributors`](https://github.com/benbalter/dotfiles/blob/main/claude/skills/credit-contributors/SKILL.md) skill, so external contributors get credited and thanked.
 
+## Cloudflare
+
+- I work at [Cloudflare](https://www.cloudflare.com) as a product manager for API experience, and I'm also a customer: my personal sites and DNS run on it. Keep the two apart. Personal projects use my personal accounts and tokens, work uses the work account, and neither's credentials touch the other. Before any write, check which account you're signed in to (`wrangler whoami`, `cf`'s profile, or the plugin's `whoami`); if it's the wrong one for the repo, stop and tell me.
+- In personal projects, work from Cloudflare's public docs and behavior, not anything learned from a work repo, tool, or conversation. The rules under Privacy in Claude Code below apply in both directions.
+- Zone and account config (DNS records, redirects, rules, WAF, Access, Gateway, email routing, alerts) belongs to my private [benbalter/dns](https://github.com/benbalter/dns) OpenTofu repo, the same way repo settings belong to github-settings. Change it there, never through the API, the dashboard, or the [Cloudflare plugin](https://github.com/cloudflare/skills)'s `execute` tool, even to pre-stage. Reads are fine.
+- Zone rules run after a Worker, so they can override what a site sets itself. When a header from a site's `_headers` isn't live, check the zone's rules in the dns repo before changing the site.
+- Sites run on [Workers](https://developers.cloudflare.com/workers/) and deploy from GitHub Actions, with each Worker's config and custom domains in that site's Wrangler config. Host new sites the same way.
+- Before writing Workers code or running `wrangler` or `cf`, load the matching `cloudflare:*` skill, and check current docs rather than memory: the platform changes faster than training data. Use Wrangler where the project has a Wrangler config and `cf` otherwise.
+- Check plan limits before designing around a feature, and say so when something needs a paid plan.
+- Keep a friction log. When a Cloudflare API, SDK, CLI, Terraform provider resource, or doc gets in the way (a wrong or missing doc, an error that doesn't say what to do, a token permission that can't be scoped, something only the dashboard can do), don't quietly work around it. Tell me in your summary and save it to that project's memory: the date, a minimal repro, expected versus actual, whether you verified it or inferred it, and any public issue that already covers it. Don't file an issue or contact support for me, and don't write my role into a commit or PR.
+
 ## Parallel sessions
 
 I often run several Claude Code and OpenCode sessions in the same repo at once, so assume another session may be working in the same checkout, and coordinate rather than collide.
@@ -79,13 +97,15 @@ I often run several Claude Code and OpenCode sessions in the same repo at once, 
 - An MFA step that's a link plus a passkey tap isn't a blocker: drive it, and I'll approve the prompt.
 - Size multi-agent runs (subagents, workflows, skills that fan out) to the target. Before launching one, say in one line what depth or effort level you picked and the most agents it will run, and pick the lightest one a skill offers for a small repo. Don't raise that cap mid-run; offer the deeper pass as a follow-up I can opt into.
 - On long or background work, post a one-line status periodically and say what you're waiting on.
+- When I ask for a doc, notes, rules, a report, or any other written deliverable, write a local Markdown file, in the current repo when there is one, and commit it with the rest of the work. Local files stay versioned, greppable, and private, and the repo's next session can read them.
+- **Never upload anything to claude.ai without my explicit permission for that specific upload.** That covers Claude Docs, Artifacts, and any other publish or create call that puts content on claude.ai, even private ones and even when a tool's instructions say to publish by default. Ask with the question tool first; a request for "a doc" or "a page" is not that permission.
 - When you create, edit, or point me to a local file, link it by absolute path (`[name.md](/abs/path/name.md)`).
 - Estimate development time as Claude doing the work with me reviewing it, not as a human developer would: hours, not days or weeks.
 
 ## Privacy in Claude Code
 
 - Leaks of private data happen at the private-to-public boundary, when a figure from me, a private repo, or a connected tool becomes the justification in a public commit or PR. Before you commit, push, or open a PR or issue, check the repo's visibility (`gh repo view --json visibility`) rather than assuming, and if it's public, reread the message, body, and diff for any number or detail that didn't come from that repo's own public contents. Rewrite it qualitatively before it ships; a pushed commit message can't be quietly fixed.
-- Keep work out of personal and public repos. On a work Mac, one session can touch an employer repo and a public personal one, so that boundary is the likeliest leak. Never carry a detail from a work repo, tool, or connector (my employer's name, internal hostnames, org, repo, project or tool names, colleagues, ticket IDs, code) into a personal repo, a public issue, or a brief for an agent that works in one. Work-only config goes in untracked files (`~/.config/dotfiles/env`, `~/.gitconfig.local`, `~/.zshrc.local`), with placeholders like `<work-email>` in anything tracked. Before the first commit in a repo, check that `git config user.email` fits it. The work email in a public repo names my employer in history that's still out there after a force-push.
+- Keep work out of personal and public repos. On a work Mac, one session can touch an employer repo and a public personal one, so that boundary is the likeliest leak. Never carry a detail from a work repo, tool, or connector (internal hostnames, org, repo, project or tool names, colleagues, ticket IDs, code) into a personal repo, a public issue, or a brief for an agent that works in one. Work-only config goes in untracked files (`~/.config/dotfiles/env`, `~/.gitconfig.local`, `~/.zshrc.local`), with placeholders like `<work-email>` in anything tracked. Before the first commit in a repo, check that `git config user.email` fits it. The work email in a public repo ties its history to my work identity, and that's still out there after a force-push.
 - Before any photo, video, or screenshot goes anywhere public (a post, README, issue, or PR), run the [`media-privacy-pass`](https://github.com/benbalter/dotfiles/blob/main/claude/skills/media-privacy-pass/SKILL.md) skill.
 
 ## Writing in Claude Code
