@@ -49,6 +49,16 @@
       }
     }
   },
+  "env": {
+    "PONYTAIL_DEFAULT_MODE": "lite"
+  },
+  "pluginConfigs": {
+    "ponytail@ponytail": {
+      "options": {
+        "ledger": false
+      }
+    }
+  },
   "advisorModel": "opus",
   "skipWorkflowUsageWarning": true,
   "theme": "auto",
