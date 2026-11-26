@@ -145,6 +145,20 @@ git -c commit.gpgsign=false commit -m x
 git add -A
 cd repo && git add .
 git add --all && git commit -m x
+git -C repo add -A
+git -c core.quotepath=off add .
+git add -- .
+git add :/
+FOO=1 git add -A
+env git add --all
+if true; then git add -A; fi
+{ git add -A; }
+FOO=1 sudo brew install wget
+git -c commit.gpgSign=0 commit -m x
+git -c tag.gpgsign=off tag -m x v1
+npm -g install typescript
+npm i -gf typescript
+npm install --location=global typescript
 EOF
 }
 
@@ -163,6 +177,11 @@ git add script/lint
 git add .claude/hooks/lint-file
 git log --show-signature
 sudo -v && brew upgrade
+git add ./script/lint
+git add .github/workflows/ci.yml
+git commit -m "Stop passing --no-gpg-sign"
+npm ls -g && npm install
+npm install -D eslint
 EOF
 }
 
@@ -172,6 +191,14 @@ EOF
 	[ -z "$(bash_decision "$cmd")" ] || fail "denied: $cmd"
 	cmd=$(printf "git commit -F - <<'EOF'\nDeny a Co-Authored-By: Claude trailer in guard-bash\nEOF")
 	[ -z "$(bash_decision "$cmd")" ] || fail "denied a mid-sentence mention: $cmd"
+	# A message line that starts with a forbidden command is still prose.
+	cmd=$(printf "git commit -F - <<'EOF'\nBlock more spellings\n\ngit add -A with -C now denied\nEOF")
+	[ -z "$(bash_decision "$cmd")" ] || fail "denied a line-start mention: $cmd"
+}
+
+@test "guard-bash still checks script heredocs" {
+	cmd=$(printf "bash <<'EOF'\ncd repo\ngit add -A\nEOF")
+	[ "$(bash_decision "$cmd")" = deny ] || fail "allowed: $cmd"
 }
 
 @test "guard-bash denies a Claude co-author trailer" {
@@ -181,6 +208,8 @@ EOF
 	[ "$(bash_decision "$cmd")" = deny ] || fail "allowed PR body trailer"
 	[ "$(bash_decision 'git commit -m x --trailer "Co-Authored-By: Claude <noreply@anthropic.com>"')" = deny ] ||
 		fail "allowed --trailer"
+	[ "$(bash_decision 'git commit -m Fix -m "Co-Authored-By: Claude <noreply@anthropic.com>"')" = deny ] ||
+		fail "allowed a trailer as its own -m"
 	printf 'Fix\n\nCo-Authored-By: Claude <noreply@anthropic.com>\n' >"$PROJECT/msg"
 	[ "$(bash_decision "git commit -F $PROJECT/msg")" = deny ] || fail "allowed -F file trailer"
 }

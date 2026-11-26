@@ -18,9 +18,24 @@ cmd=$(printf '%s' "$input" | jq -r '.tool_input.command // empty')
 cwd=$(printf '%s' "$input" | jq -r '.cwd // empty')
 [ -n "$cwd" ] || cwd=$PWD
 
+# The command minus the bodies of heredocs that feed a commit or PR message,
+# so a message line that starts with `git add -A` isn't read as running it.
+# Other heredocs (`bash <<'EOF'`) are scripts and still get checked. The
+# co-author check below looks at the full command, since the trailer lives
+# in exactly those bodies.
+scan=$(printf '%s\n' "$cmd" | awk -v q="'" '
+	stop != "" { l = $0; sub(/^\t+/, "", l); if (l == stop) stop = ""; next }
+	{ print }
+	/(git[[:space:]][^;&|]*commit|gh[[:space:]]+(pr|issue|release))/ &&
+		match($0, "<<-?[[:space:]]*[\"" q "]?[A-Za-z_][A-Za-z0-9_]*") {
+		stop = substr($0, RSTART, RLENGTH)
+		sub("^<<-?[[:space:]]*[\"" q "]?", "", stop)
+	}')
+text=$scan
+
 # matches <grep -E args>...: whether the command matches.
 matches() {
-	printf '%s\n' "$cmd" | grep -Eq "$@"
+	printf '%s\n' "$text" | grep -Eq "$@"
 }
 
 deny() {
@@ -32,10 +47,15 @@ deny() {
 	exit 0
 }
 
-# Start of a command: line start, or after a separator or subshell. Every
-# pattern is anchored here so prose that mentions a rule, like a commit message
-# about this hook, isn't denied.
-start='(^|[;&|(`]|\$\()[[:space:]]*'
+# Start of a command: line start, or after a separator, subshell, group or
+# then/do/else, then any VAR=value assignments and env/command/time/exec
+# prefixes (`FOO=1 git add -A` got through without them). Every pattern is
+# anchored here so prose that mentions a rule, like a commit message about
+# this hook, isn't denied.
+start='(^|[;&|(`{]|\$\(|(^|[[:space:]])(then|do|else)[[:space:]])[[:space:]]*([A-Za-z_][A-Za-z0-9_]*=[^[:space:]]*[[:space:]]+|(env|command|time|exec)[[:space:]]+)*'
+# Global npm install flags, including -gf style bundles and --location.
+npm_global='(-g|--global|--location[= ]global|-[a-zA-Z]*g[a-zA-Z]*)'
+npm_flags='([[:space:]]+-[^[:space:];&|]+)*'
 
 # Homebrew refuses to run as root, and anything sudo leaves in its prefix
 # belongs to root, which breaks every later brew run as the user.
@@ -45,7 +65,8 @@ fi
 if matches "${start}(sudo[[:space:]]+)?chown[[:space:]][^;&|]*/opt/homebrew"; then
 	deny "Don't chown /opt/homebrew: it's owned by you and should stay that way. Ownership errors there mean something ran brew as another user; ask before changing ownership."
 fi
-if matches "${start}npm[[:space:]]+(install|i|add)[[:space:]]([^;&|]*[[:space:]])?(-g|--global)([[:space:]]|$)"; then
+if matches "${start}npm${npm_flags}[[:space:]]+(install|i|add)[[:space:]]([^;&|]*[[:space:]])?${npm_global}([[:space:]]|$|[;&|])" ||
+	matches "${start}npm${npm_flags}[[:space:]]+${npm_global}${npm_flags}[[:space:]]+(install|i|add)([[:space:]]|$)"; then
 	deny "Global npm CLIs are managed by mise: add \"npm:<pkg>\" = \"latest\" under [tools] in ~/.config/mise/config.toml and run mise install."
 fi
 # ~/.npmrc links into the public dotfiles repo, so a saved token is one
@@ -54,10 +75,13 @@ if matches "${start}npm[[:space:]]+(login|adduser|add-user)([[:space:]]|$)" ||
 	matches "${start}npm[[:space:]]+((config|c)[[:space:]]+)?set[[:space:]][^;&|]*(_auth|_password)"; then
 	deny "Don't save npm credentials: ~/.npmrc links into the public dotfiles repo. The token lives in 1Password, and the npm() wrapper in lib/aliases reads it for commands that need auth."
 fi
-if matches -i "${start}git[[:space:]][^;&|]*(--no-gpg-sign|(commit|tag)\.gpgsign[[:space:]=]+false)"; then
+# Whole words only, so a quoted message that names the flag ("stop passing
+# --no-gpg-sign") passes. git also reads no/off/0 as false.
+if matches -i "${start}git[[:space:]]([^;&|]*[[:space:]])?(--no-gpg-sign|(commit|tag)\.gpgsign[[:space:]=]+(false|no|off|0))([[:space:]]|$|[;&|])"; then
 	deny "Don't disable commit or tag signing. If 1Password's signing prompt timed out, rerun the same command once so it prompts again; if that times out too, stop and say the commit is waiting on 1Password."
 fi
-if matches "${start}git[[:space:]]+add[[:space:]]+(-A|--all|\.)([[:space:]]|$|[;&|])"; then
+# -C <dir> / -c k=v may come first: `git -C repo add -A` got through.
+if matches "${start}git([[:space:]]+-[Cc][[:space:]]+[^[:space:];&|]+)*[[:space:]]+add[[:space:]]+(--[[:space:]]+)?(-A|--all|\.|\./|:/)([[:space:]]|$|[;&|])"; then
 	deny "Stage specific paths (git add <file>...) rather than everything, so scratch output and generated artifacts stay out of commits."
 fi
 # No Claude co-author credit: settings.json leaves attribution empty for this,
@@ -66,13 +90,15 @@ fi
 # so a message that mentions the rule mid-sentence still passes. A message
 # file passed with -F or --body-file is checked when its path resolves.
 coauthor='Co-Authored-By:[[:space:]]*Claude'
+text=$cmd
 if matches "${start}(git[[:space:]]+([^;&|]*[[:space:]])?commit|gh[[:space:]]+pr[[:space:]]+(create|edit))([[:space:]]|$)"; then
 	msgfile=$(printf '%s\n' "$cmd" | sed -nE "s/.*(-F|--file|--body-file)[= ]+[\"']?([^-[:space:]\"'][^[:space:]\"']*).*/\2/p" | head -n 1)
 	case $msgfile in
 		'' | /*) ;;
 		*) msgfile="$cwd/$msgfile" ;;
 	esac
-	if matches -i "^[[:space:]]*${coauthor}" || matches -i -e "--trailer[= ]+[\"']?${coauthor}" ||
+	# git turns a -m paragraph that is only a trailer into a real trailer.
+	if matches -i "^[[:space:]]*${coauthor}" || matches -i -e "(--trailer|-m)[= ]*[\"']?${coauthor}" ||
 		{ [ -f "$msgfile" ] && grep -Eqi "^[[:space:]]*${coauthor}" "$msgfile"; }; then
 		deny "Don't credit Claude in commits or pull requests: drop the Co-Authored-By: Claude trailer and rerun. Ben's settings.json leaves attribution empty on purpose, even where older commits in a repo have the trailer."
 	fi
