@@ -8,6 +8,7 @@
     "impeccable@impeccable": true,
     "ruby-lsp@claude-plugins-official": true,
     "context7@claude-plugins-official": true,
+    "swift-lsp@claude-plugins-official": true,
     "ponytail@ponytail": true,
     "agentic-actions-auditor@trailofbits": true,
     "open-sourcing@trailofbits": true,
@@ -50,7 +51,8 @@
     }
   },
   "env": {
-    "PONYTAIL_DEFAULT_MODE": "lite"
+    "PONYTAIL_DEFAULT_MODE": "lite",
+    "PONYTAIL_SUBAGENT_MATCHER": "^(?!(explore|claude-code-guide)$)"
   },
   "pluginConfigs": {
     "ponytail@ponytail": {

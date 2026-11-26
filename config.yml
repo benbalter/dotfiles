@@ -536,8 +536,11 @@ defaults_work_skip_domains:
 # Claude Code plugins a work Mac turns off in ~/.claude/settings.json, which
 # OpenCode's claude-code.ts follows too. Context7's MCP server is blocked by a
 # corporate network filter, so it failed to connect at every session start.
+# REA runs a reverse-engineering server (Frida, adb, debuggers), which is the
+# employer's call to allow on a managed Mac, not this repo's.
 claude_plugins_work_disabled:
   - context7@claude-plugins-official
+  - rea@rea
 
 # Launch agents third-party apps install in ~/Library/LaunchAgents to start
 # themselves at login, by label. The playbook unloads and deletes them, and
