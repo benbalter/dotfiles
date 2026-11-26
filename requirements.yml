@@ -1,6 +1,6 @@
 ---
 collections:
   - name: geerlingguy.mac
-    version: "5.0.0"
+    version: "5.1.0"
   - name: community.general
     version: "14.0.1"
