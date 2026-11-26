@@ -18,21 +18,6 @@ cmd=$(printf '%s' "$input" | jq -r '.tool_input.command // empty')
 cwd=$(printf '%s' "$input" | jq -r '.cwd // empty')
 [ -n "$cwd" ] || cwd=$PWD
 
-# The command minus the bodies of heredocs that feed a commit or PR message,
-# so a message line that starts with `git add -A` isn't read as running it.
-# Other heredocs (`bash <<'EOF'`) are scripts and still get checked. The
-# co-author check below looks at the full command, since the trailer lives
-# in exactly those bodies.
-scan=$(printf '%s\n' "$cmd" | awk -v q="'" '
-	stop != "" { l = $0; sub(/^\t+/, "", l); if (l == stop) stop = ""; next }
-	{ print }
-	/(git[[:space:]][^;&|]*commit|gh[[:space:]]+(pr|issue|release))/ &&
-		match($0, "<<-?[[:space:]]*[\"" q "]?[A-Za-z_][A-Za-z0-9_]*") {
-		stop = substr($0, RSTART, RLENGTH)
-		sub("^<<-?[[:space:]]*[\"" q "]?", "", stop)
-	}')
-text=$scan
-
 # matches <grep -E args>...: whether the command matches.
 matches() {
 	printf '%s\n' "$text" | grep -Eq "$@"
@@ -57,6 +42,43 @@ start='(^|[;&|(`{]|\$\(|(^|[[:space:]])(then|do|else)[[:space:]])[[:space:]]*([A
 npm_global='(-g|--global|--location[= ]global|-[a-zA-Z]*g[a-zA-Z]*)'
 npm_flags='([[:space:]]+-[^[:space:];&|]+)*'
 
+# The command minus the bodies of quoted heredocs that feed a commit or PR
+# message, so a message line that starts with `git add -A` isn't read as
+# running it. Strict on purpose, since a wrong skip hides real commands: the
+# heredoc must be the only one on a line that starts a git commit or gh
+# pr/issue/release command, and its delimiter must be quoted (an unquoted
+# body still runs $(...)). Script heredocs (`bash <<'EOF'`) still get checked,
+# and the co-author check below reads the full command, since the trailer
+# lives in exactly these bodies.
+msg_heredoc="${start}"'(git([[:space:]]+-[Cc][[:space:]]+[^[:space:];&|]+)*[[:space:]]+commit|gh[[:space:]]+(pr|issue|release)[[:space:]]+[a-z]+)[^;&|()`<]*("\$\(cat[[:space:]]+)?<<'
+scan=$(printf '%s\n' "$cmd" | MSG_HEREDOC=$msg_heredoc awk -v q="'" '
+	stop != "" {
+		l = $0
+		if (dash) sub(/^\t+/, "", l)
+		if (l == stop) stop = ""
+		next
+	}
+	{ print }
+	{
+		t = $0
+		if (gsub(/<</, "", t) != 1 || !match($0, ENVIRON["MSG_HEREDOC"])) next
+		rest = substr($0, RSTART + RLENGTH)
+		dash = substr(rest, 1, 1) == "-"
+		if (dash) rest = substr(rest, 2)
+		sub(/^[ \t]*/, "", rest)
+		quote = substr(rest, 1, 1)
+		if (quote != q && quote != "\"") next
+		rest = substr(rest, 2)
+		if (!match(rest, /^[A-Za-z_][A-Za-z0-9_]*/)) next
+		word = substr(rest, 1, RLENGTH)
+		after = substr(rest, RLENGTH + 1)
+		if (substr(after, 1, 1) != quote) next
+		after = substr(after, 2)
+		if (after != "" && after !~ /^[ \t)]/) next
+		stop = word
+	}')
+text=$scan
+
 # Homebrew refuses to run as root, and anything sudo leaves in its prefix
 # belongs to root, which breaks every later brew run as the user.
 if matches "${start}sudo[[:space:]]+([^;&|[:space:]]+[[:space:]]+)*([^[:space:]]*/)?brew([[:space:]]|$)"; then
@@ -75,13 +97,13 @@ if matches "${start}npm[[:space:]]+(login|adduser|add-user)([[:space:]]|$)" ||
 	matches "${start}npm[[:space:]]+((config|c)[[:space:]]+)?set[[:space:]][^;&|]*(_auth|_password)"; then
 	deny "Don't save npm credentials: ~/.npmrc links into the public dotfiles repo. The token lives in 1Password, and the npm() wrapper in lib/aliases reads it for commands that need auth."
 fi
-# Whole words only, so a quoted message that names the flag ("stop passing
-# --no-gpg-sign") passes. git also reads no/off/0 as false.
-if matches -i "${start}git[[:space:]]([^;&|]*[[:space:]])?(--no-gpg-sign|(commit|tag)\.gpgsign[[:space:]=]+(false|no|off|0))([[:space:]]|$|[;&|])"; then
+# A quoted flag still runs ("--no-gpg-sign"), and git reads no/off/0 and an
+# empty value as false.
+if matches -i "${start}git[[:space:]]([^;&|]*[[:space:]\"'])?(--no-gpg-sign|(commit|tag)\.gpgsign([[:space:]=]+[\"']?(false|no|off|0)|=))[\"']?([[:space:]]|$|[;&|])"; then
 	deny "Don't disable commit or tag signing. If 1Password's signing prompt timed out, rerun the same command once so it prompts again; if that times out too, stop and say the commit is waiting on 1Password."
 fi
 # -C <dir> / -c k=v may come first: `git -C repo add -A` got through.
-if matches "${start}git([[:space:]]+-[Cc][[:space:]]+[^[:space:];&|]+)*[[:space:]]+add[[:space:]]+(--[[:space:]]+)?(-A|--all|\.|\./|:/)([[:space:]]|$|[;&|])"; then
+if matches "${start}git([[:space:]]+-[Cc][[:space:]]+[^[:space:];&|]+)*[[:space:]]+add[[:space:]]+(--[[:space:]]+)?(-A|--all|\.|\./|:/)([[:space:]]|$|[;&|)\`])"; then
 	deny "Stage specific paths (git add <file>...) rather than everything, so scratch output and generated artifacts stay out of commits."
 fi
 # No Claude co-author credit: settings.json leaves attribution empty for this,

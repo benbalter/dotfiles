@@ -159,6 +159,9 @@ git -c tag.gpgsign=off tag -m x v1
 npm -g install typescript
 npm i -gf typescript
 npm install --location=global typescript
+git commit "--no-gpg-sign" -m x
+git -c "commit.gpgsign=false" commit -m x
+git -c commit.gpgsign= commit -m x
 EOF
 }
 
@@ -179,7 +182,6 @@ git log --show-signature
 sudo -v && brew upgrade
 git add ./script/lint
 git add .github/workflows/ci.yml
-git commit -m "Stop passing --no-gpg-sign"
 npm ls -g && npm install
 npm install -D eslint
 EOF
@@ -199,6 +201,15 @@ EOF
 @test "guard-bash still checks script heredocs" {
 	cmd=$(printf "bash <<'EOF'\ncd repo\ngit add -A\nEOF")
 	[ "$(bash_decision "$cmd")" = deny ] || fail "allowed: $cmd"
+	# Each of these only looks like a message heredoc.
+	cmd=$(printf "git commit -m x; bash <<'EOF'\ngit add -A\nEOF")
+	[ "$(bash_decision "$cmd")" = deny ] || fail "allowed a script heredoc after a commit: $cmd"
+	cmd=$(printf 'git commit -F - <<EOF\n$(git add -A)\nEOF')
+	[ "$(bash_decision "$cmd")" = deny ] || fail "allowed an unquoted, expanding body: $cmd"
+	cmd=$(printf "git commit -F - <<'EOF-X'\nmsg\nEOF-X\ngit add -A")
+	[ "$(bash_decision "$cmd")" = deny ] || fail "allowed after an unparsed delimiter: $cmd"
+	cmd=$(printf "git commit -F - <<'EOF' <<'EOS'\nmsg\nEOF\ngit add -A\nEOS")
+	[ "$(bash_decision "$cmd")" = deny ] || fail "allowed with two heredocs: $cmd"
 }
 
 @test "guard-bash denies a Claude co-author trailer" {
