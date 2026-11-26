@@ -44,7 +44,9 @@ jobs:
       # image's Python, and breaks once the image moves to a new one), and
       # puts uv on PATH so bootstrap doesn't fetch its installer on every run.
       - name: uv
-        uses: astral-sh/setup-uv@v10
+        # setup-uv publishes only full version tags (no floating v10), so
+        # this names a release; Renovate keeps it current.
+        uses: astral-sh/setup-uv@v10.4.0
         with:
           enable-cache: true
           cache-dependency-glob: requirements.txt
@@ -188,7 +190,7 @@ jobs:
 
       # uv's download cache; see the test job.
       - name: uv
-        uses: astral-sh/setup-uv@v10
+        uses: astral-sh/setup-uv@v10.4.0
         with:
           enable-cache: true
           cache-dependency-glob: requirements.txt
