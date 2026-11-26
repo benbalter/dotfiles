@@ -617,7 +617,9 @@
               set -euo pipefail
               command -v opencode >/dev/null || exit 0
               want="$HOME/.local/share/mise/shims/claude"
-              have=$(opencode service get 2>/dev/null | jq -r '.env.OPENCODE_CLAUDE_PATH // empty')
+              # || true: with no service set up yet, `get` can fail, and pipefail
+              # would fail the task instead of falling through to `set`.
+              have=$(opencode service get 2>/dev/null | jq -r '.env.OPENCODE_CLAUDE_PATH // empty' || true)
               [ "$have" = "$want" ] && exit 0
               opencode service set env OPENCODE_CLAUDE_PATH "$want"
               echo changed

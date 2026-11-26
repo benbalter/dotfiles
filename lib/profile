@@ -96,7 +96,9 @@ dotfiles_vscode_extensions() {
 	[ -n "${NODE_EXTRA_CA_CERTS:-}" ] || return 0
 	_code=$(command -v code || echo /opt/homebrew/bin/code)
 	[ -x "$_code" ] || return 0
-	_have=$("$_code" --list-extensions 2>/dev/null | tr '[:upper:]' '[:lower:]')
+	# || true: callers run under set -e and pipefail, so a failing `code` here
+	# aborted the rest of the nightly update, backup included.
+	_have=$("$_code" --list-extensions 2>/dev/null | tr '[:upper:]' '[:lower:]') || true
 	# xargs splits the list, which zsh (sourcing this file) wouldn't do for an
 	# unquoted variable. -r: with nothing missing, a bare `code` opens a window.
 	sed -n "s/^vscode '\([^']*\)'.*/\1/p" "$1/Brewfile" | tr '[:upper:]' '[:lower:]' |

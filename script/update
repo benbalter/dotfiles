@@ -251,12 +251,17 @@ if command -v npm >/dev/null; then
 fi
 
 if command -v bundle >/dev/null; then
-	echo "==> Updating Ruby gems..."
-	step bundle update
+	# `install`, not `update`, for the same reason as `npm ci` above: update
+	# rewrote the tracked Gemfile.lock, and the dirty tree made the next `up`
+	# skip its git pull. Renovate owns gem bumps.
+	echo "==> Installing Ruby gems..."
+	step bundle install
 fi
 
 echo "==> Updating Python packages..."
-if [ -d env ]; then
+# -f, not -d: a bootstrap that died partway leaves env/ without activate, and
+# sourcing a missing file is fatal in sh, which skipped every step after this.
+if [ -f env/bin/activate ]; then
 	# shellcheck disable=SC1091
 	. env/bin/activate
 	if command -v uv >/dev/null; then

@@ -245,6 +245,19 @@ EOF
 	[ "$calls" = "--install-extension need.one --install-extension need.two" ] || fail "$calls"
 }
 
+@test "dotfiles_vscode_extensions survives a failing code under set -e" {
+	# script/update calls it under set -eu and pipefail; a failing `code`
+	# used to abort the rest of the nightly run.
+	home=$(mktemp -d) root=$(mktemp -d) bin=$(mktemp -d)
+	printf "vscode 'need.one'\n" >"$root/Brewfile"
+	# shellcheck disable=SC2016 # the stub expands $1, not this shell
+	printf '#!/bin/sh\n[ "$1" = --list-extensions ] && exit 1\nexit 0\n' >"$bin/code"
+	chmod +x "$bin/code"
+	run env -i HOME="$home" PATH="$bin:$PATH" NODE_EXTRA_CA_CERTS=/ca.pem sh -c "set -eu; (set -o pipefail) 2>/dev/null && set -o pipefail; . '$REPO_ROOT/lib/profile'; dotfiles_vscode_extensions '$root'; echo after"
+	rm -rf "$home" "$root" "$bin"
+	echo "$output" | grep -qx after || fail "aborted: $output"
+}
+
 @test "dotfiles_load_signing_key loads the work key from the Keychain only when the agent lacks it" {
 	home=$(mktemp -d) bin=$(mktemp -d)
 	ssh-keygen -q -t ed25519 -N '' -C test -f "$home/sign" || fail "ssh-keygen failed"

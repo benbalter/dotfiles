@@ -101,7 +101,7 @@ refute_called() {
 	# Listing the plugins failed too, and is reported like any other step.
 	echo "$output" | grep -q 'claude plugin list --json' || fail "plugin list failure not reported: $output"
 	assert_called "npm ci"
-	assert_called "bundle update"
+	assert_called "bundle install"
 	assert_called "uv pip install --upgrade -r requirements.txt"
 	assert_called "ansible-galaxy collection install -r requirements.yml"
 	assert_called "zsh $FAKE_ROOT/.oh-my-zsh/tools/upgrade.sh -v minimal"
@@ -220,6 +220,11 @@ refute_called() {
 @test "update never rewrites package-lock.json" {
 	run_update 0
 	refute_called '^npm (update|install)'
+}
+
+@test "update never rewrites Gemfile.lock" {
+	run_update 0
+	refute_called '^bundle update'
 }
 
 @test "headless update skips installing casks and App Store apps" {
