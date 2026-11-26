@@ -993,7 +993,9 @@
       loop: "{{ login_items }}"
       register: login_items_added
       changed_when: "'changed' in login_items_added.stdout"
-      when: not is_ci and not ansible_check_mode
+      # Not on a work Mac: Brewfile.work-skip keeps these apps off it (Caffeine
+      # stops the MDM's idle lock), and one installed by hand shouldn't start.
+      when: not is_ci and not is_work and not ansible_check_mode
       tags: [macos, defaults]
 
     # bootout before deleting: a loaded agent with KeepAlive would otherwise

@@ -81,8 +81,9 @@ done
 # dotfiles.workRepo marks work repos for the leak-guard hooks, through the
 # same remote match as the email.
 want_identity=$(printf '[user]\n\temail = %s\n[dotfiles]\n\tworkRepo = true\n' "$DOTFILES_WORK_EMAIL")
-# One entry per line, whether the list is space- or newline-separated.
-entries() { printf '%s\n' "$1" | xargs -n 1; }
+# One entry per line, whether the list is space- or newline-separated. Not
+# xargs: it treats quotes as syntax, so a term like Macy's failed the script.
+entries() { printf '%s\n' "$1" | tr -s ' \t' '\n' | sed '/^$/d'; }
 want_selector=$(
 	echo "# Written by script/git-work-identity from $DOTFILES_ENV_FILE; edit that, not this."
 	entries "$DOTFILES_WORK_GIT_REMOTES" | while read -r entry; do

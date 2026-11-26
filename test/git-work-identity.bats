@@ -150,10 +150,10 @@ user_for() {
 
 @test "git-work-identity's leak rules catch the email domain, remotes and extra terms" {
 	command -v gitleaks >/dev/null || skip "needs gitleaks"
-	echo 'DOTFILES_WORK_LEAK_TERMS="Acme Widget+Co"' >>"$ENV_FILE"
+	echo "DOTFILES_WORK_LEAK_TERMS=\"Acme Widget+Co Macy's\"" >>"$ENV_FILE"
 	run_script
 	rules="$HOME/.config/git/work-leaks.toml"
-	for text in "mail me@work.example" "see github.com/work-org/app" "an ACME thing" "Widget+Co" "gitlab.work.example"; do
+	for text in "mail me@work.example" "see github.com/work-org/app" "an ACME thing" "Widget+Co" "Macy's" "gitlab.work.example"; do
 		echo "$text" | gitleaks stdin -c "$rules" --no-banner --log-level error >/dev/null &&
 			fail "'$text' wasn't caught"
 	done

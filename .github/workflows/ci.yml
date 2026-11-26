@@ -128,11 +128,18 @@ jobs:
           brew install mise
           cd "$HOME"
           mise install
+          # The cache key only changes with config.toml, so without this the
+          # weekly run kept testing whatever "latest" was when it was cached.
+          mise upgrade
           export PATH="$HOME/.local/share/mise/shims:$PATH"
           for cmd in node ruby go tsx wrangler ncu serve claude copilot zx ni degit taze \
             tsc typescript-language-server chrome-devtools-mcp skills prettier gam tflint rclone pat; do
             command -v "$cmd" >/dev/null || { echo "FAIL: $cmd not on PATH"; exit 1; }
           done
+          # On PATH isn't enough: a claude stub without its native binary, or a
+          # TypeScript without tsserver (7.x), passes command -v.
+          claude --version
+          NODE_PATH="$(mise where npm:typescript)/lib/node_modules" node -e 'require.resolve("typescript/lib/tsserver.js")'
           echo "All mise-managed CLIs verified"
 
       - name: Verify macOS user defaults applied
