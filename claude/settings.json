@@ -8,7 +8,14 @@
     "impeccable@impeccable": true,
     "ruby-lsp@claude-plugins-official": true,
     "context7@claude-plugins-official": true,
-    "ponytail@ponytail": true
+    "ponytail@ponytail": true,
+    "agentic-actions-auditor@trailofbits": true,
+    "open-sourcing@trailofbits": true,
+    "supply-chain-risk-auditor@trailofbits": true,
+    "insecure-defaults@trailofbits": true,
+    "sharp-edges@trailofbits": true,
+    "git-cleanup@trailofbits": true,
+    "rea@rea": true
   },
   "extraKnownMarketplaces": {
     "cloudflare": {
@@ -27,6 +34,18 @@
       "source": {
         "source": "github",
         "repo": "DietrichGebert/ponytail"
+      }
+    },
+    "trailofbits": {
+      "source": {
+        "source": "github",
+        "repo": "trailofbits/skills"
+      }
+    },
+    "rea": {
+      "source": {
+        "source": "github",
+        "repo": "morluto/rea"
       }
     }
   },
