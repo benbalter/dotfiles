@@ -18,9 +18,13 @@ cmd=$(printf '%s' "$input" | jq -r '.tool_input.command // empty')
 cwd=$(printf '%s' "$input" | jq -r '.cwd // empty')
 [ -n "$cwd" ] || cwd=$PWD
 
-# matches <grep -E args>...: whether the command matches.
+# matches <grep -E args>...: whether the command matches. Heredoc bodies are
+# checked like any other line: skipping "message" heredocs was tried and
+# reverted, because every way of spotting one differed from the shell's
+# parse and opened a bypass. A message line that starts with a forbidden
+# command gets denied; reword it.
 matches() {
-	printf '%s\n' "$text" | grep -Eq "$@"
+	printf '%s\n' "$cmd" | grep -Eq "$@"
 }
 
 deny() {
@@ -41,43 +45,6 @@ start='(^|[;&|(`{]|\$\(|(^|[[:space:]])(then|do|else)[[:space:]])[[:space:]]*([A
 # Global npm install flags, including -gf style bundles and --location.
 npm_global='(-g|--global|--location[= ]global|-[a-zA-Z]*g[a-zA-Z]*)'
 npm_flags='([[:space:]]+-[^[:space:];&|]+)*'
-
-# The command minus the bodies of quoted heredocs that feed a commit or PR
-# message, so a message line that starts with `git add -A` isn't read as
-# running it. Strict on purpose, since a wrong skip hides real commands: the
-# heredoc must be the only one on a line that starts a git commit or gh
-# pr/issue/release command, and its delimiter must be quoted (an unquoted
-# body still runs $(...)). Script heredocs (`bash <<'EOF'`) still get checked,
-# and the co-author check below reads the full command, since the trailer
-# lives in exactly these bodies.
-msg_heredoc="${start}"'(git([[:space:]]+-[Cc][[:space:]]+[^[:space:];&|]+)*[[:space:]]+commit|gh[[:space:]]+(pr|issue|release)[[:space:]]+[a-z]+)[^;&|()`<]*("\$\(cat[[:space:]]+)?<<'
-scan=$(printf '%s\n' "$cmd" | MSG_HEREDOC=$msg_heredoc awk -v q="'" '
-	stop != "" {
-		l = $0
-		if (dash) sub(/^\t+/, "", l)
-		if (l == stop) stop = ""
-		next
-	}
-	{ print }
-	{
-		t = $0
-		if (gsub(/<</, "", t) != 1 || !match($0, ENVIRON["MSG_HEREDOC"])) next
-		rest = substr($0, RSTART + RLENGTH)
-		dash = substr(rest, 1, 1) == "-"
-		if (dash) rest = substr(rest, 2)
-		sub(/^[ \t]*/, "", rest)
-		quote = substr(rest, 1, 1)
-		if (quote != q && quote != "\"") next
-		rest = substr(rest, 2)
-		if (!match(rest, /^[A-Za-z_][A-Za-z0-9_]*/)) next
-		word = substr(rest, 1, RLENGTH)
-		after = substr(rest, RLENGTH + 1)
-		if (substr(after, 1, 1) != quote) next
-		after = substr(after, 2)
-		if (after != "" && after !~ /^[ \t)]/) next
-		stop = word
-	}')
-text=$scan
 
 # Homebrew refuses to run as root, and anything sudo leaves in its prefix
 # belongs to root, which breaks every later brew run as the user.
@@ -112,7 +79,6 @@ fi
 # so a message that mentions the rule mid-sentence still passes. A message
 # file passed with -F or --body-file is checked when its path resolves.
 coauthor='Co-Authored-By:[[:space:]]*Claude'
-text=$cmd
 if matches "${start}(git[[:space:]]+([^;&|]*[[:space:]])?commit|gh[[:space:]]+pr[[:space:]]+(create|edit))([[:space:]]|$)"; then
 	msgfile=$(printf '%s\n' "$cmd" | sed -nE "s/.*(-F|--file|--body-file)[= ]+[\"']?([^-[:space:]\"'][^[:space:]\"']*).*/\2/p" | head -n 1)
 	case $msgfile in

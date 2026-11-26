@@ -193,15 +193,14 @@ EOF
 	[ -z "$(bash_decision "$cmd")" ] || fail "denied: $cmd"
 	cmd=$(printf "git commit -F - <<'EOF'\nDeny a Co-Authored-By: Claude trailer in guard-bash\nEOF")
 	[ -z "$(bash_decision "$cmd")" ] || fail "denied a mid-sentence mention: $cmd"
-	# A message line that starts with a forbidden command is still prose.
-	cmd=$(printf "git commit -F - <<'EOF'\nBlock more spellings\n\ngit add -A with -C now denied\nEOF")
-	[ -z "$(bash_decision "$cmd")" ] || fail "denied a line-start mention: $cmd"
 }
 
 @test "guard-bash still checks script heredocs" {
 	cmd=$(printf "bash <<'EOF'\ncd repo\ngit add -A\nEOF")
 	[ "$(bash_decision "$cmd")" = deny ] || fail "allowed: $cmd"
-	# Each of these only looks like a message heredoc.
+	# A commit heredoc is checked too: skipping it opened bypasses like these.
+	cmd=$(printf "git commit -F - <<'EOF'\nmsg\nEOF\ngit add -A")
+	[ "$(bash_decision "$cmd")" = deny ] || fail "allowed after a commit heredoc: $cmd"
 	cmd=$(printf "git commit -m x; bash <<'EOF'\ngit add -A\nEOF")
 	[ "$(bash_decision "$cmd")" = deny ] || fail "allowed a script heredoc after a commit: $cmd"
 	cmd=$(printf 'git commit -F - <<EOF\n$(git add -A)\nEOF')
