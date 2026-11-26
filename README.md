@@ -19,6 +19,7 @@
 - `script/audit-casks` — Report casks whose apps haven't been opened lately; `--comment` proposes removals in the `Brewfile`
 - `script/audit-baseline` — Read-only audit against [NIST mSCP](https://github.com/usnistgov/macos_security)'s CIS Level 1 rules, with `config.yml`'s overrides and exceptions; `--verbose` lists every rule, `--offline` skips the fetch
 - `script/backup` — Encrypted off-site backup of `config.yml`'s `backup_paths` with [restic](https://restic.net), run nightly by `script/update`; `--setup` copies its credentials from 1Password to the Keychain, `--snapshots` lists snapshots, `--restore <dir>` restores the latest
+- `script/chrome-policy` — Apply `chrome/policies.json` to Chrome profiles through the Google Workspace Chrome Policy API (via GAM); `--check` shows drift, `--setup` asks questions. `up` runs it from a terminal
 - `script/claude-ai-prefs` — Copy `claude/preferences.md` for pasting into claude.ai; `--check` says whether the pasted copy is stale
 - `script/spotlight-exclusions` — Show whether Spotlight skips `config.yml`'s `spotlight_exclusions`; `--apply` writes them (needs sudo), `--indexed` lists what's still indexed
 - `script/git-work-identity` — On a work Mac, give work repos the work email and write the leak-guard rules; `--check` reports without writing

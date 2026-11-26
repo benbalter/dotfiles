@@ -11,3 +11,5 @@ node_modules
 **/.claude/settings.local.json
 
 **/.claude/.cc-writes/
+# Claude Code and OpenCode worktrees: full copies of the repo, never tracked.
+**/.claude/worktrees/

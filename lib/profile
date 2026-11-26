@@ -101,7 +101,7 @@ dotfiles_vscode_extensions() {
 	_have=$("$_code" --list-extensions 2>/dev/null | tr '[:upper:]' '[:lower:]') || true
 	# xargs splits the list, which zsh (sourcing this file) wouldn't do for an
 	# unquoted variable. -r: with nothing missing, a bare `code` opens a window.
-	sed -n "s/^vscode '\([^']*\)'.*/\1/p" "$1/Brewfile" | tr '[:upper:]' '[:lower:]' |
+	dotfiles_brewfile_entries vscode "$1/Brewfile" | tr '[:upper:]' '[:lower:]' |
 		grep -vxF "${_have:-.}" | sed 's/^/--install-extension /' |
 		xargs -r "$_code" >/dev/null 2>&1 || true
 	unset _code _have
